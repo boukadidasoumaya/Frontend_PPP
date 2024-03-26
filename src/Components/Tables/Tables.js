@@ -19,7 +19,18 @@ import {
   Container,
   Row,
   UncontrolledTooltip,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  FormGroup,
+
+  Input,
+  FormText,
 } from "reactstrap";
+import { FormLabel } from 'react-bootstrap';
+
+
 import Header from "../Header/Header";
 import Sidebar from "../Sidebar/Sidebar";
 import routes from "../../routes";
@@ -27,246 +38,150 @@ import NavBar from "../NavBar/NavBar";
 // core components
 
 const Tables = (props) => {
-  const [data] = useState([
-    {
-      id: 1,
-      projectName: "Argon Design System",
-      budget: "$2,500 USD",
-      status: "pending",
-      users: ["Ryan Tompson", "Romina Hadid", "Alexander Smith", "Jessica Doe"],
-      completion: 60
-    },
-    // Ajoutez d'autres entrées de données au besoin
+  const [students, setStudents] = useState([
+    { id: 1, name: 'Soumaya Boukadida', major: 'RT', level: '3' },
+    { id: 2, name: 'Rim Jbeli', major: 'GL', level: '3' },
+    // ... more student data
   ]);
+  const majors = ['MPI', 'RT', 'GL','IIA','IMI','MASTER'];
+  const levels = ['2', '3', '4', '5'];
+  const [selectedMajor, setSelectedMajor] = useState('');
+  const [selectedLevel, setSelectedLevel] = useState('');
+  const [filteredStudents, setFilteredStudents] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false); // State for add student modal
 
-  const [filtered, setFiltered] = useState([]);
-
-  const onFilteredChangeCustom = (value, accessor) => {
-    let filteredData = [...filtered];
-    let insertNewFilter = true;
-
-    if (filteredData.length) {
-      filteredData.forEach((filter, i) => {
-        if (filter["id"] === accessor) {
-          if (value === "" || !value.length) {
-            filteredData.splice(i, 1);
-          } else {
-            filter["value"] = value;
-          }
-
-          insertNewFilter = false;
-        }
-      });
-    }
-
-    if (insertNewFilter) {
-      filteredData.push({ id: accessor, value: value });
-    }
-
-    setFiltered(filteredData);
+  const handleFilterChange = (major, level) => {
+    setSelectedMajor(major);
+    setSelectedLevel(level);
+    const filteredData = students.filter(
+      (student) =>
+        (major === '' || student.major === major) &&
+        (level === '' || student.level === level)
+    );
+    setFilteredStudents(filteredData);
   };
+
+  const handleAddStudent = (newStudent) => {
+    setStudents([...students, newStudent]); // Add new student to original data
+    setModalOpen(false); // Close modal after adding
+    handleFilterChange(selectedMajor, selectedLevel); // Re-filter based on selections
+  };
+
+  const toggleModal = () => setModalOpen(!modalOpen); // Toggle add student modal
 
   return (
     <>
-     
-     <Sidebar
-        {...props}
-        routes={routes}
-        logo={{
-          innerLink: "/",
-          imgSrc: require("../../assets/img/brand/insatlogo.png"),
-          imgAlt: "...",
-        }}
-      />
+      <Sidebar {...props} routes={routes} logo={{ innerLink: "/", imgSrc: require("../../assets/img/brand/insatlogo.png"), imgAlt: "..." }} />
       <div className="main-content">
-      <NavBar
-          {...props}
-        
-        />
-      <Header />
-      <Container className="mt--7 " fluid>
-        {/* Table */}
-        <Row>
-          <div className="col">
-            <Card className="shadow">
-              <CardHeader className="border-0">
-                <h3 className="mb-0">Card tables</h3>
-              </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">Project</th>
-                    <th scope="col">Budget</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Users</th>
-                    <th scope="col">Completion</th>
-                    <th scope="col" />
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">
-                      <Media className="align-items-center">
-                        <a
-                          className="avatar rounded-circle mr-3"
-                          href="#pablo"
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <img
-                            alt="..."
-                            src={require("../../assets/img/theme/bootstrap.jpg")}
-                          />
-                        </a>
-                        <Media>
-                          <span className="mb-0 text-sm">
-                            Argon Design System
-                          </span>
-                        </Media>
-                      </Media>
-                    </th>
-                    <td>$2,500 USD</td>
-                    <td>
-                      <Badge color="" className="badge-dot mr-4">
-                        <i className="bg-warning" />
-                        pending
-                      </Badge>
-                    </td>
-                    <td>
-                      <div className="avatar-group">
-                        <a
-                          className="avatar avatar-sm"
-                          href="#pablo"
-                          id="tooltip742438047"
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <img
-                            alt="..."
-                            className="rounded-circle"
-                            src={require("../../assets/img/theme/team-1-800x800.jpg")}
-                          />
-                        </a>
-                        <UncontrolledTooltip
-                          delay={0}
-                          target="tooltip742438047"
-                        >
-                          Ryan Tompson
-                        </UncontrolledTooltip>
-                        <a
-                          className="avatar avatar-sm"
-                          href="#pablo"
-                          id="tooltip941738690"
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <img
-                            alt="..."
-                            className="rounded-circle"
-                            src={require("../../assets/img/theme/team-2-800x800.jpg")}
-                          />
-                        </a>
-                        <UncontrolledTooltip
-                          delay={0}
-                          target="tooltip941738690"
-                        >
-                          Romina Hadid
-                        </UncontrolledTooltip>
-                        <a
-                          className="avatar avatar-sm"
-                          href="#pablo"
-                          id="tooltip804044742"
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <img
-                            alt="..."
-                            className="rounded-circle"
-                            src={require("../../assets/img/theme/team-3-800x800.jpg")}
-                          />
-                        </a>
-                        <UncontrolledTooltip
-                          delay={0}
-                          target="tooltip804044742"
-                        >
-                          Alexander Smith
-                        </UncontrolledTooltip>
-                        <a
-                          className="avatar avatar-sm"
-                          href="#pablo"
-                          id="tooltip996637554"
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <img
-                            alt="..."
-                            className="rounded-circle"
-                            src={require("../../assets/img/theme/team-4-800x800.jpg")}
-                          />
-                        </a>
-                        <UncontrolledTooltip
-                          delay={0}
-                          target="tooltip996637554"
-                        >
-                          Jessica Doe
-                        </UncontrolledTooltip>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">60%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="60"
-                            barClassName="bg-danger"
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="text-right">
-                      <UncontrolledDropdown>
-                        <DropdownToggle
-                          className="btn-icon-only text-light"
-                          href="#pablo"
-                          role="button"
-                          size="sm"
-                          color=""
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu className="dropdown-menu-arrow" right>
-                          <DropdownItem
-                            href="#pablo"
-                            onClick={(e) => e.preventDefault()}
-                          >
-                            Action
-                          </DropdownItem>
-                          <DropdownItem
-                            href="#pablo"
-                            onClick={(e) => e.preventDefault()}
-                          >
-                            Another action
-                          </DropdownItem>
-                          <DropdownItem
-                            href="#pablo"
-                            onClick={(e) => e.preventDefault()}
-                          >
-                            Something else here
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
-          
-            </Card>
-          </div>
-        </Row>
-      
-      
-      </Container>
+        <NavBar {...props} />
+        <Header />
+        <Container className="mt--7" fluid>
+          {/* Table */}
+          <Row>
+            <div className="col">
+              <Card className="shadow">
+                <CardHeader className="border-0 d-flex align-items-center ">
+                  {/* Filter Dropdowns on Left */}
+                  <div style={{ display: 'flex' }}>
+                    <select value={selectedMajor} onChange={(e) => handleFilterChange(e.target.value, selectedLevel)}>
+                      <option value="">Toutes les spécialités</option>
+                      {majors.map((major) => (
+                        <option key={major} value={major}>
+                          {major}
+                        </option>
+                      ))}
+                    </select>
+                    <select value={selectedLevel} onChange={(e) => handleFilterChange(selectedMajor, e.target.value)}>
+                      <option value="">Tous les niveaux</option>
+                      {levels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Centered "Liste des étudiants" */}
+                  <h3 className="flex-grow mx-2">Liste des étudiants</h3>
+                  {/* Add Student Button in Center */}
+                  <Button color="primary" onClick={toggleModal} className="mx-2">
+                    Ajouter un étudiant
+                  </Button>
+                </CardHeader>
+                {/* Table Content */}
+                <Table className="align-items-center table-flush" responsive>
+                  <thead className="thead-light">
+                    <tr>
+                      <th scope="col">Nom</th>
+                      <th scope="col">Spécialité</th>
+                      <th scope="col">Niveau</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Display filtered students or message if none found */}
+                    {filteredStudents.length === 0 ? (
+                      <tr>
+                        <td colSpan={6}>Aucun étudiant trouvé pour les filtres sélectionnés</td>
+                      </tr>
+                    ) : (
+                      filteredStudents.map((student) => (
+                        <tr key={student.id}>
+                          <td>{student.name}</td>
+                          <td>{student.major}</td>
+                          <td>{student.level}</td>
+                          <td>{/* ... action buttons or links ... */}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </Table>
+              </Card>
+            </div>
+          </Row>
+          {/* Add Student Modal */}
+          <Modal isOpen={modalOpen} toggle={toggleModal}>
+            <ModalHeader toggle={toggleModal}>Ajouter un étudiant</ModalHeader>
+            <ModalBody>
+              {/* ... form fields to capture student data ... */}
+              <FormGroup>
+                <FormLabel for="name">Nom</FormLabel>
+                <Input type="text" name="name" id="name" placeholder="Entrez le nom de l'étudiant" />
+              </FormGroup>
+              <FormGroup>
+                <FormLabel for="major">Spécialité</FormLabel>
+                <select name="major" id="major">
+                  <option value="">Sélectionnez une spécialité</option>
+                  {majors.map((major) => (
+                    <option key={major} value={major}>
+                      {major}
+                    </option>
+                  ))}
+                </select>
+              </FormGroup>
+              <FormGroup>
+                <FormLabel for="level">Niveau</FormLabel>
+                <select name="level" id="level">
+                  <option value="">Sélectionnez un niveau</option>
+                  {levels.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
+              </FormGroup>
+            </ModalBody>
+            <Button color="primary" onClick={() => handleAddStudent({ name: "", major: "", level: "" })}>
+              Ajouter
+            </Button>
+            <Button color="link text-muted" onClick={toggleModal}>
+              Annuler
+            </Button>
+          </Modal>
+        </Container>
       </div>
-   
     </>
   );
+  
 };
 
 export default Tables;
