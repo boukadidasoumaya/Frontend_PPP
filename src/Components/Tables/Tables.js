@@ -79,10 +79,7 @@ const Tables = (props) => {
         }}
       />
       <div className="main-content">
-      <NavBar
-          {...props}
-        
-        />
+     
       <Header />
       <Container className="mt--7 " fluid>
         {/* Table */}
