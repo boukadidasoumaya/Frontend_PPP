@@ -18,10 +18,10 @@ const Header = () => {
                           tag="h5"
                           className="text-uppercase text-muted mb-0"
                         >
-                          Traffic
+                          Etudiants
                         </CardTitle>
                         <span className="h2 font-weight-bold mb-0">
-                          350,897
+                          1000
                         </span>
                       </div>
                       <Col className="col-auto">
@@ -48,9 +48,9 @@ const Header = () => {
                           tag="h5"
                           className="text-uppercase text-muted mb-0"
                         >
-                          New users
+                          Teachers
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">2,356</span>
+                        <span className="h2 font-weight-bold mb-0">256</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-warning text-white rounded-circle shadow">
@@ -76,9 +76,9 @@ const Header = () => {
                           tag="h5"
                           className="text-uppercase text-muted mb-0"
                         >
-                          Sales
+                          Classes
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">924</span>
+                        <span className="h2 font-weight-bold mb-0">54</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-yellow text-white rounded-circle shadow">
@@ -104,7 +104,7 @@ const Header = () => {
                           tag="h5"
                           className="text-uppercase text-muted mb-0"
                         >
-                          Performance
+                         Absence Moyenne
                         </CardTitle>
                         <span className="h2 font-weight-bold mb-0">49,65%</span>
                       </div>

@@ -1,0 +1,28 @@
+.AddEnseignant {
+    display: flex;
+  }
+  
+  @media screen and (max-width: 860px) {
+    .listEnseignant {
+      display: flex;
+      margin-right: 5px;
+    }
+    .major {
+      display: flex;
+      margin-left: -25px;
+      margin-right: 22px;
+    }
+  }
+  
+  @media screen and (max-width: 812px) {
+    .listEnseignant {
+      display: flex;
+      margin-right: -5px;
+    }
+    .major {
+      display: flex;
+      margin-left: -35px;
+      margin-right: 38px;
+    }
+  }
+  

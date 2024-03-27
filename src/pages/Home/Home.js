@@ -1,9 +1,10 @@
 import React from 'react';
-import Sidebar from '../Sidebar/Sidebar';
-import NavBar from '../NavBar/NavBar';
+import Sidebar from '../../Components/Sidebar/Sidebar';
+import NavBar from '../../Components/NavBar/NavBar';
 import routes from "../../routes";
 
 import { useLocation, Route, Routes, Navigate  } from "react-router-dom";
+import Header from '../../Components/Header/Header';
 
 const Home = (props) => {
   const mainContent = React.useRef(null);
@@ -29,7 +30,8 @@ const Home = (props) => {
         }}
       />
       <div className="main-content" ref={mainContent}>
-     
+        <NavBar {...props} />
+     <Header />
       </div>
     </>
   );

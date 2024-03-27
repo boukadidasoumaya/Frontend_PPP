@@ -2,8 +2,9 @@ import NavBar from './Components/NavBar/NavBar';
 import { BrowserRouter as Router , Routes,Route} from 'react-router-dom';
 import './App.css';
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import Home from "./Components/Home/Home";
-import Tables from './Components/Tables/Tables';
+import Home from "./pages/Home/Home";
+import Students from './pages/Students/Students';
+import Teachers from './pages/Teachers/Teachers';
 import "./assets/plugins/nucleo/css/nucleo.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/scss/argon-dashboard-react.scss";
@@ -11,13 +12,13 @@ function App() {
   return (
     <>
     <Router>
-      <NavBar ></NavBar>
+      
       <Routes>
         <Route path='/' exact element={<Home />} ></Route>
+        <Route path='/students' exact element={<Students />} ></Route>
+        <Route path='/faculties' exact element={<Teachers />} ></Route>
       </Routes>
-      <Routes>
-        <Route path='/tables' exact element={<Tables />} ></Route>
-      </Routes>
+     
       </Router>
     </>
   );

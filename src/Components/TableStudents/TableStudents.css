@@ -1,0 +1,33 @@
+.AddEtudiant {
+ display: flex;
+
+}
+
+
+
+@media screen and (max-width: 860px) {
+.listEtudiant {
+    display: flex;
+    margin-right: 5px;
+  
+
+}
+.major{
+    display: flex;
+    margin-left: -25px;
+    margin-right: 22px;
+}
+}
+@media screen and (max-width: 812px) {
+    .listEtudiant {
+        display: flex;
+        margin-right: -5px;
+      
+    
+    }
+    .major{
+        display: flex;
+       margin-left: -35px;
+        margin-right: 38px;
+    }
+    }

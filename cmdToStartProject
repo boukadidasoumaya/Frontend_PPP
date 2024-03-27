@@ -1,1 +1,6 @@
+build:
+docker build -t proj:dev .
+
+
+command:
 docker run --name=proj -p3000:3000 proj:dev

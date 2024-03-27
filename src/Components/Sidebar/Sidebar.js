@@ -84,6 +84,7 @@ const Sidebar = (props) => {
   }
 
   return (
+    <>
     <Navbar
       className="navbar-vertical fixed-left navbar-light bg-white"
       expand="md"
@@ -192,26 +193,43 @@ const Sidebar = (props) => {
           </Form>
           {/* Navigation */}
           <Nav navbar>
-            {createLinks(routes)}
+          <NavItem>
+              <NavLink to="/" onClick={closeCollapse} tag={NavLinkRRD} >
+                <i className="ni ni-bullet-list-67 text-red" />
+                Dashbords
+              </NavLink>
+          </NavItem>
+           <NavItem>
+              <NavLink to="/faculties" onClick={closeCollapse} tag={NavLinkRRD} >
+              <i class="fa fa-university " aria-hidden="true"></i>
+                Faculties
+              </NavLink>
+          </NavItem>
+          <NavItem>
+              <NavLink to="/students" onClick={closeCollapse} tag={NavLinkRRD} >
+              <i class='fas fa-book-reader text-red'></i>
+                Students
+              </NavLink>
+              <NavLink to="/timetable" onClick={closeCollapse} tag={NavLinkRRD} >
+              <i class='fas fa-book-reader text-red'></i>
+                Managing Time Tables
+              </NavLink>
+              <NavLink to="/manageaccount" onClick={closeCollapse} tag={NavLinkRRD} >
+              <i class='fas fa-book-reader text-red'></i>
+                Managing Acounts
+              </NavLink>
+          </NavItem>
+
           </Nav>
           {/* Divider */}
           <hr className="my-3" />
           {/* Heading */}
-          <h6 className="navbar-heading text-muted">Documentation</h6>
-          {/* Navigation */}
-          <Nav className="mb-md-3" navbar>
-            <NavItem>
-              <NavLink href="https://demos.creative-tim.com/argon-dashboard-react/#/documentation/overview?ref=adr-admin-sidebar">
-                <i className="ni ni-spaceship" />
-                Getting started
-              </NavLink>
-            </NavItem>
-
-          </Nav>
-
+          
+      
         </Collapse>
       </Container>
     </Navbar>
+    </>
   );
 };
 

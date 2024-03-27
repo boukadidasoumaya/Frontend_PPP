@@ -1,5 +1,5 @@
 
-import Tables from "./Components/Tables/Tables";
+import Tables from "./pages/Students/Students";
 
 
 var routes = [
