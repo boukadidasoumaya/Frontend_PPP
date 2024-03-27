@@ -1,1 +1,6 @@
-docker run --name=proj -p3000:3000 proj:dev
+ 1-(only once )docker build -t project:5 .
+ 2-docker run --name=project -p 3000:3000 --rm -v C:\Users\sapph\OneDrive\Documents\GitHub\project\front-end:/app
+ -v app/nodemodules project:5
+ NEWCMD :IGNORE ABOVE
+ 1-docker-compose up build(first time)
+ 2- docker run project-front-end:latest
