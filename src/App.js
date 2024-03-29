@@ -1,7 +1,7 @@
 import NavBar from './Components/NavBar/NavBar';
+import  Index from './chartsview/Index.js';
 import { BrowserRouter as Router , Routes,Route} from 'react-router-dom';
 import './App.css';
-import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Home from "./Components/Home/Home";
 import Tables from './Components/Tables/Tables';
 import "./assets/plugins/nucleo/css/nucleo.css";
@@ -18,6 +18,9 @@ function App() {
       
       <Routes>
         <Route path='/tables' exact element={<Tables />} ></Route>
+      </Routes>
+      <Routes>
+        <Route path='/charts' exact element={<Index />} ></Route>
       </Routes>
       </Router>
     </>
