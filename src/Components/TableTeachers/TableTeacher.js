@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button, Card, CardHeader, Container, FormGroup, Input, Modal, ModalBody, ModalHeader, Table } from 'reactstrap';
 import { FormLabel } from 'react-bootstrap';
-
+import './TableTeachers.css';
 const TableTeachers = () => {
     const [teachers, setTeachers] = useState([
         { id: 1, name: 'John Doe', department: 'Computer Science', subject: 'Web Development' },
@@ -50,8 +50,8 @@ const TableTeachers = () => {
       <Card className="shadow">
         <CardHeader className="border-0 d-flex align-items-center">
           {/* Filter Dropdowns on Left */}
-          <div className="col-lg-3 col-md-4 col-sm-3 d-flex major">
-            <select className=" shadow-none border-1 bg-transparent text-dark" value={selectedDepartment} onChange={(e) => handleFilterChange(e.target.value)}>
+          <div className="col-lg-3 col-md-4 col-sm-3 d-flex majorlevel">
+            <select className="" value={selectedDepartment} onChange={(e) => handleFilterChange(e.target.value)}>
               <option value="">Department</option>
               {departments.map((department) => (
                 <option key={department} value={department}>
@@ -59,17 +59,17 @@ const TableTeachers = () => {
                 </option>
               ))}
             </select>
-            <select className=" shadow-none border-1 bg-transparent text-dark" value={selectedSpecialite} onChange={(e) => handleFilterChange(e.target.value, selectedLevel)}>
-  <option value="">Spécialité</option>
-  {specialites.map((specialite) => (
-    <option key={specialite} value={specialite}>
-      {specialite}
-    </option>
-  ))}
-</select>
+            <select className="" value={selectedSpecialite} onChange={(e) => handleFilterChange(e.target.value, selectedLevel)}>
+              <option value="">Matière</option>
+              { specialites.map((specialite) => (
+                <option key={specialite} value={specialite}>
+                  {specialite}
+                </option>
+              ))}
+            </select>
           </div>
           {/* Centered "Liste des enseignants" */}
-          <h3 className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-center listEtudiant">Liste des enseignants</h3>
+          <h3 className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-center listEnseignant">Liste des enseignants</h3>
           {/* Add Teacher Button in Center */}
           <div className="col-lg-3 col-md-2 col-sm-3 d-flex justify-content-end ">
             <Button color="primary" onClick={toggleModal} className="mx-2">

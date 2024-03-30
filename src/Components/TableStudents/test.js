@@ -30,7 +30,7 @@ import {
   FormText,
 } from "reactstrap";
 import { FormLabel } from 'react-bootstrap';
-import "./TableStudents.css"
+import "./test.css"
 
 const TableStudents = () => {
     const [students, setStudents] = useState([
@@ -78,29 +78,35 @@ const TableStudents = () => {
             <Card className="shadow">
               <CardHeader className="border-0 d-flex align-items-center ">
                 {/* Filter Dropdowns on Left */}
-                <div className='col-lg-2 col-md-3 col-sm-2 d-flex major' >
-                  
-                  <select  className="" value={selectedMajor} onChange={(e) => handleFilterChange(e.target.value, selectedLevel)}>
-                    <option value="">Major</option>
-                    {majors.map((major) => (
-                      <option key={major} value={major}>
-                        {major}
-                      </option>
-                    ))}
-                  </select>
-                  <select className="" value={selectedLevel} onChange={(e) => handleFilterChange(selectedMajor, e.target.value)}>
-                    <option value="">Level</option>
-                    {levels.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))}
-                  </select>
+               <div className='col-lg-2 col-md-2 col-sm-1  '>
+                 <div className='majorlevel  d-flex justify-content-center align-items-center' >
+                   
+                  <div className='major '>
+                      <select  className="" value={selectedMajor} onChange={(e) => handleFilterChange(e.target.value, selectedLevel)}>
+                        <option value="">Major</option>
+                        {majors.map((major) => (
+                          <option key={major} value={major}>
+                            {major}
+                          </option>
+                        ))}
+                      </select>
+                  </div>
+                <div className='level d-flex'>
+                    <select className="" value={selectedLevel} onChange={(e) => handleFilterChange(selectedMajor, e.target.value)}>
+                      <option value="">Level</option>
+                      {levels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
                 </div>
+                 </div>
+               </div>
                 {/* Centered "Liste des étudiants" */}
                 <h3 className="col-lg-7 col-md-7 col-sm-7 d-flex  justify-content-center listEtudiant ">Liste des étudiants</h3>
                 {/* Add Student Button in Center */}
-                <div className="col-lg-2 col-md-1 col-sm-2 d-flex AddEnseignant   justify-content-end   mx-6 ">
+                <div className="col-lg-2 col-md-1 col-sm-2 d-flex   justify-content-end   mx-6 ">
                 <Button color="primary" onClick={toggleModal} className=" mx2">
                   Ajouter un étudiant
                 </Button>
@@ -186,6 +192,58 @@ const TableStudents = () => {
                   )}
                 </tbody>
               </Table>
+              <CardFooter className="py-4">
+                <nav aria-label="...">
+                  <Pagination
+                    className="pagination justify-content-end mb-0"
+                    listClassName="justify-content-end mb-0"
+                  >
+                    <PaginationItem className="disabled">
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => e.preventDefault()}
+                        tabIndex="-1"
+                      >
+                        <i className="fas fa-angle-left" />
+                        <span className="sr-only">Previous</span>
+                      </PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem className="active">
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        1
+                      </PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        2 <span className="sr-only">(current)</span>
+                      </PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        3
+                      </PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#pablo"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        <i className="fas fa-angle-right" />
+                        <span className="sr-only">Next</span>
+                      </PaginationLink>
+                    </PaginationItem>
+                  </Pagination>
+                </nav>
+              </CardFooter>
             </Card>
           </div>
         </Row>

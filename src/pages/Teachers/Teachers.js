@@ -7,6 +7,8 @@ import NavBar from "../../Components/NavBar/NavBar";
 // core components
 
 import TableTeachers from '../../Components/TableTeachers/TableTeacher';
+
+// import Test from '../../Components/TableTeachers/test';
 const Teachers = (props) => {
     return (
         <> 
@@ -21,6 +23,8 @@ const Teachers = (props) => {
            <div className="main-content">
            <NavBar {...props} />
              <Header />
+             {/* <Test/> */}
+
             <TableTeachers/>
            </div>  
            </>
