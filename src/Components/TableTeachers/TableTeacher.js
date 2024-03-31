@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button, Card, CardHeader, Container, FormGroup, Input, Modal, ModalBody, ModalHeader, Table } from 'reactstrap';
 import { FormLabel } from 'react-bootstrap';
 import './TableTeachers.css';
+import SelectOptions from '../SelectOptions/SelectOptions';
 const TableTeachers = () => {
     const [teachers, setTeachers] = useState([
         { id: 1, name: 'John Doe', department: 'Computer Science', subject: 'Web Development' },
@@ -48,33 +49,37 @@ const TableTeachers = () => {
     <Container className="mt--7" fluid>
       {/* Table */}
       <Card className="shadow">
-        <CardHeader className="border-0 d-flex align-items-center">
+        <CardHeader className="border-0">
           {/* Filter Dropdowns on Left */}
-          <div className="col-lg-3 col-md-4 col-sm-3 d-flex majorlevel">
-            <select className="" value={selectedDepartment} onChange={(e) => handleFilterChange(e.target.value)}>
-              <option value="">Department</option>
-              {departments.map((department) => (
-                <option key={department} value={department}>
-                  {department}
-                </option>
-              ))}
-            </select>
-            <select className="" value={selectedSpecialite} onChange={(e) => handleFilterChange(e.target.value, selectedLevel)}>
-              <option value="">Matière</option>
-              { specialites.map((specialite) => (
-                <option key={specialite} value={specialite}>
-                  {specialite}
-                </option>
-              ))}
-            </select>
+          <div className='row'>
+          <h1 className="col-12 d-flex justify-content-center listEnseignant">List of Professors</h1>
+
           </div>
-          {/* Centered "Liste des enseignants" */}
-          <h3 className="col-lg-6 col-md-6 col-sm-6 d-flex justify-content-center listEnseignant">Liste des enseignants</h3>
-          {/* Add Teacher Button in Center */}
-          <div className="col-lg-3 col-md-2 col-sm-3 d-flex justify-content-end ">
-            <Button color="primary" onClick={toggleModal} className="mx-2">
-              Ajouter un enseignant
-            </Button>
+          <div className='row'>
+           
+             <div className='col-lg-3 col-md-4 col-sm-2 d-flex filter' >
+                   
+                   <SelectOptions
+                      options={departments.map((department) => ({ value: department, label: department }))}
+                      selectedValue={selectedDepartment}
+                      onOptionChange={(newDepartment) => handleFilterChange(newDepartment, selectedDepartment)}
+                      placeholderText="Department"
+                    />
+                    <SelectOptions
+                      options={specialites.map((specialite) => ({ value: specialite, label: specialite }))}
+                      selectedValue={selectedSpecialite}
+                      onOptionChange={(newSpecialite) => handleFilterChange(selectedSpecialite,selectedSpecialite)}
+                       placeholderText="Specialite"
+                    />
+                   </div>
+
+            {/* Centered "Liste des enseignants" */}
+            {/* Add Teacher Button in Center */}
+            <div className="col-lg-9 col-md-8 col-sm-10 d-flex AddEtudiant justify-content-end   ">
+                 <Button onClick={toggleModal} className="addbtn ">
+                   Add Professor
+                 </Button>
+                 </div>
           </div>
         </CardHeader>
         {/* Table Content */}

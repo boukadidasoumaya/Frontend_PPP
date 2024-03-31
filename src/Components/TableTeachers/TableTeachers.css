@@ -1,4 +1,10 @@
-
+.custom-select {
+  width: 150px !important;
+}
+.filter {
+  display: flex;
+margin-right: px;
+}
 @media screen and (max-width:1160px) {
   .listEnseignant {
     display: flex;

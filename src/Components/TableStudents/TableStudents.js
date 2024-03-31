@@ -31,6 +31,7 @@ import {
 } from "reactstrap";
 import { FormLabel } from 'react-bootstrap';
 import "./TableStudents.css"
+import SelectOptions from '../SelectOptions/SelectOptions';
 
 const TableStudents = () => {
     const [students, setStudents] = useState([
@@ -76,35 +77,36 @@ const TableStudents = () => {
         <Row>
           <div className="col">
             <Card className="shadow">
-              <CardHeader className="border-0 d-flex align-items-center ">
+              <CardHeader className="border-0 ">
+                <div className='row'>
+                <h1 className="col-lg-12 col-md-12 col-sm-12 d-flex  justify-content-center listEtudiant">Liste des étudiants</h1>
+                </div>
                 {/* Filter Dropdowns on Left */}
-                <div className='col-lg-2 col-md-3 col-sm-2 d-flex major' >
-                  
-                  <select  className="" value={selectedMajor} onChange={(e) => handleFilterChange(e.target.value, selectedLevel)}>
-                    <option value="">Major</option>
-                    {majors.map((major) => (
-                      <option key={major} value={major}>
-                        {major}
-                      </option>
-                    ))}
-                  </select>
-                  <select className="" value={selectedLevel} onChange={(e) => handleFilterChange(selectedMajor, e.target.value)}>
-                    <option value="">Level</option>
-                    {levels.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {/* Centered "Liste des étudiants" */}
-                <h3 className="col-lg-7 col-md-7 col-sm-7 d-flex  justify-content-center listEtudiant ">Liste des étudiants</h3>
-                {/* Add Student Button in Center */}
-                <div className="col-lg-2 col-md-1 col-sm-2 d-flex AddEnseignant   justify-content-end   mx-6 ">
-                <Button color="primary" onClick={toggleModal} className=" mx2">
-                  Ajouter un étudiant
-                </Button>
-                </div>
+               <div className='row'>
+                 <div className='col-lg-3 col-md-2 col-sm-2 d-flex major' >
+                   
+                 <SelectOptions
+                    options={majors.map((major) => ({ value: major, label: major }))}
+                    selectedValue={selectedMajor}
+                    onOptionChange={(newMajor) => handleFilterChange(newMajor, selectedLevel)}
+                    placeholderText="Major"
+                  />
+                  <SelectOptions
+                    options={levels.map((level) => ({ value: level, label: level }))}
+                    selectedValue={selectedLevel}
+                    onOptionChange={(newLevel) => handleFilterChange(selectedMajor, newLevel)}
+                     placeholderText="Level"
+                  />
+                 </div>
+                 {/* Centered "Liste des étudiants" */}
+                
+                 {/* Add Student Button in Center */}
+                 <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddEtudiant justify-content-end   ">
+                 <Button onClick={toggleModal} className="addbtn ">
+                   Ajouter un étudiant
+                 </Button>
+                 </div>
+               </div>
               </CardHeader>
               {/* Table Content */}
               <Table className="align-items-center table-flush" responsive>

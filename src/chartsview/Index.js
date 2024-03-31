@@ -42,7 +42,7 @@ const Index = (props) => {
   return (
     <>
   
-      <Header />
+  
       
       {/* Page content */}
       <Container className="mt--7" fluid>

@@ -5,6 +5,7 @@ import routes from "../../routes";
 
 import { useLocation, Route, Routes, Navigate  } from "react-router-dom";
 import Header from '../../Components/Header/Header';
+import Index from '../../chartsview/Index';
 
 const Home = (props) => {
   const mainContent = React.useRef(null);
@@ -32,6 +33,7 @@ const Home = (props) => {
       <div className="main-content" ref={mainContent}>
         <NavBar {...props} />
      <Header />
+     <Index />
       </div>
     </>
   );

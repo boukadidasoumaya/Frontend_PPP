@@ -1,0 +1,95 @@
+.custom-select {
+  position: relative;
+  /* Set the width as needed */
+  border: 1px solid #ccc;
+  border-radius: 20px !important;
+  padding: 8px 20px;
+  cursor: pointer;
+  background-color: #F0EDF2 !important;
+  width: 100px !important; ;
+}
+
+/* Style for the selected option */
+.custom-select .selected-option {
+  color: rgb(15, 19, 30);
+  font-weight: 400;
+  font-size:13px;
+  margin-right: 15px;
+}
+
+/* Style for the options container */
+.custom-select .options {
+  /* display: none; */
+  position: absolute;
+  color: rgb(15, 19, 30);
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #F0EDF2;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-top: 8px;
+  z-index: 1;
+
+}
+.custom-select .categories {
+  width: 400px;
+  columns: 3;
+  column-gap: 0;
+}
+
+
+/* Style for each option */
+.custom-select .option {
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 0;
+  border-bottom: #cbccce 1px solid;
+}
+
+.custom-select .option:hover {
+  background-color: #692E5F;
+  color: white;
+  border-radius: 4px;
+}
+
+/* Style for the options container when it's open */
+.custom-select .open .options {
+  display: block;
+}
+
+.custom-select .custom-scrollbar {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.custom-select .custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-select .custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #e4e4e4;
+  border-radius: 100px;
+}
+
+.custom-select .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #00071B;
+  border-radius: 100px;
+}
+
+.custom-select .custom-scrollbar {
+  overflow: auto;
+}
+
+.custom-select .custom-arrow {
+  position: absolute;
+  top: 51%;
+  right: 7.8px;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 11px solid #692E5F;
+  transition: transform 0.2s ease-in-out;
+  pointer-events: none
+
+}

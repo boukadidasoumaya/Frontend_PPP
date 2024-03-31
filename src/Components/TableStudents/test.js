@@ -30,7 +30,8 @@ import {
   FormText,
 } from "reactstrap";
 import { FormLabel } from 'react-bootstrap';
-import "./test.css"
+import "./TableStudents.css"
+import SelectOptions from '../SelectOptions/SelectOptions';
 
 const TableStudents = () => {
     const [students, setStudents] = useState([
@@ -76,41 +77,36 @@ const TableStudents = () => {
         <Row>
           <div className="col">
             <Card className="shadow">
-              <CardHeader className="border-0 d-flex align-items-center ">
-                {/* Filter Dropdowns on Left */}
-               <div className='col-lg-2 col-md-2 col-sm-1  '>
-                 <div className='majorlevel  d-flex justify-content-center align-items-center' >
-                   
-                  <div className='major '>
-                      <select  className="" value={selectedMajor} onChange={(e) => handleFilterChange(e.target.value, selectedLevel)}>
-                        <option value="">Major</option>
-                        {majors.map((major) => (
-                          <option key={major} value={major}>
-                            {major}
-                          </option>
-                        ))}
-                      </select>
-                  </div>
-                <div className='level d-flex'>
-                    <select className="" value={selectedLevel} onChange={(e) => handleFilterChange(selectedMajor, e.target.value)}>
-                      <option value="">Level</option>
-                      {levels.map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
-                    </select>
+              <CardHeader className="border-0 ">
+                <div className='row'>
+                <h1 className="col-lg-12 col-md-12 col-sm-12 d-flex  justify-content-center listEtudiant">Liste des étudiants</h1>
                 </div>
+                {/* Filter Dropdowns on Left */}
+               <div className='row'>
+                 <div className='col-lg-4 col-md-6 col-sm-2 d-flex major' >
+                   
+                 <SelectOptions
+                    options={majors.map((major) => ({ value: major, label: major }))}
+                    selectedValue={selectedMajor}
+                    onOptionChange={(newMajor) => handleFilterChange(newMajor, selectedLevel)}
+                    placeholderText="Major"
+                  />
+                  <SelectOptions
+                    options={levels.map((level) => ({ value: level, label: level }))}
+                    selectedValue={selectedLevel}
+                    onOptionChange={(newLevel) => handleFilterChange(selectedMajor, newLevel)}
+                     placeholderText="Level"
+                  />
+                 </div>
+                 {/* Centered "Liste des étudiants" */}
+                
+                 {/* Add Student Button in Center */}
+                 <div className="col-lg-8 col-md-6 col-sm-2 d-flex AddEtudiant justify-content-end   ">
+                 <Button onClick={toggleModal} className="addbtn ">
+                   Ajouter un étudiant
+                 </Button>
                  </div>
                </div>
-                {/* Centered "Liste des étudiants" */}
-                <h3 className="col-lg-7 col-md-7 col-sm-7 d-flex  justify-content-center listEtudiant ">Liste des étudiants</h3>
-                {/* Add Student Button in Center */}
-                <div className="col-lg-2 col-md-1 col-sm-2 d-flex   justify-content-end   mx-6 ">
-                <Button color="primary" onClick={toggleModal} className=" mx2">
-                  Ajouter un étudiant
-                </Button>
-                </div>
               </CardHeader>
               {/* Table Content */}
               <Table className="align-items-center table-flush" responsive>
@@ -192,58 +188,6 @@ const TableStudents = () => {
                   )}
                 </tbody>
               </Table>
-              <CardFooter className="py-4">
-                <nav aria-label="...">
-                  <Pagination
-                    className="pagination justify-content-end mb-0"
-                    listClassName="justify-content-end mb-0"
-                  >
-                    <PaginationItem className="disabled">
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                        tabIndex="-1"
-                      >
-                        <i className="fas fa-angle-left" />
-                        <span className="sr-only">Previous</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem className="active">
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        2 <span className="sr-only">(current)</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        3
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink
-                        href="#pablo"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        <i className="fas fa-angle-right" />
-                        <span className="sr-only">Next</span>
-                      </PaginationLink>
-                    </PaginationItem>
-                  </Pagination>
-                </nav>
-              </CardFooter>
             </Card>
           </div>
         </Row>
