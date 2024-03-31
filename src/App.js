@@ -23,9 +23,6 @@ function App() {
         <Route path='/students' exact element={<Students />} ></Route>
         <Route path='/faculties' exact element={<Teachers />} ></Route>
         <Route path='/timetable' exact element={<TimeTable />} ></Route>
-      </Routes>
-      
-      <Routes>
         <Route path='/charts' exact element={<Index />} ></Route>
       </Routes>
       </Router>
