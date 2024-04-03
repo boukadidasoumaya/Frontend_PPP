@@ -15,6 +15,7 @@ import { closest, Internationalization, isNullOrUndefined, removeClass, remove, 
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import './Scheduler.css';
 import { registerLicense } from '@syncfusion/ej2-base';
+import { format } from 'date-fns';
 
 registerLicense('Ngo9BigBOggjHTQxAR8/V1NBaF5cXmZCekxwWmFZfVpgdVRMYF5bRXBPMyBoS35RckVgWn9fcXRXR2ZUVUV2');
 /**
@@ -23,11 +24,11 @@ registerLicense('Ngo9BigBOggjHTQxAR8/V1NBaF5cXmZCekxwWmFZfVpgdVRMYF5bRXBPMyBoS35
 const EditorTemplate = () => {
     const dataSource = {
         doctorsEventData: [
-            {    Subject: 'Analyse',Professor:'Saloua',  StartTime: new Date(2021, 1, 15, 10, 0),  EndTime: new Date(2021, 1, 15, 12, 30),  CalendarId: 1,   },
-            {    Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 13, 0),  EndTime: new Date(2021, 1, 15, 15, 30), CalendarId: 2,   },
-            {    Subject: 'Java',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 16, 0),  EndTime: new Date(2021, 1, 15, 18, 30),  CalendarId: 3,  },
-            {  Subject: 'Analyse', Professor:'Saloua',  StartTime: new Date(2021, 1, 16, 10, 0),  EndTime: new Date(2021, 1, 16, 12, 30),  CalendarId: 1,   },
-            {   Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 16, 13, 0),  EndTime: new Date(2021, 1, 16, 15, 30), CalendarId: 2,   }
+            {   id:1, Subject: 'Analyse',Professor:'Saloua',  StartTime: new Date(2021, 1, 15, 10, 0),  EndTime: new Date(2021, 1, 15, 12, 30),  CalendarId: 1,   },
+            {   id:2 ,  Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 13, 0),  EndTime: new Date(2021, 1, 15, 15, 30), CalendarId: 2,   },
+            {  id:3 ,   Subject: 'Java',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 16, 0),  EndTime: new Date(2021, 1, 15, 18, 30),  CalendarId: 3,  },
+            {  id:4 , Subject: 'Analyse', Professor:'Saloua',  StartTime: new Date(2021, 1, 16, 10, 0),  EndTime: new Date(2021, 1, 16, 12, 30),  CalendarId: 1,   },
+            {  id:5 ,  Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 16, 13, 0),  EndTime: new Date(2021, 1, 16, 15, 30), CalendarId: 2,   }
         ]
     };
 
@@ -240,16 +241,6 @@ const EditorTemplate = () => {
                 scheduleObj.current.selectedDate = new Date();
                 break;
             case 'Add':
-            case 'AddRecurrence':
-                let selectedCells = scheduleObj.current.getSelectedElements();
-                let activeCellsData = scheduleObj.current.getCellDetails(selectedCells.length > 0 ? selectedCells : selectedTarget);
-                if (selectedMenuItem === 'Add') {
-                    scheduleObj.current.openEditor(activeCellsData, 'Add');
-                }
-                else {
-                    scheduleObj.current.openEditor(activeCellsData, 'Add', false, 1);
-                }
-                break;
             case 'Save':
             case 'EditOccurrence':
             case 'EditSeries':
@@ -296,38 +287,63 @@ const EditorTemplate = () => {
       </div>);
     };
     const editorTemplate = (props) => {
-        return ((props !== undefined) ?
-            <table className="custom-event-editor" style={{ width: '100%' }} cellPadding={5}>
-        <tbody>
-          <tr>
-            <td className="e-textlabel">Course</td>
-            <td colSpan={4}>
-            <DropDownListComponent id="Subject" placeholder='Choose course' data-name='Subject' className="e-field" style={{ width: '100%' }} dataSource={['Analyse', 'Programmation', 'Java']}/>
-            </td>
-          </tr>
-          <tr>
-            <td className="e-textlabel">Professor</td>
-            <td colSpan={4}>
-              <DropDownListComponent id="Professor" placeholder='Choose Professor' data-name='Professor' className="e-field" style={{ width: '100%' }} dataSource={['Sofienne', 'Saloua', 'Aymen']}/>
-            </td>
-          </tr>
-          <tr>
-            <td className="e-textlabel">From</td>
-            <td colSpan={4}>
-              <DateTimePickerComponent id="StartTime" format='dd/MM/yy hh:mm a' data-name="StartTime" value={new Date(props.startTime || props.StartTime)} className="e-field"/>
-            </td>
-          </tr>
-          <tr>
-            <td className="e-textlabel">To</td><td colSpan={4}>
-              <DateTimePickerComponent id="EndTime" format='dd/MM/yy hh:mm a' data-name="EndTime" value={new Date(props.endTime || props.EndTime)} className="e-field"/>
-            </td>
-          </tr>
-        
-        </tbody>
-      </table>
-            :
-                <div></div>);
-    };
+      return (
+          (props !== undefined) ?
+              <table className="custom-event-editor" style={{ width: '100%' }} cellPadding={5}>
+                  <tbody>
+                      <tr>
+                          <td className="e-textlabel">Course</td>
+                          <td colSpan={4}>
+                              <DropDownListComponent id="Subject" placeholder='Choose course' data-name='Subject' className="e-field" style={{ width: '100%' }} dataSource={['Analyse', 'Programmation', 'Java']} />
+                          </td>
+                      </tr>
+                      <tr>
+                          <td className="e-textlabel">Professor</td>
+                          <td colSpan={4}>
+                              <DropDownListComponent id="Professor" placeholder='Choose Professor' data-name='Professor' className="e-field" style={{ width: '100%' }} dataSource={['Sofienne', 'Saloua', 'Aymen']} />
+                          </td>
+                      </tr>
+                      <tr>
+                          <td className="e-textlabel">From</td>
+                          <td colSpan={4}>
+                              <DateTimePickerComponent id="StartTime" format='dd/MM/yy hh:mm a' data-name="StartTime" value={new Date(props.startTime || props.StartTime)} className="e-field" />
+                          </td>
+                      </tr>
+                      <tr>
+                          <td className="e-textlabel">To</td>
+                          <td colSpan={4}>
+                              <DateTimePickerComponent id="EndTime" format='dd/MM/yy hh:mm a' data-name="EndTime" value={new Date(props.endTime || props.EndTime)} className="e-field" />
+                          </td>
+                      </tr>
+                      {/* Ajouter une ligne pour afficher le nom du professeur */}
+                  
+                  </tbody>
+              </table>
+              :
+              <div></div>
+      );
+  };
+  const eventTemplate = (event) => {
+    // Accéder au nom du professeur à partir de l'objet d'événement (adaptez la propriété en fonction de votre structure de données)
+    const professorName = event.professorName;
+  
+    // Formater la date de début et de fin
+    const startDate = format(new Date(event.startTime), 'dd MMM yyyy');
+    const endDate = format(new Date(event.endTime), 'dd MMM yyyy');
+  
+    // Retourner le contenu HTML avec les informations de l'événement
+    return (
+      <div className="custom-event">
+        <div className="event-title">{event.subject}</div>
+        <div className="event-professor">{professorName}</div>
+        <div className="event-time">
+          {startDate} - {endDate}
+        </div>
+      </div>
+    );
+  };
+  
+  
     return (
     <>
          <div className='schedule-control-section'>
@@ -357,8 +373,7 @@ const EditorTemplate = () => {
                   <ItemDirective prefixIcon='e-icons e-week' tooltipText='Week' text='Week' tabIndex={0}/>
                   <ItemDirective prefixIcon='e-icons e-week' tooltipText='WorkWeek' text='WorkWeek' tabIndex={0}/>
                   <ItemDirective prefixIcon='e-icons e-month' tooltipText='Month' text='Month' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-month' tooltipText='Year' text='Year' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-agenda-date-range' tooltipText='Agenda' text='Agenda' tabIndex={0}/>
+                  
                   <ItemDirective tooltipText='Timeline Views' text='Timeline Views' template={timelineTemplate}/>
                   <ItemDirective type='Separator'/>
                   <ItemDirective tooltipText='Grouping' text='Grouping' template={groupTemplate}/>
@@ -369,7 +384,9 @@ const EditorTemplate = () => {
               <div className='overview-content'>
                 <div className='left-panel'>
                   <div className='overview-scheduler'>
-                  <ScheduleComponent width='100%' height='650px' selectedDate={new Date(2021, 1, 15)} ref={scheduleObj} eventSettings={{ dataSource: data, fields: fields }} editorTemplate={editorTemplate} editorHeaderTemplate={editorHeaderTemplate} actionBegin={onActionBegin} showQuickInfo={false} eventRendered={onEventRendered}>
+                  <ScheduleComponent currentView={currentView} width='100%' height='650px' selectedDate={new Date(2021, 1, 15)} ref={scheduleObj} eventSettings={{ dataSource: data, fields: fields }} editorTemplate={editorTemplate} editorHeaderTemplate={editorHeaderTemplate} actionBegin={onActionBegin} showQuickInfo={false} eventRendered={onEventRendered}
+                  eventTemplate={eventTemplate} 
+                  >
                   <ResourcesDirective>
                       <ResourceDirective field='CalendarId' title='Calendars' name='Calendars' dataSource={calendarCollections} query={new Query().where('CalendarId', 'equal', 1)} textField='CalendarText' idField='CalendarId' colorField='CalendarColor'/>
                    </ResourcesDirective>
@@ -378,6 +395,7 @@ const EditorTemplate = () => {
               <ViewDirective option='Week'/>
               <ViewDirective option='WorkWeek'/>
               <ViewDirective option='Month'/>
+
             </ViewsDirective>
             <Inject services={[Day, Week, WorkWeek, Month, Resize, DragAndDrop,Print, ExcelExport, ICalendarImport, ICalendarExport,]}/>
           </ScheduleComponent>

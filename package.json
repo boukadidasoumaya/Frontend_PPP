@@ -31,6 +31,7 @@
     "bootstrap": "^4.6.2",
     "chart.js": "^2.9.4",
     "classnames": "^2.3.2",
+    "date-fns": "^3.6.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.45",
     "nouislider": "^15.4.0",
