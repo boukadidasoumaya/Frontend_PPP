@@ -2,6 +2,17 @@ import {FaUser , FaLock} from "react-icons/fa";
 
 function Forgot() {
     // Function to handle form submission
+    const handleSubmit = (event) => {
+        event.preventDefault(); // Prevent default form submission behavior
+        
+        // Accessing the input fields
+        const usernameInput = document.getElementById('cin');
+
+        // Check if inputs are not empty
+        if (usernameInput.value.trim() === '' ) {
+            alert('Please fill out all required fields.');
+            return;
+        }}
 
     return (  <div className='wrapper'>
     <form action="">
