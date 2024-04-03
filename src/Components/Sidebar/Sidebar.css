@@ -1,0 +1,19 @@
+.navbar-collapse:before{
+    margin-top: 70px !important;
+}
+
+.barre{
+    background-color: rgb(255, 255, 255) !important;
+   
+}
+.barre .el{
+    margin-top: 20px;
+}
+.navbar-brand{
+    margin-top: 40px;
+    height: 50px;
+}
+.navbar-brand img{
+    height: 50px;
+}
+

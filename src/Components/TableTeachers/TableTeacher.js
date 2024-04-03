@@ -1,6 +1,6 @@
 // TableTeachers.js
 import React, { useState } from 'react';
-import { Button, Card, CardHeader, Container, FormGroup, Input, Modal, ModalBody, ModalHeader, Table } from 'reactstrap';
+import { Button, Card, CardHeader, Container, DropdownItem, DropdownMenu, DropdownToggle, FormGroup, Input, Modal, ModalBody, ModalHeader, Table, UncontrolledDropdown } from 'reactstrap';
 import { FormLabel } from 'react-bootstrap';
 import './TableTeachers.css';
 import SelectOptions from '../SelectOptions/SelectOptions';
@@ -104,9 +104,118 @@ const TableTeachers = () => {
                   <td>{teacher.name}</td>
                   <td>{teacher.department}</td>
                   <td>{teacher.subject}</td>
-                  <td>
-                    {/* Dropdown for actions */}
+                  
+                  <td className="">
+                    <UncontrolledDropdown>
+                      <DropdownToggle
+                        className="btn-icon-only text-light"
+                        href="#pablo"
+                        role="button"
+                        size="sm"
+                        color=""
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        <i className="fas fa-ellipsis-v" />
+                      </DropdownToggle>
+                      <DropdownMenu className="dropdown-menu-arrow" right>
+                      
+                        <DropdownItem
+                            href="/profile"
+                          >
+                           <i class="fa-solid fa-eye"></i>
+                          View Absence
+                          </DropdownItem>
+                    
+                        <DropdownItem
+                          href=""
+                          onClick={toggleUpdateModal}
+                        >
+                          <i className="fas fa-pencil-alt" />
+                         Update
+                        </DropdownItem>
+                        
+                         {/* Update Student Modal */}
+
+                        <DropdownItem
+                          href=""
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          <i className="fas fa-trash" />
+                          Delete
+                        </DropdownItem>
+                        <Modal isOpen={updateModalOpen} toggle={toggleUpdateModal}>
+    <ModalHeader toggle={toggleUpdateModal}>Modifier l'enseignant</ModalHeader>
+    <ModalBody>
+        {/* Form fields to capture updated teacher data */}
+        <FormGroup>
+            <FormLabel for="name">Nom</FormLabel>
+            <Input type="text" name="name" id="name" placeholder="Entrez le nom de l'enseignant" />
+        </FormGroup>
+        <FormGroup>
+            <FormLabel for="department">Département</FormLabel>
+            <select className="form-control shadow-none border-1 bg-transparent text-dark" name="department" id="department">
+                <option value="">Sélectionnez un département</option>
+                {departments.map((department) => (
+                    <option key={department} value={department}>
+                        {department}
+                    </option>
+                ))}
+            </select>
+        </FormGroup>
+        <FormGroup>
+            <FormLabel for="subject">Matière</FormLabel>
+            <Input type="text" name="subject" id="subject" placeholder="Entrez la matière enseignée" />
+        </FormGroup>
+        
+    </ModalBody>
+    <div className="modal-footer">
+        <Button color="primary" onClick={() => {}}>
+            Enregistrer les modifications
+        </Button>
+        <Button color="link" onClick={toggleUpdateModal}>
+            Annuler
+        </Button>
+    </div>
+</Modal>
+<Modal isOpen={modalOpen} toggle={toggleModal}>
+    <ModalHeader toggle={toggleModal}>Ajouter un enseignant</ModalHeader>
+    <ModalBody>
+        {/* Form fields to capture teacher data */}
+        <FormGroup>
+            <FormLabel for="name">Nom</FormLabel>
+            <Input type="text" name="name" id="name" placeholder="Entrez le nom de l'enseignant" />
+        </FormGroup>
+        <FormGroup>
+            <FormLabel for="department">Département</FormLabel>
+            <select className="form-control shadow-none border-1 bg-transparent text-dark" name="department" id="department">
+                <option value="">Sélectionnez un département</option>
+                {departments.map((department) => (
+                    <option key={department} value={department}>
+                        {department}
+                    </option>
+                ))}
+            </select>
+        </FormGroup>
+        <FormGroup>
+            <FormLabel for="subject">Matière</FormLabel>
+            <Input type="text" name="subject" id="subject" placeholder="Entrez la matière enseignée" />
+        </FormGroup>
+    </ModalBody>
+    <div className="modal-footer">
+        <Button color="primary" onClick={() => handleAddTeacher({ name: "", department: "", subject: "" })}>
+            Ajouter
+        </Button>
+        <Button color="link text-muted" onClick={toggleModal}>
+            Annuler
+        </Button>
+    </div>
+</Modal>
+
+                    
+                      </DropdownMenu>
+                    </UncontrolledDropdown>
                   </td>
+                  
                 </tr>
               ))
             )}

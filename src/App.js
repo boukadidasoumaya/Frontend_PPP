@@ -13,6 +13,8 @@ import TimeTable from './pages/TimeTable/TimeTable';
 import "./assets/plugins/nucleo/css/nucleo.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/scss/argon-dashboard-react.scss";
+import Profile from './pages/Profile/Profile.js';
+import Courses from './pages/Courses/Courses.js';
 function App() {
   return (
     <>
@@ -24,6 +26,8 @@ function App() {
         <Route path='/faculties' exact element={<Teachers />} ></Route>
         <Route path='/timetable' exact element={<TimeTable />} ></Route>
         <Route path='/charts' exact element={<Index />} ></Route>
+        <Route path='profile' exact element={<Profile />} ></Route>
+        <Route path='courses' exact element={<Courses />} ></Route>
       </Routes>
       </Router>
     </>

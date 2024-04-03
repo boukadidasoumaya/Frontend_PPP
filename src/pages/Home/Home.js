@@ -34,6 +34,7 @@ const Home = (props) => {
         <NavBar {...props} />
      <Header />
      <Index />
+     
       </div>
     </>
   );

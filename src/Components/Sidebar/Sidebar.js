@@ -3,7 +3,7 @@ import { useState } from "react";
 import { NavLink as NavLinkRRD, Link } from "react-router-dom";
 // nodejs library to set properties for components
 import { PropTypes } from "prop-types";
-
+import './Sidebar.css'
 // reactstrap components
 import {
   Button,
@@ -111,21 +111,7 @@ const Sidebar = (props) => {
         ) : null}
         {/* User */}
         <Nav className="align-items-center d-md-none">
-          <UncontrolledDropdown nav>
-            <DropdownToggle nav className="nav-link-icon">
-              <i className="ni ni-bell-55" />
-            </DropdownToggle>
-            <DropdownMenu
-              aria-labelledby="navbar-default_dropdown_1"
-              className="dropdown-menu-arrow"
-              right
-            >
-              <DropdownItem>Notif</DropdownItem>
-  
-              <DropdownItem divider />
-              <DropdownItem>Something else here</DropdownItem>
-            </DropdownMenu>
-          </UncontrolledDropdown>
+          
           <UncontrolledDropdown nav>
             <DropdownToggle nav>
               <Media className="align-items-center">
@@ -148,10 +134,10 @@ const Sidebar = (props) => {
         {/* Collapse */}
         <Collapse navbar isOpen={collapseOpen}>
           {/* Collapse header */}
-          <div className="navbar-collapse-header d-md-none">
-            <Row>
+          <div className="navbar-collapse-header ">
+            <div className="row">
               {logo ? (
-                <Col className="collapse-brand" xs="6">
+                <div className=" col-7 d-flex justify-content-end  collapse-brand logo" xs="6">
                   {logo.innerLink ? (
                     <Link to={logo.innerLink}>
                       <img alt={logo.imgAlt} src={logo.imgSrc} />
@@ -161,9 +147,9 @@ const Sidebar = (props) => {
                       <img alt={logo.imgAlt} src={logo.imgSrc} />
                     </a>
                   )}
-                </Col>
+                </div>
               ) : null}
-              <Col className="collapse-close" xs="6">
+              <div className=" col-5 collapse-close x" xs="6">
                 <button
                   className="navbar-toggler"
                   type="button"
@@ -172,86 +158,50 @@ const Sidebar = (props) => {
                   <span />
                   <span />
                 </button>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </div>
-          {/* Form */}
-          <Form className="mt-4 mb-3 d-md-none">
-            <InputGroup className="input-group-rounded input-group-merge">
-              <Input
-                aria-label="Search"
-                className="form-control-rounded form-control-prepended"
-                placeholder="Search"
-                type="search"
-              />
-              <InputGroupAddon addonType="prepend">
-                <InputGroupText>
-                  <span className="fa fa-search" />
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-          </Form>
+        
           {/* Navigation */}
-          <Nav navbar>
-          <NavItem>
+          <Nav navbar className="barre">
+            <NavItem className="el">
               <NavLink to="/" onClick={closeCollapse} tag={NavLinkRRD} >
                 <i className="ni ni-bullet-list-67 text-red" />
                 Dashbords
               </NavLink>
-          </NavItem>
-           <NavItem>
+            </NavItem>
+            <NavItem className="el">
               <NavLink to="/faculties" onClick={closeCollapse} tag={NavLinkRRD} >
               <i class="fa fa-university " aria-hidden="true"></i>
-                Faculties
+                Professors
               </NavLink>
-          </NavItem>
-          <NavItem>
+            </NavItem >
+            <NavItem className="el">
               <NavLink to="/students" onClick={closeCollapse} tag={NavLinkRRD} >
               <i class='fas fa-book-reader text-red'></i>
                 Students
               </NavLink>
-              <NavLink to="/timetable" onClick={closeCollapse} tag={NavLinkRRD} >
-              <i class='fas fa-book-reader text-red'></i>
-                Managing Time Tables
-              </NavLink>
-              <NavLink to="/manageaccount" onClick={closeCollapse} tag={NavLinkRRD} >
-              <i class='fas fa-book-reader text-red'></i>
-                Managing Acounts
-              </NavLink>
-          </NavItem>
-
-          </Nav>
-          {/* Divider */}
-          <hr className="my-3" />
-          {/* Heading */}
-          <h6 className="navbar-heading text-muted">Documentation</h6>
-          {/* Navigation */}
-          <Nav className="mb-md-3" navbar>
-            <NavItem>
-              <NavLink href="https://demos.creative-tim.com/argon-dashboard-react/#/documentation/overview?ref=adr-admin-sidebar">
-                <i className="ni ni-spaceship" />
-                Getting startssed
-              </NavLink>
             </NavItem>
-            <NavItem>
-              <NavLink href="https://demos.creative-tim.com/argon-dashboard-react/#/documentation/overview?ref=adr-admin-sidebar">
-                <i className="ni ni-spaceship" />
-                Getting started
-              </NavLink>
+            <NavItem className="el" >
+                <NavLink to="/timetable" onClick={closeCollapse} tag={NavLinkRRD} >
+                <i class='fas fa-book-reader text-red'></i>
+                  Manage Time Tables
+                </NavLink>
             </NavItem>
-            <NavItem>
-              <NavLink href="https://demos.creative-tim.com/argon-dashboard-react/#/documentation/overview?ref=adr-admin-sidebar">
-                <i className="ni ni-spaceship" />
-                Getting stardsded
-              </NavLink>
+            <NavItem className="el">
+               <NavLink to="/courses" onClick={closeCollapse} tag={NavLinkRRD} >
+               <i class='fas fa-book-reader text-red'></i>
+                 Manage Courses
+               </NavLink>
             </NavItem>
-            <NavItem>
-              <NavLink href="https://demos.creative-tim.com/argon-dashboard-react/#/documentation/overview?ref=adr-admin-sidebar">
-                <i className="ni ni-spaceship" />
-                Getting stae
-              </NavLink>
+            <NavItem className="el">
+               <NavLink to="/manageaccount" onClick={closeCollapse} tag={NavLinkRRD} >
+               <i class='fas fa-book-reader text-red'></i>
+                 Manage Acounts
+               </NavLink>
             </NavItem>
           </Nav>
+         
 
         </Collapse>
       </Container>
