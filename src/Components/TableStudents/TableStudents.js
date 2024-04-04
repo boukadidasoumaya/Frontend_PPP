@@ -28,49 +28,52 @@ import {
 
   Input,
   FormText,
+  NavLink,
 } from "reactstrap";
 import { FormLabel } from 'react-bootstrap';
 import "./TableStudents.css"
 import SelectOptions from '../SelectOptions/SelectOptions';
 
 const TableStudents = () => {
-    const [students, setStudents] = useState([
-        { id: 1, name: 'Soumaya Boukadida', major: 'RT', level: '3' },
-        { id: 2, name: 'Rim Jbeli', major: 'GL', level: '3' },
-        { id: 3, name: 'Mabahej ben hassine', major: 'GL', level: '3' }
-        // ... more student data
-      ]);
-      const majors = ['MPI', 'RT', 'GL','IIA','IMI','MASTER'];
-      const levels = ['2', '3', '4', '5'];
-      const [selectedMajor, setSelectedMajor] = useState('');
-      const [selectedLevel, setSelectedLevel] = useState('');
-      const [filteredStudents, setFilteredStudents] = useState([]);
-      const [modalOpen, setModalOpen] = useState(false); // State for add student modal
-      const [updateModalOpen, setUpdateModalOpen] = useState(false);
-    
-      const handleFilterChange = (major, level) => {
-        setSelectedMajor(major);
-        setSelectedLevel(level);
-        const filteredData = students.filter(
-          (student) =>
+  const [students, setStudents] = useState([
+    { id: 1, name: 'Soumaya Boukadida', major: 'RT', level: '3' },
+    { id: 2, name: 'Rim Jbeli', major: 'GL', level: '3' },
+    { id: 3, name: 'Mabahej ben hassine', major: 'GL', level: '3' }
+    // ... more student data
+]);
+const majors = ['MPI', 'RT', 'GL', 'IIA', 'IMI', 'MASTER'];
+const levels = ['2', '3', '4', '5'];
+const groups = ['1', '2', '3', '4'];
+
+const [selectedMajor, setSelectedMajor] = useState('');
+const [selectedLevel, setSelectedLevel] = useState('');
+const [filteredStudents, setFilteredStudents] = useState(students); // Initialize with all students
+const [modalOpen, setModalOpen] = useState(false); // State for add student modal
+const [updateModalOpen, setUpdateModalOpen] = useState(false);
+
+const handleFilterChange = (major, level) => {
+    setSelectedMajor(major);
+    setSelectedLevel(level);
+    const filteredData = students.filter(
+        (student) =>
             (major === '' || student.major === major) &&
             (level === '' || student.level === level)
-        );
-        setFilteredStudents(filteredData);
-      };
-    
-      const handleAddStudent = (newStudent) => {
-        setStudents([...students, newStudent]); // Add new student to original data
-        setModalOpen(false); // Close modal after adding
-        handleFilterChange(selectedMajor, selectedLevel); // Re-filter based on selections
-      };
-    
-      const toggleModal = () => setModalOpen(!modalOpen); // Toggle add student modal
-      
-    
-      const toggleUpdateModal = () => {
-        setUpdateModalOpen(!updateModalOpen);
-      };
+    );
+    setFilteredStudents(filteredData);
+};
+
+const handleAddStudent = (newStudent) => {
+    setStudents([...students, newStudent]); // Add new student to original data
+    setModalOpen(false); // Close modal after adding
+    handleFilterChange(selectedMajor, selectedLevel); // Re-filter based on selections
+};
+
+const toggleModal = () => setModalOpen(!modalOpen); // Toggle add student modal
+
+const toggleUpdateModal = () => {
+    setUpdateModalOpen(!updateModalOpen);
+};
+
     return (
         <Container className="mt--7" fluid>
         {/* Table */}
@@ -123,7 +126,7 @@ const TableStudents = () => {
                   {/* Display filtered students or message if none found */}
                   {filteredStudents.length === 0 ? (
                     <tr>
-                      <td  colSpan={6} style={{ textAlign: 'center' }}>Aucun étudiant trouvé pour les filtres sélectionnés</td>
+                      <td  colSpan={6} style={{ textAlign: 'center' }}>No Student found with the selected criteria</td>
                     </tr>
                   ) : (
                     filteredStudents.map((student) => (
@@ -145,35 +148,77 @@ const TableStudents = () => {
                         <i className="fas fa-ellipsis-v" />
                       </DropdownToggle>
                       <DropdownMenu className="dropdown-menu-arrow" right>
+                      
                         <DropdownItem
-                          href="#pablo"
+                            href="/profile"
+                          >
+                           <i class="fa-solid fa-eye"></i>
+                          View Absence
+                          </DropdownItem>
+                    
+                        <DropdownItem
+                          href=""
                           onClick={toggleUpdateModal}
                         >
                           <i className="fas fa-pencil-alt" />
                          Update
                         </DropdownItem>
+                        
                          {/* Update Student Modal */}
-                        <Modal isOpen={updateModalOpen} toggle={toggleUpdateModal}>
-                          <ModalHeader toggle={toggleUpdateModal}>Modifier l'étudiant</ModalHeader>
-                          <ModalBody>
-                            {/* Form fields to capture updated student data */}
-                            <FormGroup>
-                              <FormLabel for="name">Nom</FormLabel>
-                              <Input type="text" name="name" id="name" placeholder="Entrez le nom de l'étudiant" />
-                            </FormGroup>
-                            {/* Add other form fields for updating student data */}
-                          </ModalBody>
-                          <div className="modal-footer">
-                            <Button color="primary" onClick={() => {}}>
-                              Enregistrer les modifications
-                            </Button>
-                            <Button color="link" onClick={toggleUpdateModal}>
-                              Annuler
-                            </Button>
-                          </div>
-                        </Modal>
+                         <Modal isOpen={updateModalOpen} toggle={toggleUpdateModal}>
+    <ModalHeader toggle={toggleUpdateModal}>Modifier l'étudiant</ModalHeader>
+    <ModalBody>
+        {/* Form fields to capture updated student data */}
+        <FormGroup>
+            <FormLabel for="name">Nom</FormLabel>
+            <Input type="text" name="name" id="name" placeholder="Entrez le nom de l'étudiant" />
+        </FormGroup>
+        <FormGroup>
+            <FormLabel for="major">Spécialité</FormLabel>
+            <select className="form-control shadow-none border-1 bg-transparent text-dark" name="major" id="major">
+                <option value="">Sélectionnez une spécialité</option>
+                {majors.map((major) => (
+                    <option key={major} value={major}>
+                        {major}
+                    </option>
+                ))}
+            </select>
+        </FormGroup>
+        <FormGroup>
+            <FormLabel for="level">Niveau</FormLabel>
+            <select className="form-control shadow-none border-1 bg-transparent text-dark" name="level" id="level">
+                <option value="">Sélectionnez un niveau</option>
+                {levels.map((level) => (
+                    <option key={level} value={level}>
+                        {level}
+                    </option>
+                ))}
+            </select>
+        </FormGroup>
+        <FormGroup>
+            <FormLabel for="group">Groupe</FormLabel>
+            <select className="form-control shadow-none border-1 bg-transparent text-dark" name="group" id="group">
+                <option value="">Sélectionnez un groupe</option>
+                {groups.map((group) => (
+                    <option key={group} value={group}>
+                        {group}
+                    </option>
+                ))}
+            </select>
+        </FormGroup>
+    </ModalBody>
+    <div className="modal-footer">
+        <Button color="primary" onClick={() => {}}>
+            Enregistrer les modifications
+        </Button>
+        <Button color="link" onClick={toggleUpdateModal}>
+            Annuler
+        </Button>
+    </div>
+</Modal>
+
                         <DropdownItem
-                          href="#pablo"
+                          href=""
                           onClick={(e) => e.preventDefault()}
                         >
                           <i className="fas fa-trash" />

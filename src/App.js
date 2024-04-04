@@ -13,6 +13,8 @@ import LoginPage from "./pages/loginPage/LoginPage.js"
 import "./assets/plugins/nucleo/css/nucleo.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/scss/argon-dashboard-react.scss";
+import Profile from './pages/Profile/Profile.js';
+import Courses from './pages/Courses/Courses.js';
 function App() {
   return (
     <>
@@ -27,6 +29,8 @@ function App() {
         <Route path='/login' exact element={<LoginPage />} ></Route>
         <Route path='/forgot' exact element={<LoginPage />} ></Route>
 
+        <Route path='profile' exact element={<Profile />} ></Route>
+        <Route path='courses' exact element={<Courses />} ></Route>
       </Routes>
       </Router>
     </>
