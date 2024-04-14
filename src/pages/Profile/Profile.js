@@ -36,9 +36,46 @@ import TableTeachers from "../../Components/TableTeachers/TableTeacher";
 import { Tab } from "react-bootstrap";
 import TableAbsence from "../../Components/TableAbsence/TableAbsence";
 import Absence_Calender from "../../Components/Charts/Absence_Calendar";
+import { useLocation } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import axios from 'axios';
+
   // core components
   
   const Profile = (props) => {
+    const location = useLocation(); // Get the current location object
+    const selectedStudent = location.state?.selectedStudent; // Access the selectedStudent object from the state
+    console.log("selected student from profile",selectedStudent);
+    //concerning the info of profile take the id and do anther axios here so that we can recupere the info of the student
+    const studentId = selectedStudent._id;
+    const [student, setStudent] = useState([]);
+
+    useEffect(() => {
+      axios.get(`http://localhost:5000/students/${studentId}`)
+        .then(response => {
+          setStudent(response.data.data);
+          
+        })
+        .catch(error => {
+          console.error('Error fetching majors:', error);
+        });
+    },[]);
+    console.log("student from axios",student);
+    function calculateAge(birthDate) {
+      const today = new Date();
+      const birth = new Date(birthDate);
+      let age = today.getFullYear() - birth.getFullYear();
+      const monthDiff = today.getMonth() - birth.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+          age--;
+      }
+      return age;
+  }
+  
+  const age = calculateAge(student.Birthday);
+  console.log("Age:", age); // Output the calculated age
+  const studentType = student.Year <= 2 ? "Cycle Prepatoire" : "Cycle Ingenieur";
+
     return (
       <>
        <Sidebar 
@@ -81,16 +118,24 @@ import Absence_Calender from "../../Components/Charts/Absence_Calendar";
                 </Row>
                 <div className="text-center ">
                   <h3>
-                    Soumaya Boukadida
-                    <span className="font-weight-light">  22</span>
+                    {student.FirstName} {student.LastName}
+                    <span className="font-weight-light">  {age}</span>
                   </h3>
                   <div className="h5 font-weight-300">
                    
-                    RT 3 
+                    {student.Major} {student.Year} 
                   </div>
                   <div className="h5 font-weight-300">
-                    Cycle d'ingénieur
+                    CIN : {student.CIN}
                   </div>
+                  <div className="h5 font-weight-300">
+                    {studentType}
+                  </div>
+                  
+                  <div className="h5 font-weight-300">
+                    {student.Email}
+                  </div>
+
                   <div>
                     <Absence_Calender />
                   </div>

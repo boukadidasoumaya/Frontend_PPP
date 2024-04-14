@@ -6,6 +6,7 @@ import NavBar from "../../Components/NavBar/NavBar";
 // core components
 
 import TableStudents from '../../Components/TableStudents/TableStudents';
+
 const Students = (props) => {
   
   return (
@@ -22,6 +23,7 @@ const Students = (props) => {
       <NavBar {...props} />
         <Header />
        <TableStudents/>
+  
       </div>  
       </>
   );
