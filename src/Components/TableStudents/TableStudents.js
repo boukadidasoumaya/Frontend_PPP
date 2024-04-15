@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from 'react';
 import { render } from 'react-dom';
 import ReactTable from 'react-table';
@@ -20,16 +18,12 @@ import {
   Table,
   Container,
   Row,
-  UncontrolledTooltip,
   Button,
   Modal,
   ModalHeader,
   ModalBody,
   FormGroup,
-
   Input,
-  FormText,
-  NavLink,
 } from "reactstrap";
 import { FormLabel } from 'react-bootstrap';
 import "./TableStudents.css"
