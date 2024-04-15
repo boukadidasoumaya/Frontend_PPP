@@ -18,7 +18,7 @@ import { registerLicense } from '@syncfusion/ej2-base';
 import { format } from 'date-fns';
 import SelectOptions from '../SelectOptions/SelectOptions';
 
-registerLicense('Ngo9BigBOggjHTQxAR8/V1NBaF5cXmZCekxwWmFZfVpgdVRMYF5bRXBPMyBoS35RckVgWn9fcXRXR2ZUVUV2');
+registerLicense('ORg4AjUWIQA/Gnt2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5Xd0BjXHpcc3NRQ2hY');
 /**
  * Schedule editor template sample
  */

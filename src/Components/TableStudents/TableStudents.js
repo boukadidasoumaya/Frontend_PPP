@@ -119,7 +119,6 @@ const handleFilterChange = (major, level) => {
 };
 
 const handleStudent = (action) => {
-  const id = document.getElementById('id').value;
   const firstName = document.getElementById('firstname').value;
   const lastName = document.getElementById('lastname').value;
   const cin = document.getElementById('cin').value;
@@ -157,6 +156,8 @@ const handleStudent = (action) => {
         });
       }
       else if (action === "update") {
+        const id = document.getElementById('id').value;
+
         const newStudent = {
           _id: id,
           FirstName: firstName,
@@ -289,7 +290,7 @@ const handleViewProfil = (student) => {
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="level">Level</FormLabel>
-                      <select className="form-control shadow-none border-1 bg-transparent text-dark" name="level" id="level">
+                      <select className="form-control shadow-none border-1 bg-transparent text-dark" name="level" id="year">
                         <option value="">Select Level</option>
                         {levels.map((level) => (
                           <option key={level} value={level}>
