@@ -30,7 +30,10 @@ function App() {
         <Route path='courses' exact element={<Courses />} ></Route>
         <Route path='/login' exact element={<LoginPage />} ></Route>
         <Route path='/forgot' exact element={<LoginPage />} ></Route>
+        <Route path='/forgot/passwordReset/verif' exact element={<LoginPage />} ></Route>
 
+        <Route path='profile' exact element={<Profile />} ></Route>
+        <Route path='courses' exact element={<Courses />} ></Route>
       </Routes>
       </Router>
     </>
