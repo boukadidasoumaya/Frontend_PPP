@@ -13,14 +13,13 @@ import { useState } from "react";
             return input.replace(pattern, '');
         }
             // Function to handle form submission
-         const handleSubmit = async (event) => {
+            const handleSubmit = async (event) => {
                 event.preventDefault(); // Prevent default form submission behavior
             
                 // Accessing the input fields
                 const usernameInput = document.getElementById('username');
                 const passwordInput = document.getElementById('password');
-                console.log('username')
-
+            
                 // Check if inputs are not empty
                 if (usernameInput.value.trim() === '' || passwordInput.value.trim() === '') {
                     alert('Please fill out all required fields.');
@@ -32,7 +31,6 @@ import { useState } from "react";
                     username: removeHtmlEntities(usernameInput.value.trim()),
                     password: removeHtmlEntities(passwordInput.value.trim())
                 };
-                
             
                 try {
                     // Make a POST request to your backend API endpoint
@@ -43,7 +41,7 @@ import { useState } from "react";
                         },
                         body: JSON.stringify(data)
                     });
-                
+            
                     // Check if the request was successful (status code 2xx)
                     if (!response.ok) {
                         // If the request fails, get the error message from the response
@@ -52,14 +50,22 @@ import { useState } from "react";
                         console.error('Error:', errorData.error);
                         return; // Stop further execution
                     }
-                
+            
+                    // Get the JWT token from the response
+                    const responseData = await response.json();
+                    const token = responseData.token;
+            
+                    // Store the token in sessionStorage
+                    sessionStorage.setItem('jwtToken', token);
+            
                     // Redirect the user upon successful login
-                    window.location.href = '/';
+                    window.location.href = '/'; // Redirect to the home page
                 } catch (error) {
                     // Handle any network errors or other exceptions
                     console.error('Error:', error);
                     alert('An error occurred. Please try again later.');
-                }}
+                }
+            };
         return (
             <div className='wrapper'>
                 <form action="">
