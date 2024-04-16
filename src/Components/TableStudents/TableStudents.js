@@ -63,16 +63,7 @@ const TableStudents = () => {
     console.log('Updated formData:', formData);
 
   };
-useEffect(() => {
-  axios.get("http://localhost:5000/students")
-    .then(response => {
-      setStudents(response.data.data);
-      
-    })
-    .catch(error => {
-      console.error('Error fetching majors:', error);
-    });
-}, [students]);
+
 
 const [majors, setMajors] = useState([]);
 const [levels, setLevels] = useState([]);
@@ -88,6 +79,9 @@ useEffect(() => {
       console.error('Error fetching majors:', error);
     });
 }, []);
+const allOption = { value: 'All Majors', label: 'All Majors' }; 
+const majorOptions = [allOption, ...majors.map((major) => ({ value: major, label: major }))];
+
 useEffect(() => {
   axios.get("http://localhost:5000/classes/levels")
     .then(response => {
@@ -97,7 +91,8 @@ useEffect(() => {
       console.error('Error fetching majors:', error);
     });
 }, []);
-
+const allOptionlevel = { value: 'All Levels', label: 'All Levels' }; 
+const levelOptions = [allOptionlevel, ...levels.map((level) => ({ value: level, label: level }))];
 
 const groups = ['1', '2', '3', '4'];
 
@@ -108,81 +103,199 @@ const [modalOpen, setModalOpen] = useState(false); // State for add student moda
 const [updateModalOpen, setUpdateModalOpen] = useState(false);
 const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-const handleFilterChange = (major, level) => {
-    setSelectedMajor(major);
-    setSelectedLevel(level);
-    const filteredData = students.filter(
-        (student) =>
-            (major === '' || student.major === major) &&
-            (level === '' || student.level === level)
-    );
+const handleFilterChange = (major, year) => {
+  setSelectedMajor(major);
+  setSelectedLevel(year);
 };
 
+useEffect(() => {
+  let endpoint = '';
+
+  if ((!selectedMajor && !selectedLevel) || (selectedMajor === 'All Majors' && selectedLevel === 'All Levels')) {
+    endpoint = `http://localhost:5000/students`;
+
+  }  else if ((selectedMajor && !selectedLevel) || (selectedMajor && selectedLevel==='All Levels') ){
+    
+    endpoint = `http://localhost:5000/students/majors/${selectedMajor}`;
+  } else if ((selectedLevel && !selectedMajor) || (selectedLevel && selectedMajor==='All Majors') ){
+    
+    endpoint = `http://localhost:5000/students/year/${selectedLevel}`;
+  
+  }
+  else if (selectedMajor && selectedLevel) {
+    if (selectedMajor === 'All Majors' && selectedLevel === 'All Levels')
+      endpoint = `http://localhost:5000/students`;
+    else
+    endpoint = `http://localhost:5000/students/majoryear/${selectedMajor}/${selectedLevel}`;
+
+  }
+
+  axios.get(endpoint)
+    .then(response => {
+      setStudents(response.data.data);
+    })
+    .catch(error => {
+      console.error('Error fetching filtered students:', error);
+      console.log("error msg",error.response.data.message)
+      setStudents([]);
+    });
+}, [selectedMajor, selectedLevel,students]);
+
+const [currentCIN,setCurrentCIN] = useState("");
+const [currentEmail,setCurrentEmail] = useState("");
+
+const initialErrors = {
+  firstName: "",
+  lastName: "",
+  cin: "",
+  email: "",
+  birthday: "", 
+  major: "",
+  year: "", 
+  group: "", 
+};
+const [errors, setErrors] = useState(initialErrors);
+
+const clearErrors = () => {
+  setErrors(initialErrors);
+};
 const handleStudent = (action) => {
+  // setErrors(initialErrors);
+
+  // Récupération des valeurs des champs
   const firstName = document.getElementById('firstname').value;
   const lastName = document.getElementById('lastname').value;
   const cin = document.getElementById('cin').value;
   const email = document.getElementById('email').value;
-  const birthday = new Date(document.getElementById('birthday').value).toISOString().split('T')[0]; 
+  let birthday =document.getElementById('birthday').value; 
   const major = document.getElementById('major').value;
-  const year = parseInt(document.getElementById('year').value); // Convert level to integer
-  const group = parseInt(document.getElementById('group').value); // Convert group to integer
+  const year = parseInt(document.getElementById('year').value); // Convertir niveau en entier
+  const group = parseInt(document.getElementById('group').value); // Convertir groupe en entier
 
-
-  // Construct the new student object
-  if (action === "add") {  
-    const newStudent = {
-      FirstName: firstName,
-      LastName: lastName,
-      CIN: cin,
-      Email: email,
-      Birthday: birthday,
-      Major: major,
-      Year: year,
-      Group: group
-    };
-      console.log('newStudent:', newStudent);
-      setStudents([...students, newStudent]); // Add new student to original data
+ // Vérification si le CIN est vide ou ne contient pas exactement 8 chiffres
+const cinError = !cin ? "CIN is required" : (cin.length !== 8 ? "CIN must be 8 digits long" : "");
+// Vérification si le CIN contient uniquement des chiffres
+const cinFormatError = !/^\d+$/.test(cin) ? "CIN must contain only digits" : "";
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+console.log("current cin",currentCIN);
+console.log(cin);
+console.log("current email",currentEmail);
+console.log(email);
+if (action ==="add" || (action==="update" && (currentCIN !== cin || currentEmail !== email)))
+ {axios.get(`http://localhost:5000/students/checkcin/${cin}`)
+    .then(response => {
+      if(response.data.exists) {
+        console.log('CIN already exists');
         
-    setModalOpen(false); // Close modal after adding
-    // Send new student data to server
-
-      axios.post("http://localhost:5000/students", newStudent)
-        .then(response => {
-         console.log('Student added:', response.data);
-        })
-        .catch(error => {
-          console.error('Error in Adding student:', error);
-        });
+        setErrors({ ...errors, cin: "CIN already exists" });
       }
-      else if (action === "update") {
-        const id = document.getElementById('id').value;
+    })
+    .catch(error => {
+      console.error('Error in checking CIN:', error);
+    });
+    axios.get(`http://localhost:5000/students/checkemail/${email}`)
+    .then(response => {
+      if(response.data.exists) {
+        console.log('Email already exists');
+        setErrors({ ...errors, email: "Email already exists" });
+      }
+    })
+    .catch(error => {
+      console.error('Error in checking CIN:', error);
+    });}
 
-        const newStudent = {
-          _id: id,
-          FirstName: firstName,
-          LastName: lastName,
-          CIN: cin,
-          Email: email,
-          Birthday: birthday,
-          Major: major,
-          Year: year,
-          Group: group
-        };
+
+// Combinaison des erreurs
+const newErrors = {
+  firstName: !firstName ? "First name is required" : "",
+  lastName: !lastName ? "Last name is required" : "",
+  cin: cinError || cinFormatError,
+  email: !email ? "Email is required" : !emailRegex.test(email) ? "Invalid Email format" : "",
+  birthday: !birthday ? "Birthday is required" : "", 
+  major: !major ? "Major is required" : "",
+  year: !year ? "Year is required" : "", 
+  group: !group ? "Group is required" : "", 
+};
+
+  // Mise à jour de l'état des erreurs
+  console.log(newErrors)
+  console.log("after new errrors firstname",firstName);
+
+  console.log(errors)
+
+  // Vérification si des erreurs existent
+  const hasErrors = Object.values(newErrors).some(error => error !== "");
+  if (!hasErrors) {
+    
+    
+    if (action === "add") {  
+      const newStudent = {
+        FirstName: firstName,
+        LastName: lastName,
+        CIN: cin,
+        Email: email,
+        Birthday: birthday,
+        Major: major,
+        Year: year,
+        Group: group
+      };
+      
+      // Send new student data to server
+    
+        axios.post("http://localhost:5000/students", newStudent)
+          .then(response => {
+           console.log('Student added:', response.data);
+          })
+          .catch(error => {
+            if (error.response) {
+              // Si une réponse est reçue du serveur avec un code d'erreur
+              const backendErrors = error.response.data.errors;
+              console.error('Error in backend student:', backendErrors);
+      
+              // Ajouter les erreurs du backend à l'objet errors
+              console.log('Backend errors:', errors);
+            } else if (error.request) {
+              // Si la requête a été faite mais qu'aucune réponse n'a été reçue
+              console.error('Error in Adding student: No response received from server');
+            } else {
+              // Erreur lors de la configuration de la requête
+              console.error('Error in Adding student:', error.message);
+            }
+          });
           console.log('newStudent:', newStudent);
           setStudents([...students, newStudent]); // Add new student to original data
-          
-        setUpdateModalOpen(!updateModalOpen);
-        axios.put(`http://localhost:5000/students/${newStudent?._id}`, newStudent)
-        .then(response => {
-         console.log('Student updated:', response.data);
-        })
-        .catch(error => {
-          console.error('Error in updating student:', error);
-        });
-      }
-
+            
+        setModalOpen(false); // Close modal after adding
+    }
+    else if (action === "update") {
+          const id = document.getElementById('id').value;
+          birthday = new Date(document.getElementById('birthday').value).toISOString().split('T')[0];
+          const newStudent = {
+            _id: id,
+            FirstName: firstName,
+            LastName: lastName,
+            CIN: cin,
+            Email: email,
+            Birthday: birthday,
+            Major: major,
+            Year: year,
+            Group: group
+          };
+            
+            setStudents([...students, newStudent]); // Add new student to original data
+          setUpdateModalOpen(!updateModalOpen);
+          axios.put(`http://localhost:5000/students/${newStudent?._id}`, newStudent)
+          .then(response => {
+           console.log('Student updated:', response.data);
+          })
+          .catch(error => {
+            console.error('Error in updating student:', error);
+          });
+    }
+    
+  }
 };
+
 
 const handleDelete = (student) => {
   toggleDeleteModal();
@@ -201,16 +314,20 @@ const handleDelete = (student) => {
     setSelectedStudent(student);
   };
 
-const toggleModal = () => setModalOpen(!modalOpen); // Toggle add student modal
+const toggleModal = () => {
+  clearErrors(); // Effacer les erreurs lors de la fermeture
+
+  setModalOpen(!modalOpen); }// Toggle add student modal
 
 const toggleUpdateModal = (student) => {
- 
+    clearErrors(); // Effacer les erreurs lors de la fermeture
     setUpdateModalOpen(!updateModalOpen);
     setSelectedStudent(student);
+    setCurrentCIN(student.CIN);
+    setCurrentEmail(student.Email);
+
     setFormData(student);
 
-    console.log('updateModalOpen:', updateModalOpen);
-    console.log('formdata:', formData);
 };
 const handleViewProfil = (student) => {
   console.log("View Profil")
@@ -232,13 +349,13 @@ const handleViewProfil = (student) => {
                   <div className='col-lg-3 col-md-2 col-sm-2 d-flex major' >
                   
                   <SelectOptions
-                    options={majors.map((major) => ({ value: major, label: major }))}
+                    options={majorOptions}
                     selectedValue={selectedMajor}
                     onOptionChange={(newMajor) => handleFilterChange(newMajor, selectedLevel)}
                     placeholderText="Major"
                   />
                   <SelectOptions
-                    options={levels.map((level) => ({ value: level, label: level }))}
+                    options={levelOptions}
                     selectedValue={selectedLevel}
                     onOptionChange={(newLevel) => handleFilterChange(selectedMajor, newLevel)}
                     placeholderText="Level"
@@ -259,22 +376,31 @@ const handleViewProfil = (student) => {
                     <FormGroup>
                       <FormLabel for="firstname">First Name</FormLabel>
                       <Input type="text" name="firstname" id="firstname" placeholder="Enter First Name" />
+                      {errors.firstName && <span className="text-danger">{errors.firstName}</span>}
+                    
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel for="lastname">Last Name</FormLabel>
-                      <Input type="text" name="lastname" id="lastname" placeholder="Enter Last Name" />
+  <FormLabel for="lastname">Last Name</FormLabel>
+  <Input type="text" name="lastname" id="lastname" placeholder="Enter Last Name" />
+  {errors.lastName && <span className="text-danger">{errors.lastName}</span>}
                     </FormGroup>
+
                     <FormGroup>
-                      <FormLabel for="cin">Num CIN</FormLabel>
-                      <Input type="text" name="cin" id="cin" placeholder="Enter CIN" />
+  <FormLabel for="cin">Num CIN</FormLabel>
+  <Input type="text" name="cin" id="cin" placeholder="Enter CIN" />
+  {errors.cin && <span className="text-danger">{errors.cin}</span>}
                     </FormGroup>
+
                     <FormGroup>
                       <FormLabel for="email">Email</FormLabel>
-                      <Input type="text" name="email" id="email" placeholder="Enter Email" />
+  <Input type="text" name="email" id="email" placeholder="Enter Email" />
+  {errors.email && <span className="text-danger">{errors.email}</span>}
                     </FormGroup>
+
                     <FormGroup>
                       <FormLabel for="birthday">Birthday</FormLabel>
-                      <Input type="date" name="birthday" id="birthday" placeholder="Enter Date of Birth" />
+  <Input type="date" name="birthday" id="birthday" placeholder="Enter Date of Birth" />
+  {errors.birthday && <span className="text-danger">{errors.birthday}</span>}
                     </FormGroup>
 
                     <FormGroup>
@@ -287,7 +413,9 @@ const handleViewProfil = (student) => {
                           </option>
                         ))}
                       </select>
+                      {errors.major && <span className="text-danger">{errors.major}</span>}
                     </FormGroup>
+                      
                     <FormGroup>
                       <FormLabel for="level">Level</FormLabel>
                       <select className="form-control shadow-none border-1 bg-transparent text-dark" name="level" id="year">
@@ -298,18 +426,22 @@ const handleViewProfil = (student) => {
                           </option>
                         ))}
                       </select>
+                      {errors.year && <span className="text-danger">{errors.year}</span>}
                     </FormGroup>
+                      
                     <FormGroup>
-              <FormLabel for="group">Group</FormLabel>
-              <select className="form-control shadow-none border-1 bg-transparent text-dark" name="group" id="group" >
-                <option value="">Select Group</option>
-                {groups.map((group) => (
-                  <option key={group} value={group}>
-                    {group}
-                  </option>
-                ))}
-              </select>
-            </FormGroup>
+                      <FormLabel for="group">Group</FormLabel>
+                      <select className="form-control shadow-none border-1 bg-transparent text-dark" name="group" id="group" >
+                        <option value="">Select Group</option>
+                        {groups.map((group) => (
+                          <option key={group} value={group}>
+                            {group}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.group && <span className="text-danger">{errors.group}</span>}
+                    </FormGroup>
+
                   </ModalBody>
                   <div className="modal-footer">
                   <Button className='addbtn' onClick={()=>{handleStudent("add")}}>
@@ -400,22 +532,32 @@ const handleViewProfil = (student) => {
                         <input type="text" style={{ display: 'none' }} id='id' value={formData ? formData._id : ''}/>
 
                         <Input type="text" name="FirstName" id="firstname" placeholder="Enter First Name" value={formData ? formData.FirstName : ''} onChange={handleChange} />
+                        {errors.firstName && <span className="text-danger">{errors.firstName}</span>}
+
                       </FormGroup>
                       <FormGroup>
                         <FormLabel for="lastname">Last Name</FormLabel>
                         <Input type="text" name="LastName" id="lastname" placeholder="Enter Last Name" value={formData ? formData.LastName : ''} onChange={handleChange}/>
+                        {errors.lastName && <span className="text-danger">{errors.lastName}</span>}
+
                       </FormGroup>
                       <FormGroup>
                         <FormLabel for="cin">Num CIN</FormLabel>
                         <Input type="text" name="CIN" id="cin" placeholder="Enter CIN" value={formData ? formData.CIN : ''} onChange={handleChange}/>
+                        {errors.cin && <span className="text-danger">{errors.cin}</span>}
+
                       </FormGroup>
                       <FormGroup>
                         <FormLabel for="email">Email</FormLabel>
                         <Input type="text" name="Email" id="email" placeholder="Enter Email" value={formData ? formData.Email : ''} onChange={handleChange}/>
+                        {errors.email && <span className="text-danger">{errors.email}</span>}
+
                       </FormGroup>
                       <FormGroup>
                         <FormLabel for="birthday">Birthday</FormLabel>
                         <Input type="date" name="Birthday" id="birthday" placeholder="Enter Date of Birth" value={formData ? formData.Birthday.slice(0, 10) : ''}  onChange={handleChange} />
+                        {errors.birthday && <span className="text-danger">{errors.birthday}</span>}
+
                       </FormGroup>
                       <FormGroup>
                         <FormLabel for="Major">Major</FormLabel>
@@ -427,6 +569,8 @@ const handleViewProfil = (student) => {
                             </option>
                           ))}
                         </select>
+                        {errors.major && <span className="text-danger">{errors.major}</span>}
+
                       </FormGroup>
                       <FormGroup>
                         <FormLabel for="Level">Level</FormLabel>
@@ -438,6 +582,8 @@ const handleViewProfil = (student) => {
                             </option>
                           ))}
                         </select>
+                        {errors.year && <span className="text-danger">{errors.year}</span>}
+
                       </FormGroup>
                       <FormGroup>
                         <FormLabel for="Group">Group</FormLabel>
@@ -449,6 +595,8 @@ const handleViewProfil = (student) => {
                             </option>
                           ))}
                         </select>
+                        {errors.group && <span className="text-danger">{errors.group}</span>}
+
                       </FormGroup>
                     </ModalBody>
                     <div className="modal-footer">
