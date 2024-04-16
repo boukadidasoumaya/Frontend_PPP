@@ -2,33 +2,34 @@ import React, { useEffect, useState } from 'react';
 import "./loginPage.css";
 import Login from "../../Components/login/Login.js";
 import Forgot from "../../Components/login/Forgot.js";
-import PasswordReset from "../../Components/login/PasswordReset.js";
 import Verification from "../../Components/login/Verification.js";
 
 function LoginPage() {
     const [url, setUrl] = useState('');
-    const [pageType, setPageType] = useState('login');
 
     useEffect(() => {
         // Get the current URL
         const currentUrl = window.location.href;
         setUrl(currentUrl);
+    }, []); // Empty dependency array ensures this runs only once on mount
 
-        // Check if the URL contains any of the words
-        if (currentUrl.includes('forgot')) {
-            setPageType('forgot');
-        } else if (currentUrl.includes('passwordReset')) {
-            setPageType('passwordReset');
-        } else if (currentUrl.includes('verif')) {
-            setPageType('verification');
+    // Determine which component to render based on the URL
+    const renderComponent = () => {
+        if (url.includes('verif')) {
+          return <Verification />;
+          
+        } else if (url.includes('forgot')) {
+          return <Forgot />;
         } else {
-            setPageType('login');
+            return <Login />;
         }
-    }, []);
+    };
 
-    // Render the appropriate component based on the page type
     return (
         <div className='hello'>
-            {pageType === 'login' && <Login />}
-            {pageType === 'forgot' && <Forgot />}
-            {
+            {renderComponent()}
+        </div>
+    );
+}
+
+export default LoginPage;

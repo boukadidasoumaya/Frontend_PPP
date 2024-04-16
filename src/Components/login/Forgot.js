@@ -27,7 +27,6 @@ function Forgot() {
     
             // Check if request was successful
             if (response.ok) {
-                // Handle successful response, maybe show a success message
                 alert('Password retrieval request sent successfully!');
             } else {
                 // Handle errors from the server
