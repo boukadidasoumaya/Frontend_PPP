@@ -13,9 +13,6 @@ import {
   UncontrolledDropdown,
   DropdownToggle,
   Media,
-  Pagination,
-  PaginationItem,
-  PaginationLink,
   Progress,
   Table,
   Container,
@@ -38,6 +35,7 @@ import axios from 'axios';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { set } from 'date-fns';
+import Pagination from '../Pagination/Pagination';
 
 const TableStudents = () => {
   const modalRef = useRef(null);
@@ -326,7 +324,7 @@ const handleViewProfil = (student) => {
 };
 // pagination
 const [currentPage, setCurrentPage] = useState(1);
-  const [studentsPerPage] = useState(5); // Nombre d'étudiants par page
+  const [studentsPerPage] = useState(10); // Nombre d'étudiants par page
 
   // Fonction pour changer de page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -480,7 +478,7 @@ const [currentPage, setCurrentPage] = useState(1);
                     <td colSpan={8} style={{ textAlign: 'center' }}>No Student found</td>
                   </tr>
                 ) : (
-                  students.map((student) => (
+                  currentStudents.map((student) => (
                     <tr key={student._id}>
                       <td>{student.FirstName}</td>
                       <td>{student.LastName}</td>
@@ -624,6 +622,17 @@ const [currentPage, setCurrentPage] = useState(1);
           </tbody>
 
               </Table>
+              {currentStudents.length === 0 ? null : (
+  <div className="d-flex justify-content-center mt-3">
+    <Pagination
+      studentsPerPage={studentsPerPage}
+      totalStudents={students.length}
+      paginate={paginate}
+      currentPage={currentPage}
+    />
+  </div>
+)}
+
             </Card>
           </div>
         </Row>

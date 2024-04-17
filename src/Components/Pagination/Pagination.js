@@ -1,25 +1,33 @@
-import React from "react";
+import React from 'react';
+import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 
-const Pagination = ({ studentsPerPage, totalStudents, paginate }) => {
+const CustomPagination = ({ studentsPerPage, totalStudents, paginate, currentPage }) => {
+  // Calculer le nombre total de pages
   const pageNumbers = [];
-
   for (let i = 1; i <= Math.ceil(totalStudents / studentsPerPage); i++) {
     pageNumbers.push(i);
   }
 
   return (
-    <nav>
-      <ul className="pagination">
-        {pageNumbers.map((number) => (
-          <li key={number} className="page-item">
-            <a onClick={() => paginate(number)} href="!#" className="page-link">
-              {number}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <Pagination>
+      {/* Bouton "Previous" */}
+      <PaginationItem disabled={currentPage === 1}>
+        <PaginationLink previous onClick={() => paginate(currentPage - 1)} />
+      </PaginationItem>
+      {/* Boutons de pagination */}
+      {pageNumbers.map(number => (
+        <PaginationItem key={number} active={number === currentPage}>
+          <PaginationLink onClick={() => paginate(number)}>
+            {number}
+          </PaginationLink>
+        </PaginationItem>
+      ))}
+      {/* Bouton "Next" */}
+      <PaginationItem disabled={currentPage === pageNumbers.length}>
+        <PaginationLink next onClick={() => paginate(currentPage + 1)} />
+      </PaginationItem>
+    </Pagination>
   );
 };
 
-export default Pagination;
+export default CustomPagination;
