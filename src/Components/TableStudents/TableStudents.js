@@ -136,7 +136,6 @@ useEffect(() => {
     })
     .catch(error => {
       console.error('Error fetching filtered students:', error);
-      console.log("error msg",error.response.data.message)
       setStudents([]);
     });
 }, [selectedMajor, selectedLevel,students]);
@@ -177,38 +176,18 @@ const cinError = !cin ? "CIN is required" : (cin.length !== 8 ? "CIN must be 8 d
 // Vérification si le CIN contient uniquement des chiffres
 const cinFormatError = !/^\d+$/.test(cin) ? "CIN must contain only digits" : "";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-console.log("current cin",currentCIN);
-console.log(cin);
-console.log("current email",currentEmail);
-console.log(email);
-if (action ==="add" || (action==="update" && (currentCIN !== cin || currentEmail !== email)))
- {axios.get(`http://localhost:5000/students/checkcin/${cin}`)
-    .then(response => {
-      if(response.data.exists) {
-        console.log('CIN already exists');
-        
-        setErrors({ ...errors, cin: "CIN already exists" });
-      }
-    })
-    .catch(error => {
-      console.error('Error in checking CIN:', error);
-    });
-    axios.get(`http://localhost:5000/students/checkemail/${email}`)
-    .then(response => {
-      if(response.data.exists) {
-        console.log('Email already exists');
-        setErrors({ ...errors, email: "Email already exists" });
-      }
-    })
-    .catch(error => {
-      console.error('Error in checking CIN:', error);
-    });}
+// Vérification si le prénom contient uniquement des lettres et des espaces
+const firstNameFormatError = !/^[a-zA-Z\s]+$/.test(firstName) ? "First name must contain only letters " : "";
+
+// Vérification si le nom de famille contient uniquement des lettres et des espaces
+const lastNameFormatError = !/^[a-zA-Z\s]+$/.test(lastName) ? "Last name must contain only letters" : "";
+
 
 
 // Combinaison des erreurs
 const newErrors = {
-  firstName: !firstName ? "First name is required" : "",
-  lastName: !lastName ? "Last name is required" : "",
+  firstName: !firstName ? "First name is required" : firstNameFormatError,
+  lastName: !lastName ? "Last name is required" : lastNameFormatError,
   cin: cinError || cinFormatError,
   email: !email ? "Email is required" : !emailRegex.test(email) ? "Invalid Email format" : "",
   birthday: !birthday ? "Birthday is required" : "", 
@@ -220,15 +199,13 @@ const newErrors = {
   // Mise à jour de l'état des erreurs
   console.log(newErrors)
   console.log("after new errrors firstname",firstName);
-
+  setErrors(newErrors);
   console.log(errors)
 
   // Vérification si des erreurs existent
   const hasErrors = Object.values(newErrors).some(error => error !== "");
-  if (!hasErrors) {
-    
-    
-    if (action === "add") {  
+  
+  if (action === "add") {  
       const newStudent = {
         FirstName: firstName,
         LastName: lastName,
@@ -245,27 +222,26 @@ const newErrors = {
         axios.post("http://localhost:5000/students", newStudent)
           .then(response => {
            console.log('Student added:', response.data);
+           console.log('newStudent:', newStudent);
+           setStudents([...students, newStudent]); // Add new student to original data
+            
+            setModalOpen(false);
           })
           .catch(error => {
-            if (error.response) {
-              // Si une réponse est reçue du serveur avec un code d'erreur
-              const backendErrors = error.response.data.errors;
-              console.error('Error in backend student:', backendErrors);
-      
-              // Ajouter les erreurs du backend à l'objet errors
-              console.log('Backend errors:', errors);
-            } else if (error.request) {
-              // Si la requête a été faite mais qu'aucune réponse n'a été reçue
-              console.error('Error in Adding student: No response received from server');
-            } else {
-              // Erreur lors de la configuration de la requête
-              console.error('Error in Adding student:', error.message);
-            }
+            const backendErrors = error.response.data.errors;
+            console.log("backend",error.response.data)
+              setErrors(prevErrors => ({ ...prevErrors, ...backendErrors }));
+              console.log("backend errors",backendErrors); 
+              if (backendErrors&& backendErrors.cin) {
+                setErrors(prevErrors => ({ ...prevErrors, cin: "CIN already exists" }));
+              }
+              if(backendErrors && backendErrors.email){
+                setErrors(prevErrors => ({ ...prevErrors, email: "Email already exists" }));
+
+              }
+              console.log("errors",errors);// Close modal after adding
           });
-          console.log('newStudent:', newStudent);
-          setStudents([...students, newStudent]); // Add new student to original data
-            
-        setModalOpen(false); // Close modal after adding
+      
     }
     else if (action === "update") {
           const id = document.getElementById('id').value;
@@ -282,18 +258,33 @@ const newErrors = {
             Group: group
           };
             
-            setStudents([...students, newStudent]); // Add new student to original data
-          setUpdateModalOpen(!updateModalOpen);
-          axios.put(`http://localhost:5000/students/${newStudent?._id}`, newStudent)
+          
+            axios.put(`http://localhost:5000/students/${newStudent?._id}`, newStudent)
           .then(response => {
-           console.log('Student updated:', response.data);
+          console.log('Student updated:', response.data);
+          console.log("in if");
+          setStudents([...students, newStudent]); // Add new student to original data
+          setUpdateModalOpen(!updateModalOpen);
           })
           .catch(error => {
-            console.error('Error in updating student:', error);
+            const backendErrors = error.response.data.errors;
+            console.log("backend",error.response.data)
+              setErrors(prevErrors => ({ ...prevErrors, ...backendErrors }));
+              console.log("backend errors",backendErrors); 
+              if (backendErrors && backendErrors.cin) {
+                setErrors(prevErrors => ({ ...prevErrors, cin: "CIN already exists" }));
+              }
+              if(backendErrors && backendErrors.email){
+                setErrors(prevErrors => ({ ...prevErrors, email: "Email already exists" }));
+
+              }
+              console.log("errors",errors);// Close modal after adding
           });
+        
+          
     }
     
-  }
+  
 };
 
 
@@ -333,6 +324,18 @@ const handleViewProfil = (student) => {
   console.log("View Profil")
   navigate("/profile", { state: { selectedStudent: student } });
 };
+// pagination
+const [currentPage, setCurrentPage] = useState(1);
+  const [studentsPerPage] = useState(5); // Nombre d'étudiants par page
+
+  // Fonction pour changer de page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Index du premier et du dernier étudiant de la page actuelle
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  // Les étudiants à afficher sur la page actuelle
+  const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent);
 
     return (
         <Container className="mt--7" fluid>
