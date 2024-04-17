@@ -111,14 +111,14 @@ const handleFilterChange = (major, year) => {
 useEffect(() => {
   let endpoint = '';
 
-  if ((!selectedMajor && !selectedLevel) || (selectedMajor === 'All Majors' && selectedLevel === 'All Levels')) {
+  if ((!selectedMajor && !selectedLevel) || (selectedMajor === 'All Majors' && selectedLevel === 'All Levels') || (!selectedMajor && selectedLevel === 'All Levels' )|| (!selectedLevel && selectedMajor === 'All Majors' ) ) {
     endpoint = `http://localhost:5000/students`;
 
   }  else if ((selectedMajor && !selectedLevel) || (selectedMajor && selectedLevel==='All Levels') ){
-    
+   
     endpoint = `http://localhost:5000/students/majors/${selectedMajor}`;
   } else if ((selectedLevel && !selectedMajor) || (selectedLevel && selectedMajor==='All Majors') ){
-    
+   
     endpoint = `http://localhost:5000/students/year/${selectedLevel}`;
   
   }
