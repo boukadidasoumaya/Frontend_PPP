@@ -1,34 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import "./loginPage.css";
 import Login from "../../Components/login/Login.js";
-import Forgot from "../../Components/login/Forgot.js";
-import PasswordReset from "../../Components/login/PasswordReset.js";
-import Verification from "../../Components/login/Verification.js";
-
+import Forgot from "../../Components/login/Forgot.js"
 function LoginPage() {
     const [url, setUrl] = useState('');
-    const [pageType, setPageType] = useState('login');
-
+    const [containsWord, setContainsWord] = useState(false);
+    const wordToCheck = 'forgot'; // The word you want to check for
+  
     useEffect(() => {
-        // Get the current URL
-        const currentUrl = window.location.href;
-        setUrl(currentUrl);
-
-        // Check if the URL contains any of the words
-        if (currentUrl.includes('forgot')) {
-            setPageType('forgot');
-        } else if (currentUrl.includes('passwordReset')) {
-            setPageType('passwordReset');
-        } else if (currentUrl.includes('verif')) {
-            setPageType('verification');
-        } else {
-            setPageType('login');
-        }
-    }, []);
-
-    // Render the appropriate component based on the page type
+      // Get the current URL
+      const currentUrl = window.location.href;
+      setUrl(currentUrl);
+  
+      // Check if the URL contains the word
+      const urlContainsWord = currentUrl.toLowerCase().includes(wordToCheck.toLowerCase());
+      setContainsWord(urlContainsWord);
+    }, []); // Empty dependency array ensures this runs only once on mount
+    if (containsWord) {
     return (
-        <div className='hello'>
-            {pageType === 'login' && <Login />}
-            {pageType === 'forgot' && <Forgot />}
-            {
+   
+      <div className='hello'>
+     <Forgot/>
+
+     </div>    
+        
+       
+    );}
+    else return (      <div className='hello'>
+    <Login/> </div>)
+}
+
+export default LoginPage;

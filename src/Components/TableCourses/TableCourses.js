@@ -26,17 +26,17 @@ import {
   Input,
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
-// import "./TableStudents.css";
+// import "./TableSubjects.css";
 import SelectOptions from "../SelectOptions/SelectOptions";
 import axios from "axios";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { set } from "date-fns";
 
-const TableStudents = () => {
+const TableSubjects = () => {
   const modalRef = useRef(null);
   const navigate = useNavigate();
-  const [subjects, setSubjects] = useState([]); // Changed variable name from students to subjects
+  const [subjects, setSubjects] = useState([]); // Changed variable name from subjects to subjects
   const [formData, setFormData] = useState({
     _id: "",
     SubjectName: "",
@@ -63,6 +63,7 @@ const TableStudents = () => {
 
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
+  const modules = formData.Module;
 
   useEffect(() => {
     axios
@@ -87,12 +88,10 @@ const TableStudents = () => {
       });
   }, []);
 
-  const groups = ["1", "2", "3", "4"];
-
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false); // State for add student modal
+  const [modalOpen, setModalOpen] = useState(false); // State for add subject modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
@@ -100,34 +99,33 @@ const TableStudents = () => {
     setSelectedMajor(major);
     setSelectedLevel(level);
     const filteredData = subjects.filter(
-      (student) =>
-        (major === "" || student.major === major) &&
-        (level === "" || student.level === level)
+      (subject) =>
+        (major === "" || subject.major === major) &&
+        (level === "" || subject.level === level) &&
+        (modules === "" || subject.Module === modules)
     );
   };
 
-  const handleStudent = (action) => {
+  const handleSubject = (action) => {
     const subjectName = document.getElementById("SubjectName").value;
     const module = document.getElementById("Module").value;
     const coeff = document.getElementById("Coeff").value;
     const major = document.getElementById("major").value;
     const year = parseInt(document.getElementById("year").value); // Convert level to integer
-    const group = parseInt(document.getElementById("group").value); // Convert group to integer
 
-    // Construct the new student object
+    // Construct the new subject object
     if (action === "add") {
       const newSubject = {
         SubjectName: subjectName,
         coeff: module,
         Major: major,
         Year: year,
-        Group: group,
       };
       console.log("newSubject:", newSubject);
-      setSubjects([...subjects, newSubject]); // Add new student to original data
+      setSubjects([...subjects, newSubject]); // Add new subject to original data
 
       setModalOpen(false); // Close modal after adding
-      // Send new student data to server
+      // Send new subject data to server
 
       axios
         .post("http://localhost:5000/api/subjects", newSubject)
@@ -147,15 +145,17 @@ const TableStudents = () => {
         coeff: coeff,
         Major: major,
         Year: year,
-        Group: group,
       };
 
       console.log("newSubject:", newSubject);
-      setSubjects([...subjects, newSubject]); // Add new student to original data
+      setSubjects([...subjects, newSubject]); // Add new subject to original data
 
       setUpdateModalOpen(!updateModalOpen);
       axios
-        .put(`http://localhost:5000/api/subjects/${newSubject?._id}`, newSubject)
+        .put(
+          `http://localhost:5000/api/subjects/${newSubject?._id}`,
+          newSubject
+        )
         .then((response) => {
           console.log("Subject updated:", response.data);
         })
@@ -182,7 +182,7 @@ const TableStudents = () => {
     setSelectedSubject(subject);
   };
 
-  const toggleModal = () => setModalOpen(!modalOpen); // Toggle add student modal
+  const toggleModal = () => setModalOpen(!modalOpen); // Toggle add subject modal
 
   const toggleUpdateModal = (subject) => {
     setUpdateModalOpen(!updateModalOpen);
@@ -237,13 +237,13 @@ const TableStudents = () => {
                 </div>
                 {/* Centered "Liste des étudiants" */}
 
-                {/* Add Student Button in Center */}
+                {/* Add Subject Button in Center */}
                 <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddEtudiant justify-content-end   ">
                   <Button className="addbtn" onClick={toggleModal}>
                     Add Subject
                   </Button>
                 </div>
-                {/* Add Student Modal */}
+                {/* Add Subject Modal */}
                 <Modal
                   isOpen={modalOpen}
                   toggle={toggleModal}
@@ -308,27 +308,12 @@ const TableStudents = () => {
                         ))}
                       </select>
                     </FormGroup>
-                    <FormGroup>
-                      <FormLabel for="group">Group</FormLabel>
-                      <select
-                        className="form-control shadow-none border-1 bg-transparent text-dark"
-                        name="group"
-                        id="group"
-                      >
-                        <option value="">Select Group</option>
-                        {groups.map((group) => (
-                          <option key={group} value={group}>
-                            {group}
-                          </option>
-                        ))}
-                      </select>
-                    </FormGroup>
                   </ModalBody>
                   <div className="modal-footer">
                     <Button
                       className="addbtn"
                       onClick={() => {
-                        handleStudent("add");
+                        handleSubject("add");
                       }}
                     >
                       Add Subject
@@ -502,29 +487,12 @@ const TableStudents = () => {
                         ))}
                       </select>
                     </FormGroup>
-                    <FormGroup>
-                      <FormLabel for="Group">Group</FormLabel>
-                      <select
-                        className="form-control shadow-none border-1 bg-transparent text-dark"
-                        name="Group"
-                        id="group"
-                        value={formData ? formData.Group : ""}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select Group</option>
-                        {groups.map((group) => (
-                          <option key={group} value={group}>
-                            {group}
-                          </option>
-                        ))}
-                      </select>
-                    </FormGroup>
                   </ModalBody>
                   <div className="modal-footer">
                     <Button
                       className="addbtn"
                       onClick={() => {
-                        handleStudent("update");
+                        handleSubject("update");
                       }}
                     >
                       Save Changes
@@ -567,4 +535,4 @@ const TableStudents = () => {
   );
 };
 
-export default TableStudents;
+export default TableSubjects;
