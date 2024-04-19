@@ -15,15 +15,12 @@ import {
   Table,
   Container,
   Row,
-  UncontrolledTooltip,
   Button,
   Modal,
   ModalHeader,
   ModalBody,
   FormGroup,
   Input,
-  FormText,
-  NavLink,
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
 import "./TableStudents.css";

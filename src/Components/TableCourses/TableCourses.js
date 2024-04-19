@@ -213,8 +213,8 @@ const TableCourses = () => {
 
     const coeffError = !coeff
       ? "Coeff is required"
-      : coeff.length !== 1
-      ? "Coeff must be 1 digit long"
+      : coeff.length !== 2
+      ? "Coeff must be 2 digit long"
       : "";
     // Vérification si le Coeff contient uniquement des chiffres
     const coeffFormatError = !/^\d+$/.test(coeff)
