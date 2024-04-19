@@ -11,9 +11,6 @@ import {
   UncontrolledDropdown,
   DropdownToggle,
   Media,
-  Pagination,
-  PaginationItem,
-  PaginationLink,
   Progress,
   Table,
   Container,
@@ -32,6 +29,7 @@ import axios from "axios";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { set } from "date-fns";
+import Pagination from "../Pagination/Pagination";
 
 const TableStudents = () => {
   const modalRef = useRef(null);
@@ -55,16 +53,6 @@ const TableStudents = () => {
     });
     console.log("Updated formData:", formData);
   };
-  useEffect(() => {
-    axios
-      .get("http://localhost:5000/students")
-      .then((response) => {
-        setStudents(response.data.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching majors:", error);
-      });
-  }, [students]);
 
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -81,6 +69,12 @@ const TableStudents = () => {
         console.error("Error fetching majors:", error);
       });
   }, []);
+  const allOption = { value: "All Majors", label: "All Majors" };
+  const majorOptions = [
+    allOption,
+    ...majors.map((major) => ({ value: major, label: major })),
+  ];
+
   useEffect(() => {
     axios
       .get("http://localhost:5000/classes/levels")
@@ -91,6 +85,11 @@ const TableStudents = () => {
         console.error("Error fetching majors:", error);
       });
   }, []);
+  const allOptionlevel = { value: "All Levels", label: "All Levels" };
+  const levelOptions = [
+    allOptionlevel,
+    ...levels.map((level) => ({ value: level, label: level })),
+  ];
 
   const groups = ["1", "2", "3", "4"];
 
@@ -101,29 +100,126 @@ const TableStudents = () => {
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const handleFilterChange = (major, level) => {
+  const handleFilterChange = (major, year) => {
     setSelectedMajor(major);
-    setSelectedLevel(level);
-    const filteredData = students.filter(
-      (student) =>
-        (major === "" || student.major === major) &&
-        (level === "" || student.level === level)
-    );
+    setSelectedLevel(year);
   };
 
+  useEffect(() => {
+    let endpoint = "";
+
+    if (
+      (!selectedMajor && !selectedLevel) ||
+      (selectedMajor === "All Majors" && selectedLevel === "All Levels") ||
+      (!selectedMajor && selectedLevel === "All Levels") ||
+      (!selectedLevel && selectedMajor === "All Majors")
+    ) {
+      endpoint = `http://localhost:5000/students`;
+    } else if (
+      (selectedMajor && !selectedLevel) ||
+      (selectedMajor && selectedLevel === "All Levels")
+    ) {
+      endpoint = `http://localhost:5000/students/majors/${selectedMajor}`;
+    } else if (
+      (selectedLevel && !selectedMajor) ||
+      (selectedLevel && selectedMajor === "All Majors")
+    ) {
+      endpoint = `http://localhost:5000/students/year/${selectedLevel}`;
+    } else if (selectedMajor && selectedLevel) {
+      if (selectedMajor === "All Majors" && selectedLevel === "All Levels")
+        endpoint = `http://localhost:5000/students`;
+      else
+        endpoint = `http://localhost:5000/students/majoryear/${selectedMajor}/${selectedLevel}`;
+    }
+
+    axios
+      .get(endpoint)
+      .then((response) => {
+        setStudents(response.data.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered students:", error);
+        setStudents([]);
+      });
+  }, [selectedMajor, selectedLevel, students]);
+
+  const [currentCIN, setCurrentCIN] = useState("");
+  const [currentEmail, setCurrentEmail] = useState("");
+
+  const initialErrors = {
+    firstName: "",
+    lastName: "",
+    cin: "",
+    email: "",
+    birthday: "",
+    major: "",
+    year: "",
+    group: "",
+  };
+  const [errors, setErrors] = useState(initialErrors);
+
+  const clearErrors = () => {
+    setErrors(initialErrors);
+  };
   const handleStudent = (action) => {
+    // setErrors(initialErrors);
+
+    // Récupération des valeurs des champs
     const firstName = document.getElementById("firstname").value;
     const lastName = document.getElementById("lastname").value;
     const cin = document.getElementById("cin").value;
     const email = document.getElementById("email").value;
-    const birthday = new Date(document.getElementById("birthday").value)
-      .toISOString()
-      .split("T")[0];
+    let birthday = document.getElementById("birthday").value;
     const major = document.getElementById("major").value;
-    const year = parseInt(document.getElementById("year").value); // Convert level to integer
-    const group = parseInt(document.getElementById("group").value); // Convert group to integer
+    const year = parseInt(document.getElementById("year").value); // Convertir niveau en entier
+    const group = parseInt(document.getElementById("group").value); // Convertir groupe en entier
 
-    // Construct the new student object
+    // Vérification si le CIN est vide ou ne contient pas exactement 8 chiffres
+    const cinError = !cin
+      ? "CIN is required"
+      : cin.length !== 8
+      ? "CIN must be 8 digits long"
+      : "";
+    // Vérification si le CIN contient uniquement des chiffres
+    const cinFormatError = !/^\d+$/.test(cin)
+      ? "CIN must contain only digits"
+      : "";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Vérification si le prénom contient uniquement des lettres et des espaces
+    const firstNameFormatError = !/^[a-zA-Z\s]+$/.test(firstName)
+      ? "First name must contain only letters "
+      : "";
+
+    // Vérification si le nom de famille contient uniquement des lettres et des espaces
+    const lastNameFormatError = !/^[a-zA-Z\s]+$/.test(lastName)
+      ? "Last name must contain only letters"
+      : "";
+
+    // Combinaison des erreurs
+    const newErrors = {
+      firstName: !firstName ? "First name is required" : firstNameFormatError,
+      lastName: !lastName ? "Last name is required" : lastNameFormatError,
+      cin: cinError || cinFormatError,
+      email: !email
+        ? "Email is required"
+        : !emailRegex.test(email)
+        ? "Invalid Email format"
+        : "",
+      birthday: !birthday ? "Birthday is required" : "",
+      major: !major ? "Major is required" : "",
+      year: !year ? "Year is required" : "",
+      group: !group ? "Group is required" : "",
+    };
+
+    // Mise à jour de l'état des erreurs
+    console.log(newErrors);
+    console.log("after new errrors firstname", firstName);
+    setErrors(newErrors);
+    console.log(errors);
+
+    // Vérification si des erreurs existent
+    const hasErrors = Object.values(newErrors).some((error) => error !== "");
+
     if (action === "add") {
       const newStudent = {
         FirstName: firstName,
@@ -135,23 +231,42 @@ const TableStudents = () => {
         Year: year,
         Group: group,
       };
-      console.log("newStudent:", newStudent);
-      setStudents([...students, newStudent]); // Add new student to original data
 
-      setModalOpen(false); // Close modal after adding
       // Send new student data to server
 
       axios
         .post("http://localhost:5000/students", newStudent)
         .then((response) => {
           console.log("Student added:", response.data);
+          console.log("newStudent:", newStudent);
+          setStudents([...students, newStudent]); // Add new student to original data
+
+          setModalOpen(false);
         })
         .catch((error) => {
-          console.error("Error in Adding student:", error);
+          const backendErrors = error.response.data.errors;
+          console.log("backend", error.response.data);
+          setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
+          console.log("backend errors", backendErrors);
+          if (backendErrors && backendErrors.cin) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              cin: "CIN already exists",
+            }));
+          }
+          if (backendErrors && backendErrors.email) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              email: "Email already exists",
+            }));
+          }
+          console.log("errors", errors); // Close modal after adding
         });
     } else if (action === "update") {
       const id = document.getElementById("id").value;
-
+      birthday = new Date(document.getElementById("birthday").value)
+        .toISOString()
+        .split("T")[0];
       const newStudent = {
         _id: id,
         FirstName: firstName,
@@ -163,17 +278,33 @@ const TableStudents = () => {
         Year: year,
         Group: group,
       };
-      console.log("newStudent:", newStudent);
-      setStudents([...students, newStudent]); // Add new student to original data
 
-      setUpdateModalOpen(!updateModalOpen);
       axios
         .put(`http://localhost:5000/students/${newStudent?._id}`, newStudent)
         .then((response) => {
           console.log("Student updated:", response.data);
+          console.log("in if");
+          setStudents([...students, newStudent]); // Add new student to original data
+          setUpdateModalOpen(!updateModalOpen);
         })
         .catch((error) => {
-          console.error("Error in updating student:", error);
+          const backendErrors = error.response.data.errors;
+          console.log("backend", error.response.data);
+          setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
+          console.log("backend errors", backendErrors);
+          if (backendErrors && backendErrors.cin) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              cin: "CIN already exists",
+            }));
+          }
+          if (backendErrors && backendErrors.email) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              email: "Email already exists",
+            }));
+          }
+          console.log("errors", errors); // Close modal after adding
         });
     }
   };
@@ -195,20 +326,40 @@ const TableStudents = () => {
     setSelectedStudent(student);
   };
 
-  const toggleModal = () => setModalOpen(!modalOpen); // Toggle add student modal
+  const toggleModal = () => {
+    clearErrors(); // Effacer les erreurs lors de la fermeture
+
+    setModalOpen(!modalOpen);
+  }; // Toggle add student modal
 
   const toggleUpdateModal = (student) => {
+    clearErrors(); // Effacer les erreurs lors de la fermeture
     setUpdateModalOpen(!updateModalOpen);
     setSelectedStudent(student);
-    setFormData(student);
+    setCurrentCIN(student.CIN);
+    setCurrentEmail(student.Email);
 
-    console.log("updateModalOpen:", updateModalOpen);
-    console.log("formdata:", formData);
+    setFormData(student);
   };
   const handleViewProfil = (student) => {
     console.log("View Profil");
     navigate("/profile", { state: { selectedStudent: student } });
   };
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [studentsPerPage] = useState(10); // Nombre d'étudiants par page
+
+  // Fonction pour changer de page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Index du premier et du dernier étudiant de la page actuelle
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  // Les étudiants à afficher sur la page actuelle
+  const currentStudents = students.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
 
   return (
     <Container className="mt--7" fluid>
@@ -226,10 +377,7 @@ const TableStudents = () => {
               <div className="row">
                 <div className="col-lg-3 col-md-2 col-sm-2 d-flex major">
                   <SelectOptions
-                    options={majors.map((major) => ({
-                      value: major,
-                      label: major,
-                    }))}
+                    options={majorOptions}
                     selectedValue={selectedMajor}
                     onOptionChange={(newMajor) =>
                       handleFilterChange(newMajor, selectedLevel)
@@ -237,10 +385,7 @@ const TableStudents = () => {
                     placeholderText="Major"
                   />
                   <SelectOptions
-                    options={levels.map((level) => ({
-                      value: level,
-                      label: level,
-                    }))}
+                    options={levelOptions}
                     selectedValue={selectedLevel}
                     onOptionChange={(newLevel) =>
                       handleFilterChange(selectedMajor, newLevel)
@@ -272,6 +417,9 @@ const TableStudents = () => {
                         id="firstname"
                         placeholder="Enter First Name"
                       />
+                      {errors.firstName && (
+                        <span className="text-danger">{errors.firstName}</span>
+                      )}
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="lastname">Last Name</FormLabel>
@@ -281,7 +429,11 @@ const TableStudents = () => {
                         id="lastname"
                         placeholder="Enter Last Name"
                       />
+                      {errors.lastName && (
+                        <span className="text-danger">{errors.lastName}</span>
+                      )}
                     </FormGroup>
+
                     <FormGroup>
                       <FormLabel for="cin">Num CIN</FormLabel>
                       <Input
@@ -290,7 +442,11 @@ const TableStudents = () => {
                         id="cin"
                         placeholder="Enter CIN"
                       />
+                      {errors.cin && (
+                        <span className="text-danger">{errors.cin}</span>
+                      )}
                     </FormGroup>
+
                     <FormGroup>
                       <FormLabel for="email">Email</FormLabel>
                       <Input
@@ -299,7 +455,11 @@ const TableStudents = () => {
                         id="email"
                         placeholder="Enter Email"
                       />
+                      {errors.email && (
+                        <span className="text-danger">{errors.email}</span>
+                      )}
                     </FormGroup>
+
                     <FormGroup>
                       <FormLabel for="birthday">Birthday</FormLabel>
                       <Input
@@ -308,6 +468,9 @@ const TableStudents = () => {
                         id="birthday"
                         placeholder="Enter Date of Birth"
                       />
+                      {errors.birthday && (
+                        <span className="text-danger">{errors.birthday}</span>
+                      )}
                     </FormGroup>
 
                     <FormGroup>
@@ -324,7 +487,11 @@ const TableStudents = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.major && (
+                        <span className="text-danger">{errors.major}</span>
+                      )}
                     </FormGroup>
+
                     <FormGroup>
                       <FormLabel for="level">Level</FormLabel>
                       <select
@@ -339,7 +506,11 @@ const TableStudents = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.year && (
+                        <span className="text-danger">{errors.year}</span>
+                      )}
                     </FormGroup>
+
                     <FormGroup>
                       <FormLabel for="group">Group</FormLabel>
                       <select
@@ -354,6 +525,9 @@ const TableStudents = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.group && (
+                        <span className="text-danger">{errors.group}</span>
+                      )}
                     </FormGroup>
                   </ModalBody>
                   <div className="modal-footer">
@@ -396,7 +570,7 @@ const TableStudents = () => {
                     </td>
                   </tr>
                 ) : (
-                  students.map((student) => (
+                  currentStudents.map((student) => (
                     <tr key={student._id}>
                       <td>{student.FirstName}</td>
                       <td>{student.LastName}</td>
@@ -481,6 +655,9 @@ const TableStudents = () => {
                         value={formData ? formData.FirstName : ""}
                         onChange={handleChange}
                       />
+                      {errors.firstName && (
+                        <span className="text-danger">{errors.firstName}</span>
+                      )}
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="lastname">Last Name</FormLabel>
@@ -492,6 +669,9 @@ const TableStudents = () => {
                         value={formData ? formData.LastName : ""}
                         onChange={handleChange}
                       />
+                      {errors.lastName && (
+                        <span className="text-danger">{errors.lastName}</span>
+                      )}
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="cin">Num CIN</FormLabel>
@@ -503,6 +683,9 @@ const TableStudents = () => {
                         value={formData ? formData.CIN : ""}
                         onChange={handleChange}
                       />
+                      {errors.cin && (
+                        <span className="text-danger">{errors.cin}</span>
+                      )}
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="email">Email</FormLabel>
@@ -514,6 +697,9 @@ const TableStudents = () => {
                         value={formData ? formData.Email : ""}
                         onChange={handleChange}
                       />
+                      {errors.email && (
+                        <span className="text-danger">{errors.email}</span>
+                      )}
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="birthday">Birthday</FormLabel>
@@ -525,6 +711,9 @@ const TableStudents = () => {
                         value={formData ? formData.Birthday.slice(0, 10) : ""}
                         onChange={handleChange}
                       />
+                      {errors.birthday && (
+                        <span className="text-danger">{errors.birthday}</span>
+                      )}
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="Major">Major</FormLabel>
@@ -542,6 +731,9 @@ const TableStudents = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.major && (
+                        <span className="text-danger">{errors.major}</span>
+                      )}
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="Level">Level</FormLabel>
@@ -559,6 +751,9 @@ const TableStudents = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.year && (
+                        <span className="text-danger">{errors.year}</span>
+                      )}
                     </FormGroup>
                     <FormGroup>
                       <FormLabel for="Group">Group</FormLabel>
@@ -576,6 +771,9 @@ const TableStudents = () => {
                           </option>
                         ))}
                       </select>
+                      {errors.group && (
+                        <span className="text-danger">{errors.group}</span>
+                      )}
                     </FormGroup>
                   </ModalBody>
                   <div className="modal-footer">
@@ -618,6 +816,16 @@ const TableStudents = () => {
                 </Modal>
               </tbody>
             </Table>
+            {currentStudents.length === 0 ? null : (
+              <div className="d-flex justify-content-center mt-3">
+                <Pagination
+                  studentsPerPage={studentsPerPage}
+                  totalStudents={students.length}
+                  paginate={paginate}
+                  currentPage={currentPage}
+                />
+              </div>
+            )}
           </Card>
         </div>
       </Row>

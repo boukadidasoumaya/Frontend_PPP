@@ -12,7 +12,32 @@ function Forgot() {
         if (usernameInput.value.trim() === '' ) {
             alert('Please fill out all required fields.');
             return;
-        }}
+        }
+    
+        try {
+            // Make a POST request to your backend API
+            const response = await fetch('/api/admin/resetPassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cin }) // Send the username in the request body
+            });
+    
+            // Check if request was successful
+            if (response.ok) {
+                alert('Password retrieval request sent successfully!');
+            } else {
+                // Handle errors from the server
+                const errorData = await response.json();
+                alert('Error: ' + errorData.message); // Assuming your server returns error messages in a JSON format
+            }
+        } catch (error) {
+            // Handle network errors or other exceptions
+            console.error('Error:', error);
+            alert('An error occurred while processing your request.');
+        }
+    };
 
     return (  <div className='wrapper'>
     <form action="">
