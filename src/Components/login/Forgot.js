@@ -1,6 +1,8 @@
-import {FaUser , FaLock} from "react-icons/fa";
-
+import React, { useState } from 'react';
+import { FaUser, FaLock } from "react-icons/fa";
 function Forgot() {
+    const [error, setError] = useState('');
+
     // Function to handle form submission
     const handleSubmit = async (event) => {
         event.preventDefault(); // Prevent default form submission behavior
@@ -11,7 +13,7 @@ function Forgot() {
     
         // Check if input is not empty
         if (cin === '') {
-            alert('Please fill out all required fields.');
+            setError('Please fill out all required fields.');
             return;
         }
     
@@ -27,38 +29,39 @@ function Forgot() {
     
             // Check if request was successful
             if (response.ok) {
-                alert('Password retrieval request sent successfully!');
+                setError('Password retrieval request sent successfully!');
             } else {
                 // Handle errors from the server
                 const errorData = await response.json();
-                alert('Error: ' + errorData.message); // Assuming your server returns error messages in a JSON format
+                setError('Error: ' + errorData.message); // Assuming your server returns error messages in a JSON format
             }
         } catch (error) {
             // Handle network errors or other exceptions
             console.error('Error:', error);
-            alert('An error occurred while processing your request.');
+            setError('An error occurred while processing your request.');
         }
     };
 
-    return (  <div className='wrapper'>
-    <form action="">
-    <h1>retrieving password for</h1>
-    <div className="input-box">
-        <input type="text" placeholder='cin' id ='cin' required ></input>
-        <FaUser className="icon" />
-    </div>
-   
-    <div className="remember-forgot">
-       
-         <a href="/login">login
-         <svg viewBox="0 0 70 36">
-<path d="M6.9739 30.8153H63.0244C65.5269 30.8152 75.5358 -3.68471 35.4998 2.81531C-16.1598 11.2025 0.894099 33.9766 26.9922 34.3153C104.062 35.3153 54.5169 -6.68469 23.489 9.31527" />
-</svg></a>
-    </div>
-    <button type="submit" onClick={(e) => handleSubmit(e)}>send code</button>
-</form>
-</div>
+    return (
+        <div className='wrapper'>
+            <form action="">
+                <h1>Retrieving Password</h1>
+                {error && <div className="error"><FaLock />   {error}</div>}
 
-);
+                <div className="input-box">
+                    <input type="text" placeholder='CIN' id='cin' required></input>
+                    <FaUser className="icon" />
+                </div>
+                <div className="remember-forgot">
+                    <a href="/login">Login
+                    <svg viewBox="0 0 70 36">
+                        <path d="M6.9739 30.8153H63.0244C65.5269 30.8152 75.5358 -3.68471 35.4998 2.81531C-16.1598 11.2025 0.894099 33.9766 26.9922 34.3153C104.062 35.3153 54.5169 -6.68469 23.489 9.31527" />
+                    </svg></a>
+                </div>
+                <button type="submit" onClick={(e) => handleSubmit(e)}>send code</button>
+            </form>
+        </div>
+    );
 }
+
 export default Forgot;
