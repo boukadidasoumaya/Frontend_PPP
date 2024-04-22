@@ -6,8 +6,7 @@ import NavBar from "../../Components/NavBar/NavBar";
 // core components
 
 import TableCourses from '../../Components/TableCourses/TableCourses';
-import RowTemplate from '../../Components/TableCourses/RowTemplate';
-const Students = (props) => {
+const Courses = (props) => {
   
   return (
    <> 
@@ -30,4 +29,4 @@ const Students = (props) => {
 
 };
 
-export default Students;
+export default Courses;
