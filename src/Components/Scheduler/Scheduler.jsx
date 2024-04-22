@@ -23,22 +23,29 @@ registerLicense('ORg4AjUWIQA/Gnt2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5
  * Schedule editor template sample
  */
 const EditorTemplate = () => {
-    const dataSource = {
-        doctorsEventData: [
-            {   id:1, Subject: 'Analyse',Professor:'Saloua',  StartTime: new Date(2021, 1, 15, 10, 0),  EndTime: new Date(2021, 1, 15, 12, 30),  CalendarId: 1,   },
+    const [dataSource,setDataSource] = useState(
+        [
+            {   id:1, Subject: 'Analyse',Professor:'Saloua',  StartTime: new Date(2024, 4, 21, 10, 0),  EndTime: new Date(2024, 4, 21, 12, 30),  CalendarId: 1,   },
             {   id:2 ,  Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 13, 0),  EndTime: new Date(2021, 1, 15, 15, 30), CalendarId: 2,   },
             {  id:3 ,   Subject: 'Java',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 16, 0),  EndTime: new Date(2021, 1, 15, 18, 30),  CalendarId: 3,  },
             {  id:4 , Subject: 'Analyse', Professor:'Saloua',  StartTime: new Date(2021, 1, 16, 10, 0),  EndTime: new Date(2021, 1, 16, 12, 30),  CalendarId: 1,   },
             {  id:5 ,  Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 16, 13, 0),  EndTime: new Date(2021, 1, 16, 15, 30), CalendarId: 2,   }
         ]
-    };
+    );
 
     const majors = ['MPI', 'RT', 'GL','IIA','IMI','MASTER'];
     const [selectedMajor, setSelectedMajor] = useState('');
     const projectData = [
-        { text: 'PROJECT 1', id: 1, color: '#cb6bb2' },
-        { text: 'PROJECT 2', id: 2, color: '#56ca85' },
-        { text: 'PROJECT 3', id: 3, color: '#df5286' }
+        { text: 'MPI', id: 1, color: '#cb6bb2' },
+        { text: 'CBA', id: 2, color: '#56ca85' },
+        { text: 'RT', id: 3, color: '#df5286' },
+        { text: 'GL', id: 4, color: '#df5286' },
+        { text: 'IIA', id: 5, color: '#df5286' },
+        { text: 'IMI', id: 6, color: '#df5286' },
+        { text: 'BIO', id: 7, color: '#df5286' },
+        { text: 'MASTER', id: 8, color: '#df5286' },
+
+
     ];
     
     const categoryData = [
@@ -47,7 +54,12 @@ const EditorTemplate = () => {
         { text: 'Robert', id: 3, groupId: 2, color: '#ea7a57' },
         { text: 'Smith', id: 4, groupId: 2, color: '#5978ee' },
         { text: 'Michael', id: 5, groupId: 3, color: '#df5286' },
-        { text: 'Root', id: 6, groupId: 3, color: '#00bdae' }
+        { text: 'Root', id: 6, groupId: 3, color: '#00bdae' },
+        { text: 'Requested', id: 7, groupId: 1, color: '#7fa900' },
+        { text: 'Confirmed', id: 8, groupId: 1, color: '#7fa900' },
+        { text: 'New', id: 9, groupId: 1, color: '#7fa900' },
+
+        
     ];
     let group = { resources: ['Projects', 'Categories'] };
     
@@ -59,7 +71,7 @@ const EditorTemplate = () => {
     let timeBtn = useRef(null);
     let selectedTarget;
     let intl = new Internationalization();
-    const data = extend([], dataSource.doctorsEventData, null, true);
+    const data = extend([], dataSource, null, true);
     const fields = {
         startTime: { name: 'StartTime', validation: { required: true } },
         endTime: { name: 'EndTime', validation: { required: true } },
@@ -182,22 +194,7 @@ const EditorTemplate = () => {
         <div className='text-child'>Timeline Views</div>
       </div>);
     }, []);
-    const groupTemplate = useCallback(() => {
-        return (<div className='template'>
-        <div className='icon-child'>
-          <CheckBoxComponent id='grouping' checked={true} change={(args) => { scheduleObj.current.group.resources = args.checked ? ['Calendars'] : []; }}/>
-        </div>
-        <div className='text-child'>Grouping</div>
-      </div>);
-    }, []);
-    const gridlineTemplate = useCallback(() => {
-        return (<div className='template'>
-        <div className='icon-child'>
-          <CheckBoxComponent id='timeSlots' checked={true} change={(args) => { scheduleObj.current.timeScale.enable = args.checked; }}/>
-        </div>
-        <div className='text-child'>Gridlines</div>
-      </div>);
-    }, []);
+    
    
     const onChange = (args) => {
         setIsTimelineView(args.checked);
@@ -269,22 +266,9 @@ const EditorTemplate = () => {
                 break;
         }
     };
-    ///
+
     
-    const onEventRendered = (args) => {
-        // eslint-disable-next-line default-case
-        switch (args.data.Professor) {
-            case 'Requested':
-                args.element.style.backgroundColor = '#F57F17';
-                break;
-            case 'Confirmed':
-                args.element.style.backgroundColor = '#7fa900';
-                break;
-            case 'New':
-                args.element.style.backgroundColor = '#8e24aa';
-                break;
-        }
-    };
+    
     const onActionBegin = (args) => {
         if (args.requestType === 'eventCreate' || args.requestType === 'eventChange') {
             let data = args.data instanceof Array ? args.data[0] : args.data;
@@ -339,26 +323,7 @@ const EditorTemplate = () => {
               <div></div>
       );
   };
-  const eventTemplate = (event) => {
-    // Accéder au nom du professeur à partir de l'objet d'événement (adaptez la propriété en fonction de votre structure de données)
-    const professorName = event.professorName;
-  
-    // Formater la date de début et de fin
-    const startDate = format(new Date(event.startTime), 'dd MMM yyyy');
-    const endDate = format(new Date(event.endTime), 'dd MMM yyyy');
-  
-    // Retourner le contenu HTML avec les informations de l'événement
-    return (
-      <div className="custom-event">
-        <div className="event-title">{event.subject}</div>
-        <div className="event-professor">{professorName}</div>
-        <div className="event-time">
-          {startDate} - {endDate}
-        </div>
-      </div>
-    );
-  };
-  
+
   
     return (
     <>
@@ -394,11 +359,8 @@ const EditorTemplate = () => {
                   <ItemDirective prefixIcon='e-icons e-week' tooltipText='Week' text='Week' tabIndex={0}/>
                   <ItemDirective prefixIcon='e-icons e-week' tooltipText='WorkWeek' text='WorkWeek' tabIndex={0}/>
                   <ItemDirective prefixIcon='e-icons e-month' tooltipText='Month' text='Month' tabIndex={0}/>
-                  
                   <ItemDirective type='Separator'/>
-                  <ItemDirective tooltipText='Grouping' text='Grouping' template={groupTemplate}/>
-                  <ItemDirective tooltipText='Timme Slots' text='Timme Slots' template={gridlineTemplate}/>
-                </ItemsDirective>
+                  </ItemsDirective>
               </ToolbarComponent>
               <div className='overview-content'>
                 <div className='left-panel'>
@@ -413,26 +375,13 @@ const EditorTemplate = () => {
                         editorTemplate={editorTemplate}
                         editorHeaderTemplate={editorHeaderTemplate}
                         actionBegin={onActionBegin}
-                        eventRendered={onEventRendered}
-                        eventTemplate={eventTemplate}
-                        group={group}
+                       
                         enableAdaptiveUI={true}
-                      >
-                        <ResourcesDirective>
-                          <ResourceDirective
-                            field="CalendarId"
-                            title="Calendars"
-                            name="Calendars"
-                            dataSource={calendarCollections}
-                            query={new Query().where("CalendarId", "equal", 1)}
-                            textField="CalendarText"
-                            idField="CalendarId"
-                            colorField="CalendarColor"
-                          />
-                            <ResourceDirective field='ProjectId' title='Choose Project' name='Projects' allowMultiple={false} dataSource={projectData} textField='text' idField='id' colorField='color' />
-                            <ResourceDirective field='TaskId' title='Category' name='Categories' allowMultiple={true} dataSource={categoryData} textField='text' idField='id' groupIDField='groupId' colorField='color' />
+                       
                         
-                        </ResourcesDirective>
+                        >
+                       
+                        
                         <ViewsDirective>
                           <ViewDirective option="Day" />
                           <ViewDirective option="Week" />
@@ -445,8 +394,6 @@ const EditorTemplate = () => {
                             Week,
                             WorkWeek,
                             Month,
-                            Resize,
-                            DragAndDrop,
                             Print,
                             ExcelExport,
                             ICalendarImport,
@@ -454,7 +401,6 @@ const EditorTemplate = () => {
                           ]}
                         />
                       </ScheduleComponent>
-                    <ContextMenuComponent id='overviewContextMenu' cssClass='schedule-context-menu' ref={contextMenuObj} target='.e-schedule' items={contextMenuItems} beforeOpen={contextMenuOpen} select={contextMenuSelect}/>
                   </div>
                 </div>
                 

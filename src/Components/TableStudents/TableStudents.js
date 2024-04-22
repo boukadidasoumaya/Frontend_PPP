@@ -29,8 +29,12 @@ import {
   NavLink,
 } from "reactstrap";
 import { FormLabel } from 'react-bootstrap';
+import { Alert } from 'reactstrap';
+import {toast, ToastContainer} from "react-toastify";
+
 import "./TableStudents.css"
 import SelectOptions from '../SelectOptions/SelectOptions';
+import AlertMessage from '../Alert/Alert';
 import axios from 'axios';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -97,7 +101,8 @@ const groups = ['1', '2', '3', '4'];
 const [selectedMajor, setSelectedMajor] = useState('');
 const [selectedLevel, setSelectedLevel] = useState('');
 const [selectedStudent, setSelectedStudent] = useState(null);
-const [modalOpen, setModalOpen] = useState(false); // State for add student modal
+const [modalOpen, setModalOpen] = useState(false);
+const [uploadModalOpen, setUploadModalOpen] = useState(false);
 const [updateModalOpen, setUpdateModalOpen] = useState(false);
 const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
@@ -105,7 +110,42 @@ const handleFilterChange = (major, year) => {
   setSelectedMajor(major);
   setSelectedLevel(year);
 };
+// Fonction pour gérer le changement de Major
+const handleMajorChange = (newMajor) => {
+  setSelectedMajor(newMajor);
+  // Si Master ou Doctorat, annuler la sélection de l'année
+  if (newMajor === 'MASTER' || newMajor === 'DOCTORAT') {
+    setSelectedLevel('');
+  }
+};
 
+// Fonction pour gérer le changement d'année
+const handleYearChange = (newYear) => {
+  setSelectedLevel(newYear);
+};
+
+// Fonction utilitaire pour déterminer les options disponibles pour l'année en fonction de Major
+const yearOptions = (major) => {
+  if (major === 'CBA' || major === 'MPI') {
+    // Si Major est CBA ou MPI, retourner seulement l'option 1 pour l'année
+    return [{ value: '1', label: '1' }];
+  } else if (major === 'MASTER' || major === 'DOCTORAT') {
+    // Si Major est MASTER ou DOCTORAT, ne pas retourner d'options pour l'année
+    return [];
+  } else {
+    // Pour tous les autres Majors, retourner les options de 2 à 5 pour l'année
+    return [
+      {value: 'All Levels', label: 'All Levels'},
+      { value: '2', label: '2' },
+      { value: '3', label: '3' },
+      { value: '4', label: '4' },
+      { value: '5', label: '5' },
+    ];
+  }
+};
+const disabledYear = (major) => {
+  return major === 'MASTER' || major === 'DOCTORAT';
+};
 useEffect(() => {
   let endpoint = '';
 
@@ -133,13 +173,11 @@ useEffect(() => {
       setStudents(response.data.data);
     })
     .catch(error => {
-      console.error('Error fetching filtered students:', error);
       setStudents([]);
     });
 }, [selectedMajor, selectedLevel,students]);
 
-const [currentCIN,setCurrentCIN] = useState("");
-const [currentEmail,setCurrentEmail] = useState("");
+
 
 const initialErrors = {
   firstName: "",
@@ -260,7 +298,6 @@ const newErrors = {
             axios.put(`http://localhost:5000/students/${newStudent?._id}`, newStudent)
           .then(response => {
           console.log('Student updated:', response.data);
-          console.log("in if");
           setStudents([...students, newStudent]); // Add new student to original data
           setUpdateModalOpen(!updateModalOpen);
           })
@@ -290,7 +327,7 @@ const handleDelete = (student) => {
   toggleDeleteModal();
   axios.delete(`http://localhost:5000/students/${student?._id}`)
   .then(response => {
-   console.log('Student deleted:', response.data);
+  console.log('Student deleted:', response.data);
   })
   .catch(error => {
     console.error('Error in deleting student:', error);
@@ -312,8 +349,7 @@ const toggleUpdateModal = (student) => {
     clearErrors(); // Effacer les erreurs lors de la fermeture
     setUpdateModalOpen(!updateModalOpen);
     setSelectedStudent(student);
-    setCurrentCIN(student.CIN);
-    setCurrentEmail(student.Email);
+
 
     setFormData(student);
 
@@ -335,40 +371,145 @@ const [currentPage, setCurrentPage] = useState(1);
   // Les étudiants à afficher sur la page actuelle
   const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent);
 
+  //upload 
+  const [Alertvisible, setAlertVisible] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [UploadErrors, setUploadErrors] = useState([]);
+  const config = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  };
+  const handleFileChange = (event) => {
+    if (event.target.files.length === 0) {
+      setSelectedFile(null);
+      return;
+    }
+  
+    const file = event.target.files[0];
+    console.log("file", file);
+    setSelectedFile(file);
+  
+    if (file && file.type === 'text/csv') {
+      const formdata = new FormData();
+      formdata.append('csv', file);
+      axios.post("http://localhost:5000/students/upload", formdata, config)
+        .then(response => {
+          console.log('File uploaded');
+         
+        })
+        .catch(error => {
+          console.error('Error in uploading file:', error);
+          setUploadModalOpen(!uploadModalOpen);
+          setUploadErrors(error.response.data.error);
+          setSelectedFile(null);
+        });
+    } else {
+      setSelectedFile(null);
+      setAlertVisible(!Alertvisible);
+    }
+  };
+  
+  const handleButtonClick = () => {
+    setAlertVisible(false);
+    document.getElementById('fileUpload').value = '';
+    document.getElementById('fileUpload').click();
+  };
+  
+
+  const onDismiss = () => setAlertVisible(!Alertvisible);
+  const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
+
     return (
         <Container className="mt--7" fluid>
         {/* Table */}
+        <Row className='alertNotif'>
+        {Alertvisible && (
+          <div className='col alertMessage d-flex justify-content-end'>
+              <Alert isOpen={Alertvisible} toggle={onDismiss} className="alert-slide">
+                Please Enter a CSV File 
+              </Alert>
+          </div>
+        ) }
+
+        </Row>
+        <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
+                <ModalHeader color="danger" toggle={toggleUploadModal}>Error in Uploading File </ModalHeader>
+                <ModalBody>
+                  {UploadErrors ? (
+                    <div>
+                      <p>Error in  inserting students into the database.</p>
+                      <p>Check your Emails and CINs. They must be unique and valid.</p>
+                      <p>  Also check Major, Year, and Group.</p>
+                      <p>There must be all these informations:</p>
+                      <p>First Name, Last Name, CIN, Email, Birthday, Major, Year, Group</p>
+                      <p>Major : MPI CBA RT GL IIA IMI CH BIO MASTER DOCTORAT</p>
+                      <p>Year : 1 2 3 4 5</p>
+                      <p>Group : 1 2 3 4</p>
+                      <p>Check the file and try again.</p>
+                    </div>
+                  ) : null}
+                </ModalBody>
+    
+        </Modal>
+
         <Row>
+        
           <div className="col">
             <Card className="shadow">
               <CardHeader className="border-0 ">
-                <div className='row'>
-                <h1 className="col-lg-12 col-md-12 col-sm-12 d-flex  justify-content-center listEtudiant">Liste des étudiants</h1>
-                </div>
+                
+               <div className="col-lg-12 col-md-12 col-sm-12 d-flex  justify-content-center">
+                 <h1 >Liste des étudiants</h1>
+               </div>
+            
+               
+              
+                
+              
                 {/* Filter Dropdowns on Left */}
                 <div className='row'>
                   <div className='col-lg-3 col-md-2 col-sm-2 d-flex major' >
                   
                   <SelectOptions
-                    options={majorOptions}
-                    selectedValue={selectedMajor}
-                    onOptionChange={(newMajor) => handleFilterChange(newMajor, selectedLevel)}
-                    placeholderText="Major"
-                  />
-                  <SelectOptions
-                    options={levelOptions}
-                    selectedValue={selectedLevel}
-                    onOptionChange={(newLevel) => handleFilterChange(selectedMajor, newLevel)}
-                    placeholderText="Level"
-                  />
+  options={majorOptions}
+  selectedValue={selectedMajor}
+  onOptionChange={(newMajor) => handleMajorChange(newMajor)}
+  placeholderText="Major"
+/>
+<SelectOptions
+  options={yearOptions(selectedMajor)}
+  selectedValue={selectedLevel}
+  onOptionChange={(newYear) => handleYearChange(newYear)}
+  placeholderText="Year"
+  disabled={disabledYear(selectedMajor)}
+/>
+
                   </div>
                  {/* Centered "Liste des étudiants" */}
                 
                  {/* Add Student Button in Center */}
                 <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddEtudiant justify-content-end   ">
-                  <Button className= "addbtn" onClick={toggleModal}>
-                    Add  Student
-                  </Button>
+                <div className=''>
+                <input
+                    type="file"
+                    id="fileUpload"
+                    style={{ display: 'none' }}
+                    name='csv'
+                    className=''
+                    onChange={handleFileChange}
+                  />
+                 
+                    <Button className="uploadbtn" onClick={handleButtonClick}>
+                      Upload file
+                    </Button>
+                   
+                  </div>
+                  <div>
+                    <Button className= "addbtn" onClick={toggleModal}>
+                      Add  Student
+                    </Button>
+                  </div>
                 </div>
                   {/* Add Student Modal */}
                 <Modal isOpen={modalOpen} toggle={toggleModal} innerRef={modalRef}>
@@ -454,6 +595,7 @@ const [currentPage, setCurrentPage] = useState(1);
                   </div>
 
                 </Modal>
+
               </div>
               </CardHeader>
               {/* Table Content */}
@@ -632,11 +774,15 @@ const [currentPage, setCurrentPage] = useState(1);
     />
   </div>
 )}
+ 
 
             </Card>
           </div>
+        
         </Row>
-       
+        
+     
+            
       </Container>
     );
 }
