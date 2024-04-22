@@ -108,8 +108,6 @@ const TableCourses = () => {
     ...levels.map((level) => ({ value: level, label: level })),
   ];
 
-  const groups = ["1", "2", "3", "4"];
-
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
@@ -213,8 +211,8 @@ const TableCourses = () => {
 
     const coeffError = !coeff
       ? "Coeff is required"
-      : coeff.length !== 2
-      ? "Coeff must be 2 digit long"
+      : coeff.length > 1
+      ? "Coeff must be 1 digit long"
       : "";
     // Vérification si le Coeff contient uniquement des chiffres
     const coeffFormatError = !/^\d+$/.test(coeff)
@@ -243,9 +241,6 @@ const TableCourses = () => {
     console.log("after new errrors SubjectName", SubjectName);
     setErrors(newErrors);
     console.log(errors);
-
-    // Vérification si des erreurs existent
-    const hasErrors = Object.values(newErrors).some((error) => error !== "");
 
     if (action === "add") {
       const newSubject = {
@@ -350,25 +345,29 @@ const TableCourses = () => {
     setSelectedSubject(subject);
     setFormData(subject);
   };
-  // const handleViewProfil = (subject) => {
-  //   console.log("View Profil");
-  //   navigate("/profile", { state: { selectedSubject: subject } });
-  // };
-  // pagination
+
   const [currentPage, setCurrentPage] = useState(1);
   const [subjectsPerPage] = useState(10); // Nombre d'matières par page
 
   // Fonction pour changer de page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Index du premier et du dernier matière de la page actuelle
   const indexOfLastSubject = currentPage * subjectsPerPage;
   const indexOfFirstSubject = indexOfLastSubject - subjectsPerPage;
-  // Les matières à afficher sur la page actuelle
   const currentSubjects = subjects.slice(
     indexOfFirstSubject,
     indexOfLastSubject
   );
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Index du premier et du dernier matière de la page actuelle
+  // const indexOfLastSubject = currentPage * subjectsPerPage;
+  // const indexOfFirstSubject = indexOfLastSubject - subjectsPerPage;
+  // // Les matières à afficher sur la page actuelle
+  // const currentSubjects = subjects.slice(
+  //   indexOfFirstSubject,
+  //   indexOfLastSubject
+  // );
 
   return (
     <Container className="mt--7" fluid>
@@ -501,8 +500,7 @@ const TableCourses = () => {
                   <th scope="col">Subject Name</th>
                   <th scope="col">Module</th>
                   <th scope="col">Coeff</th>
-                  <th scope="col">Major</th>
-                  <th scope="col">Level</th>
+                  <th scope="col">Class</th>
                   <th scope="col">Teacher</th>
                   <th scope="col">Actions </th>
                 </tr>
@@ -521,8 +519,7 @@ const TableCourses = () => {
                       <td>{subject.SubjectName}</td>
                       <td>{subject.module}</td>
                       <td>{subject.coeff}</td>
-                      <td>{subject.major}</td>
-                      <td>{subject.year}</td>
+                      <td>{subject.classes_years}</td>
                       <td>{subject.teacher_name}</td>
                       <td className="">
                         <UncontrolledDropdown>
@@ -674,7 +671,6 @@ const TableCourses = () => {
                 </Modal>
               </tbody>
             </Table>
-            {currentSubjects.length === 0 ? null : (
               <div className="d-flex justify-content-center mt-3">
                 <Pagination
                   subjectsPerPage={subjectsPerPage}
@@ -683,7 +679,6 @@ const TableCourses = () => {
                   currentPage={currentPage}
                 />
               </div>
-            )}
           </Card>
         </div>
       </Row>

@@ -336,8 +336,6 @@ const TableStudents = () => {
     clearErrors(); // Effacer les erreurs lors de la fermeture
     setUpdateModalOpen(!updateModalOpen);
     setSelectedStudent(student);
-    setCurrentCIN(student.CIN);
-    setCurrentEmail(student.Email);
 
     setFormData(student);
   };
