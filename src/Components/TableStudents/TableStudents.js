@@ -27,11 +27,9 @@ import {
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
 import { Alert } from "reactstrap";
-import { toast, ToastContainer } from "react-toastify";
 
 import "./TableStudents.css";
 import SelectOptions from "../SelectOptions/SelectOptions";
-import AlertMessage from "../Alert/Alert";
 import axios from "axios";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -69,8 +67,6 @@ const TableStudents = () => {
       .get("http://localhost:5000/classes/majors")
       .then((response) => {
         setMajors(response.data.majors);
-        console.log("Majors fetched:", response.data.majors);
-        console.log("Majors:", majors);
       })
       .catch((error) => {
         console.error("Error fetching majors:", error);

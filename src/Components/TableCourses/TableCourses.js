@@ -1,42 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { render } from "react-dom";
-import ReactTable from "react-table";
 import {
-  Badge,
   Card,
   CardHeader,
-  CardFooter,
   DropdownMenu,
   DropdownItem,
   UncontrolledDropdown,
   DropdownToggle,
-  Media,
-  Progress,
   Table,
   Container,
   Row,
-  UncontrolledTooltip,
   Button,
   Modal,
   ModalHeader,
   ModalBody,
   FormGroup,
   Input,
-  FormText,
-  NavLink,
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
 import "./TableCourses.css";
 import SelectOptions from "../SelectOptions/SelectOptions";
 import axios from "axios";
 import { useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { set } from "date-fns";
 import Pagination from "../Pagination/Pagination";
 
 const TableCourses = () => {
   const modalRef = useRef(null);
-  const navigate = useNavigate();
   const [subjects, setSubjects] = useState([]);
   const [formData, setFormData] = useState({
     _id: "",
@@ -52,9 +40,26 @@ const TableCourses = () => {
     console.log("Updated formData:", formData);
   };
 
+  const [Modules, setModules] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/api/subjects/modules")
+      .then((response) => {
+        setModules(response.data.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching Modules:", error);
+      });
+  }, []);
+  const allOptionModules = { value: "All Modules", label: "All Modules" };
+  const ModuleOptions = [
+    allOptionModules,
+    ...Modules.map((Module) => ({ value: Module, label: Module })),
+  ];
 
   useEffect(() => {
     axios
@@ -63,7 +68,7 @@ const TableCourses = () => {
         setTeachers(response.data.data);
       })
       .catch((error) => {
-        console.error("Error fetching majors:", error);
+        console.error("Error fetching teachers:", error);
       });
   }, []);
   const allOptionTeachers = { value: "All Teachers", label: "All Teachers" };
@@ -79,8 +84,6 @@ const TableCourses = () => {
       .get("http://localhost:5000/classes/majors")
       .then((response) => {
         setMajors(response.data.majors);
-        console.log("Majors fetched:", response.data.majors);
-        console.log("Majors:", majors);
       })
       .catch((error) => {
         console.error("Error fetching majors:", error);
@@ -99,7 +102,7 @@ const TableCourses = () => {
         setLevels(response.data.levels);
       })
       .catch((error) => {
-        console.error("Error fetching majors:", error);
+        console.error("Error fetching levels:", error);
       });
   }, []);
   const allOptionlevel = { value: "All Levels", label: "All Levels" };
@@ -132,7 +135,18 @@ const TableCourses = () => {
         selectedTeacher === "All Teachers") ||
       (!selectedTeacher && !selectedMajor && selectedLevel === "All Levels") ||
       (!selectedTeacher && !selectedLevel && selectedMajor === "All Majors") ||
-      (!selectedMajor && !selectedLevel && selectedTeacher === "All Teachers")
+      (!selectedMajor &&
+        !selectedLevel &&
+        selectedTeacher === "All Teachers") ||
+      (selectedMajor === "All Majors" &&
+        selectedLevel === "All Levels" &&
+        !selectedTeacher) ||
+      (selectedMajor === "All Majors" &&
+        selectedTeacher === "All Teachers" &&
+        !selectedLevel) ||
+      (selectedLevel === "All Levels" &&
+        selectedTeacher === "All Teachers" &&
+        !selectedMajor)
     ) {
       endpoint = `http://localhost:5000/api/subjects`;
     } else if (
@@ -140,7 +154,8 @@ const TableCourses = () => {
       (selectedMajor && selectedLevel === "All Levels" && !selectedTeacher) ||
       (selectedMajor && selectedTeacher === "All Teachers" && !selectedLevel)
     ) {
-      endpoint = `http://localhost:5000/api/subjects/majors/${selectedMajor}`;
+      endpoint = `http://localhost:5000/api/subjects/majors/${selectedMajor}
+`;
     } else if (
       (selectedLevel && !selectedMajor && !selectedTeacher) ||
       (selectedLevel && selectedMajor === "All Majors" && !selectedTeacher) ||
@@ -206,16 +221,16 @@ const TableCourses = () => {
   const handleSubject = (action) => {
     // Récupération des valeurs des champs
     const SubjectName = document.getElementById("subjectname").value;
-    const Module = document.getElementById("module").value;
-    const coeff = parseInt(document.getElementById("coeff").value);
+    const Module = document.getElementById("Module").value;
+    const Coeff = parseInt(document.getElementById("Coeff").value);
 
-    const coeffError = !coeff
+    const CoeffError = !Coeff
       ? "Coeff is required"
-      : coeff.length > 1
+      : Coeff.length > 1
       ? "Coeff must be 1 digit long"
       : "";
     // Vérification si le Coeff contient uniquement des chiffres
-    const coeffFormatError = !/^\d+$/.test(coeff)
+    const CoeffFormatError = !/^\d+$/.test(Coeff)
       ? "Coeff must contain only digits"
       : "";
 
@@ -233,10 +248,10 @@ const TableCourses = () => {
         ? "SubjectName is required"
         : SubjectNameFormatError,
       Module: !Module ? "Module is required" : ModuleFormatError,
-      coeff: coeffError || coeffFormatError,
+      Coeff: CoeffError || CoeffFormatError,
     };
 
-    // Mise à jour de l'état des erreurs
+    // Mise =C3=A0 jour de l'état des erreurs
     console.log(newErrors);
     console.log("after new errrors SubjectName", SubjectName);
     setErrors(newErrors);
@@ -246,17 +261,14 @@ const TableCourses = () => {
       const newSubject = {
         SubjectName: SubjectName,
         Module: Module,
-        Coeff: coeff,
+        Coeff: Coeff,
       };
 
       // Send new subject data to server
       axios
         .post("http://localhost:5000/api/subjects", newSubject)
         .then((response) => {
-          console.log("Subject added:", response.data);
-          console.log("newSubject:", newSubject);
-          setSubjects([...subjects, newSubject]); // Add new subject to original data
-
+          setSubjects([...subjects, response.data.data]); // Add new subject to original data
           setModalOpen(false);
         })
         .catch((error) => {
@@ -267,11 +279,12 @@ const TableCourses = () => {
           if (
             backendErrors &&
             backendErrors.SubjectName &&
-            backendErrors.coeff
+            backendErrors.Coeff &&
+            backendErrors.Module
           ) {
             setErrors((prevErrors) => ({
               ...prevErrors,
-              email: "Subject already exists",
+              SubjectName: "Subject already exists",
             }));
           }
           console.log("errors", errors); // Close modal after adding
@@ -282,7 +295,7 @@ const TableCourses = () => {
         _id: id,
         SubjectName: SubjectName,
         Module: Module,
-        Coeff: coeff,
+        Coeff: Coeff,
       };
 
       axios
@@ -304,7 +317,7 @@ const TableCourses = () => {
           if (
             backendErrors &&
             backendErrors.SubjectName &&
-            backendErrors.coeff
+            backendErrors.Coeff
           ) {
             setErrors((prevErrors) => ({
               ...prevErrors,
@@ -322,6 +335,8 @@ const TableCourses = () => {
       .delete(`http://localhost:5000/api/subjects/${subject?._id}`)
       .then((response) => {
         console.log("Subject deleted:", response.data);
+        setSubjects([...response.data]);
+        console.log("subjects:", subjects);
       })
       .catch((error) => {
         console.error("Error in deleting subject:", error);
@@ -335,7 +350,6 @@ const TableCourses = () => {
 
   const toggleModal = () => {
     clearErrors(); // Effacer les erreurs lors de la fermeture
-
     setModalOpen(!modalOpen);
   }; // Toggle add subject modal
 
@@ -347,7 +361,7 @@ const TableCourses = () => {
   };
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [subjectsPerPage] = useState(10); // Nombre d'matières par page
+  const [subjectsPerPage] = useState(10); // Nombre de matières par page;
 
   // Fonction pour changer de page
   // const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -360,10 +374,10 @@ const TableCourses = () => {
   );
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Index du premier et du dernier matière de la page actuelle
+  // Index du premier et du dernier mati=C3=A8re de la page actuelle
   // const indexOfLastSubject = currentPage * subjectsPerPage;
   // const indexOfFirstSubject = indexOfLastSubject - subjectsPerPage;
-  // // Les matières à afficher sur la page actuelle
+  // // Les mati=C3=A8res =C3=A0 afficher sur la page actuelle
   // const currentSubjects = subjects.slice(
   //   indexOfFirstSubject,
   //   indexOfLastSubject
@@ -377,7 +391,7 @@ const TableCourses = () => {
           <Card className="shadow">
             <CardHeader className="border-0 ">
               <div className="row">
-                <h1 className="col-lg-12 col-md-12 col-sm-12 d-flex  justify-content-center listEtudiant">
+                <h1 className="col-lg-12 col-md-12 col-sm-12 d-flex justify-content-center listSubjects">
                   Liste des matières
                 </h1>
               </div>
@@ -421,10 +435,10 @@ const TableCourses = () => {
                     placeholderText="Level"
                   />
                 </div>
-                {/* Centered "Liste des matières" */}
+                {/* Centered "Liste des mati=C3=A8res" */}
 
                 {/* Add Subject Button in Center */}
-                <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddEtudiant justify-content-end   ">
+                <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddSubject justify-content-end   ">
                   <Button className="addbtn" onClick={toggleModal}>
                     Add Subject
                   </Button>
@@ -452,28 +466,34 @@ const TableCourses = () => {
                       )}
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel for="module">Module</FormLabel>
-                      <Input
-                        type="text"
-                        name="module"
-                        id="module"
-                        placeholder="Enter Module"
-                      />
+                      <FormLabel for="Module">Module</FormLabel>
+                      <select
+                        className="form-control shadow-none border-1
+bg-transparent text-dark"
+                        name="Module"
+                        id="Module"
+                      >
+                        <option value="">Select Module</option>
+                        {Modules.map((Module) => (
+                          <option key={Module} value={Module}>
+                            {Module}
+                          </option>
+                        ))}
+                      </select>
                       {errors.Module && (
                         <span className="text-danger">{errors.Module}</span>
                       )}
                     </FormGroup>
-
                     <FormGroup>
-                      <FormLabel for="coeff">Coeff</FormLabel>
+                      <FormLabel for="Coeff">Coeff</FormLabel>
                       <Input
                         type="text"
-                        name="coeff"
-                        id="coeff"
+                        name="Coeff"
+                        id="Coeff"
                         placeholder="Enter Coeff"
                       />
-                      {errors.coeff && (
-                        <span className="text-danger">{errors.coeff}</span>
+                      {errors.Coeff && (
+                        <span className="text-danger">{errors.Coeff}</span>
                       )}
                     </FormGroup>
                   </ModalBody>
@@ -506,7 +526,6 @@ const TableCourses = () => {
                 </tr>
               </thead>
               <tbody>
-                {/* Afficher les matières ou un message s'il n'y en a aucun */}
                 {subjects.length === 0 ? (
                   <tr>
                     <td colSpan={8} style={{ textAlign: "center" }}>
@@ -517,10 +536,18 @@ const TableCourses = () => {
                   currentSubjects.map((subject) => (
                     <tr key={subject._id}>
                       <td>{subject.SubjectName}</td>
-                      <td>{subject.module}</td>
-                      <td>{subject.coeff}</td>
-                      <td>{subject.classes_years}</td>
-                      <td>{subject.teacher_name}</td>
+                      <td>{subject.Module}</td>
+                      <td>{subject.Coeff}</td>
+                      <td>
+                        {subject.classes_years?.length > 0
+                          ? subject.classes_years.join(" / ")
+                          : "N/A"}
+                      </td>
+                      <td>
+                        {subject.teacher_name?.length > 0
+                          ? subject.teacher_name.join(" / ")
+                          : "N/A"}
+                      </td>
                       <td className="">
                         <UncontrolledDropdown>
                           <DropdownToggle
@@ -552,7 +579,8 @@ const TableCourses = () => {
                               <i className="fas fa-pencil-alt" />
                               Update
                             </DropdownItem>
-                            {/* Modal de mise à jour de l'matière */}
+                            {/* Modal de mise =C3=A0 jour de l'mati=C3=A8re=
+                             */}
 
                             <DropdownItem
                               href=""
@@ -602,32 +630,53 @@ const TableCourses = () => {
                         </span>
                       )}
                     </FormGroup>
-                    <FormGroup>
-                      <FormLabel for="module">Module</FormLabel>
+                    {/* <FormGroup>
+                      <FormLabel for="Module">Module</FormLabel>
                       <Input
                         type="text"
-                        name="module"
-                        id="module"
+                        name="Module"
+                        id="Module"
                         placeholder="Enter Module"
-                        value={formData ? formData.module : ""}
+                        value={formData ? formData.Module : ""}
                         onChange={handleChange}
                       />
+                      {errors.Module && (
+                        <span className="text-danger">{errors.Module}</sp=
+an>
+                      )}
+                    </FormGroup> */}
+                    <FormGroup>
+                      <FormLabel for="Module">Module</FormLabel>
+                      <select
+                        className="form-control shadow-none border-1 bg-transparent text-dark"
+                        name="Module"
+                        id="Module"
+                        value={formData ? formData.Module : ""}
+                        onChange={handleChange}
+                      >
+                        <option value="">Select Module</option>
+                        {Modules.map((Module) => (
+                          <option key={Module} value={Module}>
+                            {Module}
+                          </option>
+                        ))}
+                      </select>
                       {errors.Module && (
                         <span className="text-danger">{errors.Module}</span>
                       )}
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel for="coeff">Coeff</FormLabel>
+                      <FormLabel for="Coeff">Coeff</FormLabel>
                       <Input
                         type="text"
                         name="Coeff"
-                        id="coeff"
+                        id="Coeff"
                         placeholder="Enter Coeff"
                         value={formData ? formData.Coeff : ""}
                         onChange={handleChange}
                       />
-                      {errors.coeff && (
-                        <span className="text-danger">{errors.coeff}</span>
+                      {errors.Coeff && (
+                        <span className="text-danger">{errors.Coeff}</span>
                       )}
                     </FormGroup>
                   </ModalBody>
@@ -671,14 +720,14 @@ const TableCourses = () => {
                 </Modal>
               </tbody>
             </Table>
-              <div className="d-flex justify-content-center mt-3">
-                <Pagination
-                  subjectsPerPage={subjectsPerPage}
-                  totalSubjects={subjects.length}
-                  paginate={paginate}
-                  currentPage={currentPage}
-                />
-              </div>
+            <div className="d-flex justify-content-center mt-3">
+              <Pagination
+                subjectsPerPage={subjectsPerPage}
+                totalSubjects={subjects.length}
+                paginate={paginate}
+                currentPage={currentPage}
+              />
+            </div>
           </Card>
         </div>
       </Row>
