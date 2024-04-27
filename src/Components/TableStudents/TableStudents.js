@@ -1,29 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { render } from "react-dom";
-import ReactTable from "react-table";
 import {
-  Badge,
   Card,
   CardHeader,
-  CardFooter,
   DropdownMenu,
   DropdownItem,
   UncontrolledDropdown,
   DropdownToggle,
-  Media,
-  Progress,
   Table,
   Container,
   Row,
-  UncontrolledTooltip,
   Button,
   Modal,
   ModalHeader,
   ModalBody,
   FormGroup,
   Input,
-  FormText,
-  NavLink,
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
 import { Alert } from "reactstrap";
@@ -33,7 +24,6 @@ import SelectOptions from "../SelectOptions/SelectOptions";
 import axios from "axios";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { set } from "date-fns";
 import Pagination from "../Pagination/Pagination";
 
 const TableStudents = () => {
@@ -375,7 +365,7 @@ const TableStudents = () => {
   };
   const handleViewProfil = (student) => {
     console.log("View Profil");
-    navigate("/profile", { state: { selectedStudent: student } });
+    navigate("/profile", { state: { selectedStudent: student ,type:"student"} });
   };
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -836,7 +826,7 @@ const TableStudents = () => {
                         name="Birthday"
                         id="birthday"
                         placeholder="Enter Date of Birth"
-                        value={formData ? formData.Birthday.slice(0, 10) : ""}
+                        value={formData && formData.Birthday ? formData.Birthday.slice(0, 10) : ""}
                         onChange={handleChange}
                       />
                       {errors.birthday && (

@@ -41,7 +41,6 @@ const TableCourses = () => {
   };
 
   const [Modules, setModules] = useState([]);
-  const [teachers, setTeachers] = useState([]);
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
 
@@ -59,24 +58,6 @@ const TableCourses = () => {
   const ModuleOptions = [
     allOptionModules,
     ...Modules.map((Module) => ({ value: Module, label: Module })),
-  ];
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:5000/teachers")
-      .then((response) => {
-        setTeachers(response.data.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching teachers:", error);
-      });
-  }, []);
-  const allOptionTeachers = { value: "All Teachers", label: "All Teachers" };
-  const TeacherOptions = [
-    allOptionTeachers,
-    ...(Array.isArray(teachers)
-      ? teachers.map((teacher) => ({ value: teacher, label: teacher }))
-      : []),
   ];
 
   useEffect(() => {
@@ -111,7 +92,7 @@ const TableCourses = () => {
     ...levels.map((level) => ({ value: level, label: level })),
   ];
 
-  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [selectedModule, setSelectedModule] = useState("");
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -119,8 +100,8 @@ const TableCourses = () => {
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const handleFilterChange = (teacher, major, year) => {
-    setSelectedTeacher(teacher);
+  const handleFilterChange = (module, major, year) => {
+    setSelectedModule(module);
     setSelectedMajor(major);
     setSelectedLevel(year);
   };
@@ -129,72 +110,76 @@ const TableCourses = () => {
     let endpoint = "";
 
     if (
-      (!selectedMajor && !selectedLevel & !selectedTeacher) ||
+      (!selectedMajor && !selectedLevel & !selectedModule) ||
       (selectedMajor === "All Majors" &&
         selectedLevel === "All Levels" &&
-        selectedTeacher === "All Teachers") ||
-      (!selectedTeacher && !selectedMajor && selectedLevel === "All Levels") ||
-      (!selectedTeacher && !selectedLevel && selectedMajor === "All Majors") ||
-      (!selectedMajor &&
-        !selectedLevel &&
-        selectedTeacher === "All Teachers") ||
+        selectedModule === "All Modules") ||
+      (!selectedModule && !selectedMajor && selectedLevel === "All Levels") ||
+      (!selectedModule && !selectedLevel && selectedMajor === "All Majors") ||
+      (!selectedMajor && !selectedLevel && selectedModule === "All Modules") ||
       (selectedMajor === "All Majors" &&
         selectedLevel === "All Levels" &&
-        !selectedTeacher) ||
+        !selectedModule) ||
       (selectedMajor === "All Majors" &&
-        selectedTeacher === "All Teachers" &&
+        selectedModule === "All Modules" &&
         !selectedLevel) ||
       (selectedLevel === "All Levels" &&
-        selectedTeacher === "All Teachers" &&
+        selectedModule === "All Modules" &&
         !selectedMajor)
     ) {
       endpoint = `http://localhost:5000/api/subjects`;
     } else if (
-      (selectedMajor && !selectedLevel && !selectedTeacher) ||
-      (selectedMajor && selectedLevel === "All Levels" && !selectedTeacher) ||
-      (selectedMajor && selectedTeacher === "All Teachers" && !selectedLevel)
+      (selectedMajor && !selectedLevel && !selectedModule) ||
+      (selectedMajor && selectedLevel === "All Levels" && !selectedModule) ||
+      (selectedMajor && selectedModule === "All Modules" && !selectedLevel)
     ) {
       endpoint = `http://localhost:5000/api/subjects/majors/${selectedMajor}
 `;
     } else if (
-      (selectedLevel && !selectedMajor && !selectedTeacher) ||
-      (selectedLevel && selectedMajor === "All Majors" && !selectedTeacher) ||
-      (selectedLevel && selectedTeacher === "All Teachers" && !selectedMajor)
+      (selectedLevel && !selectedMajor && !selectedModule) ||
+      (selectedLevel && selectedMajor === "All Majors" && !selectedModule) ||
+      (selectedLevel && selectedModule === "All Modules" && !selectedMajor)
     ) {
       endpoint = `http://localhost:5000/api/subjects/year/${selectedLevel}`;
     } else if (
-      (selectedMajor && selectedLevel && !selectedTeacher) ||
-      (selectedMajor && selectedLevel && selectedTeacher === "All Teachers")
+      (selectedModule && !selectedMajor && !selectedLevel) ||
+      (selectedModule && selectedMajor === "All Majors" && !selectedLevel) ||
+      (selectedModule && selectedLevel === "All Levels" && !selectedMajor)
+    ) {
+      endpoint = `http://localhost:5000/api/subjects/module/${selectedModule}`;
+    } else if (
+      (selectedMajor && selectedLevel && !selectedModule) ||
+      (selectedMajor && selectedLevel && selectedModule === "All Modules")
     ) {
       if (selectedMajor === "All Majors" && selectedLevel === "All Levels")
         endpoint = `http://localhost:5000/api/subjects`;
       else
         endpoint = `http://localhost:5000/api/subjects/majoryear/${selectedMajor}/${selectedLevel}`;
     } else if (
-      (selectedMajor && selectedTeacher && !selectedLevel) ||
-      (selectedMajor && selectedTeacher && selectedLevel === "All Levels")
+      (selectedMajor && selectedModule && !selectedLevel) ||
+      (selectedMajor && selectedModule && selectedLevel === "All Levels")
     ) {
-      if (selectedMajor === "All Majors" && selectedTeacher === "All Teachers")
+      if (selectedMajor === "All Majors" && selectedModule === "All Modules")
         endpoint = `http://localhost:5000/api/subjects`;
       else
-        endpoint = `http://localhost:5000/api/subjects/teachermajor/${selectedTeacher}/${selectedMajor}`;
+        endpoint = `http://localhost:5000/api/subjects/modulemajor/${selectedModule}/${selectedMajor}`;
     } else if (
-      (selectedLevel && selectedTeacher && !selectedMajor) ||
-      (selectedLevel && selectedTeacher && selectedMajor === "All Majors")
+      (selectedLevel && selectedModule && !selectedMajor) ||
+      (selectedLevel && selectedModule && selectedMajor === "All Majors")
     ) {
-      if (selectedLevel === "All Levels" && selectedTeacher === "All Teachers")
+      if (selectedLevel === "All Levels" && selectedModule === "All Modules")
         endpoint = `http://localhost:5000/api/subjects`;
       else
-        endpoint = `http://localhost:5000/api/subjects/teacheryear/${selectedTeacher}/${selectedLevel}`;
-    } else if (selectedMajor && selectedLevel && selectedTeacher) {
+        endpoint = `http://localhost:5000/api/subjects/moduleyear/${selectedModule}/${selectedLevel}`;
+    } else if (selectedMajor && selectedLevel && selectedModule) {
       if (
         selectedMajor === "All Majors" &&
         selectedLevel === "All Levels" &&
-        selectedTeacher === "All Teachers"
+        selectedModule === "All Modules"
       )
         endpoint = `http://localhost:5000/api/subjects`;
       else
-        endpoint = `http://localhost:5000/api/subjects/teacheryear/${selectedTeacher}/${selectedMajor}/${selectedLevel}`;
+        endpoint = `http://localhost:5000/api/subjects/moduleyear/${selectedModule}/${selectedMajor}/${selectedLevel}`;
     }
 
     axios
@@ -206,7 +191,7 @@ const TableCourses = () => {
         console.error("Error fetching filtered subjects:", error);
         setSubjects([]);
       });
-  }, [selectedTeacher, selectedMajor, selectedLevel, subjects]);
+  }, [selectedModule, selectedMajor, selectedLevel, subjects]);
 
   const initialErrors = {
     SubjectName: "",
@@ -226,7 +211,7 @@ const TableCourses = () => {
 
     const CoeffError = !Coeff
       ? "Coeff is required"
-      : Coeff.length > 1
+      : Coeff.toString().length !== 1
       ? "Coeff must be 1 digit long"
       : "";
     // Vérification si le Coeff contient uniquement des chiffres
@@ -234,12 +219,14 @@ const TableCourses = () => {
       ? "Coeff must contain only digits"
       : "";
 
-    const SubjectNameFormatError = !/^[a-zA-Z\s]+$/.test(SubjectName)
-      ? "SubjectName must contain only letters "
+    const SubjectNameFormatError = !/^[a-zA-Z0-9\séèàêâûîïô]+$/.test(
+      SubjectName
+    )
+      ? "SubjectName must contain only letters and numbers"
       : "";
 
-    const ModuleFormatError = !/^[a-zA-Z\s]+$/.test(Module)
-      ? "Module must contain only letters"
+    const ModuleFormatError = !/^[a-zA-Z0-9\séèàêâûîïô:-]+$/.test(Module)
+      ? "Module must contain only letters and numbers"
       : "";
 
     // Combinaison des erreurs
@@ -251,7 +238,7 @@ const TableCourses = () => {
       Coeff: CoeffError || CoeffFormatError,
     };
 
-    // Mise =C3=A0 jour de l'état des erreurs
+    // Mise à jour de l'état des erreurs
     console.log(newErrors);
     console.log("after new errrors SubjectName", SubjectName);
     setErrors(newErrors);
@@ -284,7 +271,7 @@ const TableCourses = () => {
           ) {
             setErrors((prevErrors) => ({
               ...prevErrors,
-              SubjectName: "Subject already exists",
+              combinedError: "Subject already exists",
             }));
           }
           console.log("errors", errors); // Close modal after adding
@@ -314,17 +301,6 @@ const TableCourses = () => {
           console.log("backend", error.response.data);
           setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
           console.log("backend errors", backendErrors);
-          if (
-            backendErrors &&
-            backendErrors.SubjectName &&
-            backendErrors.Coeff
-          ) {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              email: "Subject already exists",
-            }));
-          }
-          console.log("errors", errors); // Close modal after adding
         });
     }
   };
@@ -350,6 +326,7 @@ const TableCourses = () => {
 
   const toggleModal = () => {
     clearErrors(); // Effacer les erreurs lors de la fermeture
+
     setModalOpen(!modalOpen);
   }; // Toggle add subject modal
 
@@ -363,9 +340,6 @@ const TableCourses = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [subjectsPerPage] = useState(10); // Nombre de matières par page;
 
-  // Fonction pour changer de page
-  // const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
   const indexOfLastSubject = currentPage * subjectsPerPage;
   const indexOfFirstSubject = indexOfLastSubject - subjectsPerPage;
   const currentSubjects = subjects.slice(
@@ -374,15 +348,6 @@ const TableCourses = () => {
   );
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Index du premier et du dernier mati=C3=A8re de la page actuelle
-  // const indexOfLastSubject = currentPage * subjectsPerPage;
-  // const indexOfFirstSubject = indexOfLastSubject - subjectsPerPage;
-  // // Les mati=C3=A8res =C3=A0 afficher sur la page actuelle
-  // const currentSubjects = subjects.slice(
-  //   indexOfFirstSubject,
-  //   indexOfLastSubject
-  // );
-
   return (
     <Container className="mt--7" fluid>
       {/* Table */}
@@ -390,52 +355,50 @@ const TableCourses = () => {
         <div className="col">
           <Card className="shadow">
             <CardHeader className="border-0 ">
-              <div className="row">
-                <h1 className="col-lg-12 col-md-12 col-sm-12 d-flex justify-content-center listSubjects">
-                  Liste des matières
-                </h1>
+              <div className="col-lg-12 col-md-12 col-sm-12 d-flex  justify-content-center listSubjects">
+                <h1>Liste des matières</h1>
               </div>
               {/* Filter Dropdowns on Left */}
               <div className="row">
-                <div className="col-lg-3 col-md-2 col-sm-2 d-flex major">
+                <div className="col-lg-3 col-md-3 col-sm-4 d-flex major">
                   <SelectOptions
-                    options={TeacherOptions}
-                    selectedValue={selectedTeacher}
-                    onOptionChange={(newTeacher) =>
+                    options={ModuleOptions}
+                    selectedValue={selectedModule}
+                    onOptionChange={(newModule) =>
                       handleFilterChange(
-                        newTeacher,
+                        newModule,
                         selectedMajor,
                         selectedLevel
                       )
                     }
-                    placeholderText="Teacher"
+                    placeholderText="All Modules"
                   />
                   <SelectOptions
                     options={majorOptions}
                     selectedValue={selectedMajor}
                     onOptionChange={(newMajor) =>
                       handleFilterChange(
-                        selectedTeacher,
+                        selectedModule,
                         newMajor,
                         selectedLevel
                       )
                     }
-                    placeholderText="Major"
+                    placeholderText="All Majors"
                   />
                   <SelectOptions
                     options={levelOptions}
                     selectedValue={selectedLevel}
                     onOptionChange={(newLevel) =>
                       handleFilterChange(
-                        selectedTeacher,
+                        selectedModule,
                         selectedMajor,
                         newLevel
                       )
                     }
-                    placeholderText="Level"
+                    placeholderText="All Levels"
                   />
                 </div>
-                {/* Centered "Liste des mati=C3=A8res" */}
+                {/* Centered "Liste des matières" */}
 
                 {/* Add Subject Button in Center */}
                 <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddSubject justify-content-end   ">
@@ -468,8 +431,7 @@ const TableCourses = () => {
                     <FormGroup>
                       <FormLabel for="Module">Module</FormLabel>
                       <select
-                        className="form-control shadow-none border-1
-bg-transparent text-dark"
+                        className="form-control shadow-none border-1 bg-transparent text-dark"
                         name="Module"
                         id="Module"
                       >
@@ -496,6 +458,7 @@ bg-transparent text-dark"
                         <span className="text-danger">{errors.Coeff}</span>
                       )}
                     </FormGroup>
+                    
                   </ModalBody>
                   <div className="modal-footer">
                     <Button
@@ -509,6 +472,11 @@ bg-transparent text-dark"
                     <Button color="link text-muted" onClick={toggleModal}>
                       Cancel
                     </Button>
+                    {errors.combinedError && (
+                      <span className="text-danger">
+                        {errors.combinedError}
+                      </span>
+                    )}
                   </div>
                 </Modal>
               </div>
@@ -561,15 +529,6 @@ bg-transparent text-dark"
                             <i className="fas fa-ellipsis-v" />
                           </DropdownToggle>
                           <DropdownMenu className="dropdown-menu-arrow" right>
-                            {/* <DropdownItem
-                              onClick={() => {
-                                handleViewProfil(subject);
-                              }}
-                            >
-                              <i className="fa-solid fa-eye"></i>
-                              View Absence
-                            </DropdownItem> */}
-
                             <DropdownItem
                               href=""
                               onClick={() => {
@@ -579,8 +538,7 @@ bg-transparent text-dark"
                               <i className="fas fa-pencil-alt" />
                               Update
                             </DropdownItem>
-                            {/* Modal de mise =C3=A0 jour de l'mati=C3=A8re=
-                             */}
+                            {/* Modal de mise à jour de l'matière*/}
 
                             <DropdownItem
                               href=""
@@ -630,21 +588,6 @@ bg-transparent text-dark"
                         </span>
                       )}
                     </FormGroup>
-                    {/* <FormGroup>
-                      <FormLabel for="Module">Module</FormLabel>
-                      <Input
-                        type="text"
-                        name="Module"
-                        id="Module"
-                        placeholder="Enter Module"
-                        value={formData ? formData.Module : ""}
-                        onChange={handleChange}
-                      />
-                      {errors.Module && (
-                        <span className="text-danger">{errors.Module}</sp=
-an>
-                      )}
-                    </FormGroup> */}
                     <FormGroup>
                       <FormLabel for="Module">Module</FormLabel>
                       <select
