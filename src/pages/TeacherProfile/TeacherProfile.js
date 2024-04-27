@@ -42,40 +42,39 @@ import axios from 'axios';
 
   // core components
   
-  const Profile = (props) => {
+  const TeacherProfile = (props) => {
     const location = useLocation(); // Get the current location object
-    const selectedStudent = location.state?.selectedStudent;
-    const type= location.state?.type;// Access the selectedStudent object from the state
-    console.log("selected student from profile",selectedStudent);
-    //concerning the info of profile take the id and do anther axios here so that we can recupere the info of the student
-    const studentId = selectedStudent._id;
-    const [student, setStudent] = useState([]);
+    const selectedTeacher = location.state?.selectedTeacher; // Access the selectedTeacher object from the state
+    console.log("selected Teacher from profile",selectedTeacher);
+    //concerning the info of profile take the id and do anther axios here so that we can recupere the info of the Teacher
+    const TeacherId = selectedTeacher._id;
+    const [Teacher, setTeacher] = useState([]);
 
     useEffect(() => {
-      axios.get(`http://localhost:5000/students/${studentId}`)
+      axios.get(`http://localhost:5000/Teachers/${TeacherId}`)
         .then(response => {
-          setStudent(response.data.data);
+          setTeacher(response.data.data);
           
         })
         .catch(error => {
           console.error('Error fetching majors:', error);
         });
     },[]);
-    console.log("student from axios",student);
-    function calculateAge(birthDate) {
-      const today = new Date();
-      const birth = new Date(birthDate);
-      let age = today.getFullYear() - birth.getFullYear();
-      const monthDiff = today.getMonth() - birth.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-          age--;
-      }
-      return age;
-  }
+    console.log("Teacher from axios",Teacher);
+//     function calculateAge(birthDate) {
+//       const today = new Date();
+//       const birth = new Date(birthDate);
+//       let age = today.getFullYear() - birth.getFullYear();
+//       const monthDiff = today.getMonth() - birth.getMonth();
+//       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+//           age--;
+//       }
+//       return age;
+//   }
   
-  const age = calculateAge(student.Birthday);
-  console.log("Age:", age); // Output the calculated age
-  const studentType = student.Year <= 2 ? "Cycle Prepatoire" : "Cycle Ingenieur";
+//   const age = calculateAge(Teacher.Birthday);
+//   console.log("Age:", age); // Output the calculated age
+//   const TeacherType = Teacher.Year <= 2 ? "Cycle Prepatoire" : "Cycle Ingenieur";
 
     return (
       <>
@@ -118,23 +117,23 @@ import axios from 'axios';
                   </div>
                 </Row>
                 <div className="text-center ">
-                  <h3>
-                    {student.FirstName} {student.LastName}
+                  {/* <h3>
+                    {Teacher.FirstName} {Teacher.LastName}
                     <span className="font-weight-light">  {age}</span>
-                  </h3>
+                  </h3> */}
                   <div className="h5 font-weight-300">
                    
-                    {student.Major} {student.Year} 
+                    {Teacher.Major} {Teacher.Year} 
                   </div>
                   <div className="h5 font-weight-300">
-                    CIN : {student.CIN}
+                    CIN : {Teacher.CIN}
                   </div>
-                  <div className="h5 font-weight-300">
-                    {studentType}
-                  </div>
+                  {/* <div className="h5 font-weight-300">
+                    {TeacherType}
+                  </div> */}
                   
                   <div className="h5 font-weight-300">
-                    {student.Email}
+                    {Teacher.Email}
                   </div>
 
                   <div>
@@ -148,7 +147,6 @@ import axios from 'axios';
             </Card>
           </Col>
           <Col className="order-xl-1" xl="8">
-            
             <TableAbsence />
           </Col>
         </Row>
@@ -160,5 +158,5 @@ import axios from 'axios';
     );
   };
   
-  export default Profile;
+  export default TeacherProfile;
   

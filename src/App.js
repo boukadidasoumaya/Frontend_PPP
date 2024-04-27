@@ -15,6 +15,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/scss/argon-dashboard-react.scss";
 import Profile from './pages/Profile/Profile.js';
 import Courses from './pages/Courses/Courses.js';
+import TeacherProfile from './pages/TeacherProfile/TeacherProfile.js';
 function App() {
   return (
     <>
@@ -23,13 +24,14 @@ function App() {
       <Routes>
         <Route path='/' exact element={<Home />} ></Route>
         <Route path='/students' exact element={<Students />} ></Route>
-        <Route path='/faculties' exact element={<Teachers />} ></Route>
+        <Route path='/teachers' exact element={<Teachers />} ></Route>
         <Route path='/timetable' exact element={<TimeTable />} ></Route>
         <Route path='/charts' exact element={<Index />} ></Route>
         <Route path='profile' exact element={<Profile />} ></Route>
         <Route path='courses' exact element={<Courses />} ></Route>
         <Route path='/login' exact element={<LoginPage />} ></Route>
         <Route path='/forgot' exact element={<LoginPage />} ></Route>
+        <Route path='/TeacherProfile' exact element={<TeacherProfile />} ></Route>
 
       </Routes>
       </Router>

@@ -171,7 +171,7 @@ const Sidebar = (props) => {
               </NavLink>
             </NavItem>
             <NavItem className="el">
-              <NavLink to="/faculties" onClick={closeCollapse} tag={NavLinkRRD} >
+              <NavLink to="/teachers" onClick={closeCollapse} tag={NavLinkRRD} >
               <i class="fa fa-university " aria-hidden="true"></i>
                 Professors
               </NavLink>
