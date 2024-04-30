@@ -3,9 +3,9 @@
 }
 .filter {
   display: flex;
-margin-right: px;
+  margin-right: px;
 }
-@media screen and (max-width:1160px) {
+@media screen and (max-width: 1160px) {
   .listEnseignant {
     display: flex;
     margin-left: 5px;
@@ -17,46 +17,26 @@ margin-right: px;
   }
 }
 
-  @media screen and (max-width: 860px) {
-    .listEnseignant {
-      display: flex;
-      margin-right: 5px;
-    }
-    .majorlevel {
-      display: flex;
-      margin-left: -25px;
-      margin-right: 22px;
-    }
+@media screen and (max-width: 860px) {
+  .listEnseignant {
+    display: flex;
+    margin-right: 5px;
   }
-  
-  @media screen and (max-width: 812px) {
-    .listEnseignant {
-      display: flex;
-      margin-right: -5px;
-    }
-    .majorlevel{
-      display: flex;
-      margin-left: -35px;
-      margin-right: 38px;
-    }
+  .majorlevel {
+    display: flex;
+    margin-left: -25px;
+    margin-right: 22px;
   }
+}
 
-
-
-
-
-  
-
- 
-  
-
-
-
-
-
-
-
-
-
-
-
+@media screen and (max-width: 812px) {
+  .listEnseignant {
+    display: flex;
+    margin-right: -5px;
+  }
+  .majorlevel {
+    display: flex;
+    margin-left: -35px;
+    margin-right: 38px;
+  }
+}
