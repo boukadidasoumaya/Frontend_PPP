@@ -17,7 +17,6 @@ import {
   DropdownItem,
   Pagination,
 } from "reactstrap";
-import { FormLabel } from "react-bootstrap";
 import "./TableTeachers.css";
 import { useNavigate } from "react-router-dom";
 import SelectOptions from "../SelectOptions/SelectOptions";
@@ -88,12 +87,12 @@ const TableTeachers = () => {
         console.error("Error fetching Departments:", error);
       });
   }, []);
-  const allOption = { value: "All Departments", Label: "All Departments" };
+  const allOption = { value: "All Departments", label: "All Departments" };
   const departmentsOptions = [
     allOption,
     ...departments.map((department) => ({
       value: department,
-      Label: department,
+      label: department,
     })),
   ];
 
@@ -107,13 +106,10 @@ const TableTeachers = () => {
         console.error("Error fetching subject:", error);
       });
   }, []);
-  const allOptionsubjects = {
-    value: "All Subjects",
-    Label: "All Subjects",
-  };
+  const allOptionsubjects = { value: "All Subjects", label: "All Subjects" };
   const subjectOption = [
     allOptionsubjects,
-    ...subjects.map((subject) => ({ value: subject, Label: subject })),
+    ...subjects.map((subject) => ({ value: subject, label: subject })),
   ];
 
   const [selectedDepartment, setselectedDepartment] = useState("");
@@ -173,136 +169,275 @@ const TableTeachers = () => {
   const [currentEmail, setCurrentEmail] = useState("");
 
   const initialErrors = {
-    FirstName: "",
-    LastName: "",
-    CIN: "",
-    Email: "",
-    Department: "",
+    firstName: "",
+    lastName: "",
+    cin: "",
+    email: "",
+    department: "",
   };
   const [errors, setErrors] = useState(initialErrors);
 
   const clearErrors = () => {
     setErrors(initialErrors);
   };
+  const handleteacher = (action) => {
+    // setErrors(initialErrors);
 
-  const handleTeacher = (action) => {
     // Récupération des valeurs des champs
-    //const id = document.getElementById("id").value;
-    const FirstName = document.getElementById("FirstName").value;
-    const LastName = document.getElementById("LastName").value;
-    const CIN = document.getElementById("CIN").value;
-    const Email = document.getElementById("Email").value;
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastname").value;
+    const cin = document.getElementById("cin").value;
+    const email = document.getElementById("email").value;
     const department = document.getElementById("department").value;
-    //console.log(department);
 
-    if (!FirstName || !LastName || !CIN || !Email || !department) {
-      console.error("One or more elements not found in the DOM");
-      return; // Exit early if any required element is missing
-    }
+    //let birthday = document.getElementById("birthday").value;
+    //const major = document.getElementById("major").value;
+    //const year = parseInt(document.getElementById("year").value); // Convertir niveau en entier
+    //const group = parseInt(document.getElementById("group").value); // Convertir groupe en entier
+
     // Vérification si le CIN est vide ou ne contient pas exactement 8 chiffres
-    const CINError = !CIN
+    const cinError = !cin
       ? "CIN is required"
-      : CIN.length !== 8
+      : cin.length !== 8
       ? "CIN must be 8 digits long"
       : "";
     // Vérification si le CIN contient uniquement des chiffres
-    const CINFormatError = !/^\d+$/.test(CIN)
+    const cinFormatError = !/^\d+$/.test(cin)
       ? "CIN must contain only digits"
       : "";
-    const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     // Vérification si le prénom contient uniquement des lettres et des espaces
-    const FirstNameFormatError = !/^[a-zA-Z\s]+$/.test(FirstName)
-      ? "First name must contain only letters"
+    const FirstNameFormatError = !/^[a-zA-Z\s]+$/.test(firstName)
+      ? "First name must contain only letters "
       : "";
 
     // Vérification si le nom de famille contient uniquement des lettres et des espaces
-    const LastNameFormatError = !/^[a-zA-Z\s]+$/.test(LastName)
+    const lastNameFormatError = !/^[a-zA-Z\s]+$/.test(lastName)
       ? "Last name must contain only letters"
       : "";
 
     // Combinaison des erreurs
     const newErrors = {
-      FirstName: !FirstName ? "First name is required" : FirstNameFormatError,
-      LastName: !LastName ? "Last name is required" : LastNameFormatError,
-      CIN: CINError || CINFormatError,
-      Email: !Email
+      FirstName: !firstName ? "First name is required" : FirstNameFormatError,
+      lastName: !lastName ? "Last name is required" : lastNameFormatError,
+      cin: cinError || cinFormatError,
+      email: !email
         ? "Email is required"
-        : !EmailRegex.test(Email)
+        : !emailRegex.test(email)
         ? "Invalid Email format"
         : "",
+      department: !department ? "Department is required" : "",
     };
 
     // Mise à jour de l'état des erreurs
+    console.log(newErrors);
+    console.log("after new errrors FirstName", firstName);
     setErrors(newErrors);
+    console.log(errors);
 
     // Vérification si des erreurs existent
     const hasErrors = Object.values(newErrors).some((error) => error !== "");
 
-    if (!hasErrors) {
-      const newTeacher = {
-        FirstName: FirstName,
-        LastName: LastName,
-        CIN: CIN,
-        Email: Email,
+    if (action === "add") {
+      const newteacher = {
+        FirstName: firstName,
+        LastName: lastName,
+        CIN: cin,
+        Email: email,
         Department: department,
       };
 
-      if (action === "add") {
-        // Ajouter un nouveau professeur
-        axios
-          .post("http://localhost:5000/teachers", newTeacher)
-          .then((response) => {
-            console.log("Teacher added:", response.data);
-            console.log("newStudent:", newTeacher);
-            setTeachers([...teachers, newTeacher]); // Add new teacher to the local state
-            setModalOpen(false); // Close the modal after successful addition
-          })
-          .catch((error) => {
-            console.error("Error adding teacher:", error);
-          });
-      } else if (action === "update") {
-        const id = document.getElementById("id").value;
-        newTeacher._id = id;
+      // Send new teacher data to server
 
-        // Mettre à jour les données du professeur
-        // axios
-        //   .put(`http://localhost:5000/teachers/${id}`, newTeacher)
-        //   .then((response) => {
-        //     console.log("Teacher updated:", response.data);
-        //     setTeachers([...teachers.filter((t) => t._id !== id), newTeacher]); // Update teacher in the local state
-        //     setUpdateModalOpen(false); // Close the update modal
-        //   })
-        //   .catch((error) => {
-        //     console.error("Error updating teacher:", error);
-        //   });
-      }
+      axios
+        .post("http://localhost:5000/teachers", newteacher)
+        .then((response) => {
+          console.log("teacher added:", response.data);
+          console.log("newteacher:", newteacher);
+          setTeachers([...teachers, newteacher]); // Add new teacher to original data
 
-      // Réinitialiser les champs du formulaire après l'ajout ou la mise à jour
-      setFormData({
-        FirstName: "",
-        LastName: "",
-        CIN: "",
-        Email: "",
-        Department: "",
-      });
+          setModalOpen(false);
+        })
+        .catch((error) => {
+          const backendErrors = error.response.data.errors;
+          console.log("backend", error.response.data);
+          setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
+          console.log("backend errors", backendErrors);
+          if (backendErrors && backendErrors.cin) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              cin: "CIN already exists",
+            }));
+          }
+          if (backendErrors && backendErrors.email) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              email: "Email already exists",
+            }));
+          }
+          console.log("errors", errors); // Close modal after adding
+        });
+    } else if (action === "update") {
+      const id = document.getElementById("id").value;
+      // birthday = new Date(document.getElementById("birthday").value)
+      //  .toISOString()
+      // .split("T")[0];
+      const newteacher = {
+        _id: id,
+        FirstName: firstName,
+        LastName: lastName,
+        CIN: cin,
+        Email: email,
+        Department: department,
+      };
+
+      axios
+        .put(`http://localhost:5000/teachers/teacher/${newteacher?._id}`, newteacher)
+        .then((response) => {
+          console.log("teacher updated:", response.data);
+          console.log("in if");
+          setTeachers([...teachers, newteacher]); // Add new teacher to original data
+          setUpdateModalOpen(!updateModalOpen);
+        })
+        .catch((error) => {
+          const backendErrors = error.response.data.errors;
+          console.log("backend", error.response.data);
+          setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
+          console.log("backend errors", backendErrors);
+          if (backendErrors && backendErrors.cin) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              cin: "CIN already exists",
+            }));
+          }
+          if (backendErrors && backendErrors.email) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              email: "Email already exists",
+            }));
+          }
+          console.log("errors", errors); // Close modal after adding
+        });
     }
+  };
+
+
+  
+
+  const handleAddTeacher = () => {
+
+    //const id = document.getElementById("id").value;
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+    const cin = document.getElementById("cin").value;
+    const email = document.getElementById("email").value;
+    const department = document.getElementById("department").value;
+    // Vérification si le CIN est vide ou ne contient pas exactement 8 chiffres
+    const cinError = !cin
+      ? "CIN is required"
+      : cin.length !== 8
+      ? "CIN must be 8 digits long"
+      : "";
+    // Vérification si le CIN contient uniquement des chiffres
+    const cinFormatError = !/^\d+$/.test(cin)
+      ? "CIN must contain only digits"
+      : "";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Vérification si le prénom contient uniquement des lettres et des espaces
+    const FirstNameFormatError = !/^[a-zA-Z\s]+$/.test(firstName)
+      ? "First name must contain only letters "
+      : "";
+
+    // Vérification si le nom de famille contient uniquement des lettres et des espaces
+    const lastNameFormatError = !/^[a-zA-Z\s]+$/.test(lastName)
+      ? "Last name must contain only letters"
+      : "";
+
+    // Combinaison des erreurs
+    const newErrors = {
+      firstName: !firstName ? "First name is required" : FirstNameFormatError,
+      lastName: !lastName ? "Last name is required" : lastNameFormatError,
+      cin: cinError || cinFormatError,
+      email: !email
+        ? "Email is required"
+        : !emailRegex.test(email)
+        ? "Invalid Email format"
+        : "",
+      department: !department ? "Department is required" : "",
+    };
+
+    // Mise à jour de l'état des erreurs
+    console.log(newErrors);
+    console.log("after new errrors FirstName", firstName);
+    setErrors(newErrors);
+    console.log(errors);
+
+    // Vérification si des erreurs existent
+    const hasErrors = Object.values(newErrors).some((error) => error !== "");
+
+
+
+    const newTeacher = {
+      //_id:id,
+      FirstName: firstName,
+      LastName: lastName,
+      CIN: cin,
+      Email: email,
+      Department: department,
+    };
+
+    axios
+      .post("http://localhost:5000/teachers", newTeacher)
+      .then((response) => {
+        console.log("Teacher added:", response.data);
+        setTeachers([...teachers, newTeacher]); // Add new teacher to the local state
+        setModalOpen(false); // Close the modal after successful addition
+        // Reset the form data state
+        // setFormData({
+        //   FirstName: "",
+        //   LastName: "",
+        //   CIN: "",
+        //   Email: "",
+        //   Department: "",
+        // });
+      })
+      .catch((error) => {
+        const backendErrors = error.response.data.errors;
+          console.log("backend", error.response.data);
+          setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
+          console.log("backend errors", backendErrors);
+          if (backendErrors && backendErrors.cin) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              cin: "CIN already exists",
+            }));
+          }
+          if (backendErrors && backendErrors.email) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              email: "Email already exists",
+            }));
+          }
+          console.log("errors", errors); // Close modal after adding
+      });
+  };
+
+  const toggleDeleteModal = (teacher) => {
+    setSelectedteacher(teacher);
+    setDeleteModalOpen(!deleteModalOpen);
+    
   };
 
   const handleDelete = (teacher) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/teachers/${teacher?._id}`)
+      .delete(`http://localhost:5000/teachers/teacher/${teacher?._id}`)
       .then((response) => {
         console.log("teacher deleted:", response.data);
       })
       .catch((error) => {
         console.error("Error in deleting teacher:", error);
       });
-  };
-
-  const toggleDeleteModal = (teacher) => {
-    setDeleteModalOpen(!deleteModalOpen);
-    setSelectedteacher(teacher);
   };
 
   const toggleModal = () => {
@@ -374,6 +509,91 @@ const TableTeachers = () => {
               <Button onClick={toggleModal} className="addbtn ">
                 Add Professor
               </Button>
+              {/* Add Teacher Modal */}
+              <Modal isOpen={modalOpen} toggle={toggleModal}>
+                <ModalHeader toggle={toggleModal}>Add a teacher</ModalHeader>
+                <ModalBody>
+                  {/* Form fields to capture teacher data */}
+                  <FormGroup>
+                    <Label for="firstName">First Name</Label>
+                    <Input
+                      type="text"
+                      name="firstName"
+                      id="firstName"
+                      placeholder="Enter the teacher's first name"
+                      // value={formData.firstName}
+                      // onChange={handleChange}
+                    />
+                     {errors.firstName && (
+                        <span className="text-danger">{errors.firstName}</span>
+                      )}
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="lastName">Last Name</Label>
+                    <Input
+                      type="text"
+                      name="lastName"
+                      id="lastName"
+                      placeholder="Enter the teacher's last name"
+                      // value={formData.lastName}
+                      // onChange={handleChange}
+                    />
+                     {errors.firstName && (
+                        <span className="text-danger">{errors.lastName}</span>
+                      )}
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="cin">CIN</Label>
+                    <Input
+                      type="text"
+                      name="cin"
+                      id="cin"
+                      placeholder="Enter the teacher's CIN"
+                      // value={formData.cin}
+                      // onChange={handleChange}
+                    />
+                     {errors.firstName && (
+                        <span className="text-danger">{errors.cin}</span>
+                      )}
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="email">Email</Label>
+                    <Input
+                      type="text"
+                      name="email"
+                      id="email"
+                      placeholder="Enter the teacher's email"
+                      // value={formData.email}
+                      // onChange={handleChange}
+                    />
+                     {errors.firstName && (
+                        <span className="text-danger">{errors.email}</span>
+                      )}
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="department">Department</Label>
+                    <Input
+                      type="text"
+                      name="department"
+                      id="department"
+                      placeholder="Enter the teacher's Department"
+                      // value={formData.department}
+                      // onChange={handleChange}
+                    />
+                     {errors.firstName && (
+                        <span className="text-danger">{errors.department}</span>
+                      )}
+                  </FormGroup>
+                </ModalBody>
+                <div className="modal-footer">
+                  <Button className="addbtn" onClick={handleAddTeacher}>
+                    Add
+                  </Button>
+                  <Button color="link text-muted" onClick={toggleModal}>
+                    Cancel
+                  </Button>
+                </div>
+              </Modal>
             </div>
           </div>
         </CardHeader>
@@ -420,9 +640,11 @@ const TableTeachers = () => {
                         <i className="fas fa-ellipsis-v" />
                       </DropdownToggle>
                       <DropdownMenu className="dropdown-menu-arrow" right>
-                        {/* <DropdownItem key="all" value="All Subjects">
-                  All Subjects
-                </DropdownItem> */}
+                        {
+                          <DropdownItem key="all" value="All Subjects">
+                            All Subjects
+                          </DropdownItem>
+                        }
                         {teacher.Subjects &&
                           teacher.Subjects.map((subject) => (
                             <DropdownItem key={subject} value={subject}>
@@ -467,12 +689,14 @@ const TableTeachers = () => {
                         </DropdownItem>
                         {/* Update Teacher Modal */}
                         <DropdownItem
-                          href=""
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          <i className="fas fa-trash" />
-                          Delete
-                        </DropdownItem>
+                              href=""
+                              onClick={() => {
+                                toggleDeleteModal(teacher);
+                              }}
+                            >
+                              <i className="fas fa-trash" />
+                              Delete
+                            </DropdownItem>
                         {/* Include any additional dropdown items as needed */}
                       </DropdownMenu>
                     </UncontrolledDropdown>
@@ -491,51 +715,51 @@ const TableTeachers = () => {
               <ModalBody>
                 {/* Form fields to capture updated teacher data */}
                 <FormGroup>
-                  <FormLabel for="FirstName">First Name:</FormLabel>
+                  <Label for="firstname">First Name:</Label>
                   <Input
                     type="text"
-                    name="FirstName"
-                    id="FirstName"
+                    name="firstname"
+                    id="firstname"
                     placeholder="Enter the teacher's first name"
-                    value={formData ? formData.FirstName : ""}
+                    value={formData ? formData.firstname : ""}
                     onChange={handleChange}
                   />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel for="LastName">Last Name:</FormLabel>
+                  <Label for="lastname">Last Name:</Label>
                   <Input
                     type="text"
-                    name="LastName"
-                    id="LastName"
+                    name="lastname"
+                    id="lastname"
                     placeholder="Enter the teacher's last name"
-                    value={formData ? formData.LastName : ""}
+                    value={formData ? formData.lastname : ""}
                     onChange={handleChange}
                   />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel for="CIN">CIN:</FormLabel>
+                  <Label for="cin">CIN:</Label>
                   <Input
                     type="text"
-                    name="CIN"
-                    id="CIN"
+                    name="cin"
+                    id="cin"
                     placeholder="Enter the teacher's CIN"
-                    value={formData ? formData.CIN : ""}
+                    value={formData ? formData.cin : ""}
                     onChange={handleChange}
                   />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel for="department">Department:</FormLabel>
+                  <Label for="department">Department:</Label>
                   <Input
                     type="text"
                     name="department"
                     id="department"
                     placeholder="Enter the teacher's department"
-                    value={formData ? formData.Department : ""}
+                    value={formData ? formData.department : ""}
                     onChange={handleChange}
                   />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel for="subject">Subject:</FormLabel>
+                  <Label for="subject">Subject:</Label>
                   <Input
                     type="text"
                     name="subject"
@@ -546,11 +770,11 @@ const TableTeachers = () => {
                   />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel for="class">Class:</FormLabel>
+                  <Label for="class">Class:</Label>
                   <SelectOptions
                     options={Class.map((className) => ({
                       value: className,
-                      FormLabel: className,
+                      label: className,
                     }))}
                     selectedValue={selectedClass}
                     onOptionChange={(newClass) => setSelectedClass(newClass)}
@@ -558,7 +782,7 @@ const TableTeachers = () => {
                   />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel for="majors">Majors:</FormLabel>
+                  <Label for="majors">Majors:</Label>
                   <Input type="select" name="majors" id="majors">
                     {majors.map((major) => (
                       <option key={major} value={major}>
@@ -597,76 +821,7 @@ const TableTeachers = () => {
           </div>
         )}
       </Card>
-      {/* Add Teacher Modal */}
-      <Modal isOpen={modalOpen} toggle={toggleModal} innerRef={modalRef}>
-        <ModalHeader toggle={toggleModal}>Add a teacher</ModalHeader>
-        <ModalBody>
-          {/* Form fields to capture teacher data */}
-          <FormGroup>
-            <FormLabel for="FirstName">First Name</FormLabel>
-            <Input
-              type="text"
-              name="FirstName"
-              id="FirstName"
-              placeholder="Enter the teacher's first name"
-              // value={ formData.FirstName}
-              // onChange={handleChange}
-            />
-            {errors.FirstName && (
-              <span className="text-danger">{errors.FirstName}</span>
-            )}
-          </FormGroup>
-          <FormGroup>
-            <FormLabel for="LastName">Last Name</FormLabel>
-            <Input
-              type="text"
-              name="LastName"
-              id="LastName"
-              placeholder="Enter the teacher's last name"
-            />
-            {errors.LastName && (
-              <span className="text-danger">{errors.LastName}</span>
-            )}
-          </FormGroup>
-          <FormGroup>
-            <FormLabel for="CIN">Num CIN</FormLabel>
-            <Input type="text" name="CIN" id="CIN" placeholder="Enter CIN" />
-            {errors.CIN && <span className="text-danger">{errors.CIN}</span>}
-          </FormGroup>
-          <FormGroup>
-            <FormLabel for="Email">Email</FormLabel>
-            <Input
-              type="text"
-              name="Email"
-              id="Email"
-              placeholder="Enter Email"
-            />
-            {errors.Email && (
-              <span className="text-danger">{errors.Email}</span>
-            )}
-          </FormGroup>
-          <FormGroup>
-            <FormLabel for="Department">Department</FormLabel>
-            <Input
-              type="text"
-              name="Department"
-              id="Department"
-              placeholder="Enter the teacher's Department"
-            />
-            {errors.Department && (
-              <span className="text-danger">{errors.Department}</span>
-            )}
-          </FormGroup>
-        </ModalBody>
-        <div className="modal-footer">
-          <Button className="addbtn" onClick={() => handleTeacher("add")}>
-            Add
-          </Button>
-          <Button color="link text-muted" onClick={toggleModal}>
-            Cancel
-          </Button>
-        </div>
-      </Modal>
+
       <Modal isOpen={deleteModalOpen} toggle={toggleDeleteModal}>
         <ModalHeader toggle={toggleDeleteModal}>Confirmation</ModalHeader>
         <ModalBody>
