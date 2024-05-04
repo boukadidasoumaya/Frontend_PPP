@@ -37,16 +37,16 @@ const TableTeachers = () => {
   });
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    console.log("Updated formData:", formData);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+    // Since setFormData is asynchronous, you won't see the updated state immediately here
+    // If you want to log the updated state, do it in a useEffect or another function
   };
 
   const [departments, setDepartments] = useState([]);
-  const majors = ["RT", "GL", "IIA", "IMI"];
-  const Class = ["1", "2", "3", "4", "5"];
+
 
   const [subjects, setSubjects] = useState([]);
   const [selectedClass, setSelectedClass] = useState([]);
@@ -160,12 +160,16 @@ const TableTeachers = () => {
   };
 
   const handleAddTeacher = () => {
-    //const id = document.getElementById("id").value;
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
-    const cin = document.getElementById("cin").value;
-    const email = document.getElementById("email").value;
-    const department = document.getElementById("department").value;
+    const { _id, firstName, lastName, cin, email, department } = formData;
+
+    const newTeacher = {
+      _id,
+      FirstName: firstName,
+      LastName: lastName,
+      CIN: cin,
+      Email: email,
+      Department: department,
+    };
     // Vérification si le CIN est vide ou ne contient pas exactement 8 chiffres
     const cinError = !cin
       ? "CIN is required"
@@ -209,14 +213,14 @@ const TableTeachers = () => {
     // Vérification si des erreurs existent
     const hasErrors = Object.values(newErrors).some((error) => error !== "");
 
-    const newTeacher = {
-      //_id:id,
-      FirstName: firstName,
-      LastName: lastName,
-      CIN: cin,
-      Email: email,
-      Department: department,
-    };
+    // const newTeacher = {
+    //   //_id:id,
+    //   FirstName: firstName,
+    //   LastName: lastName,
+    //   CIN: cin,
+    //   Email: email,
+    //   Department: department,
+    // };
 
     axios
       .post("http://localhost:5000/teachers", newTeacher)
@@ -330,7 +334,7 @@ const TableTeachers = () => {
     setErrors(newErrors);
     console.log(errors);
 
-    const newTeacher = {
+    const updatedTeacher = {
       _id: id,
       FirstName: firstName,
       LastName: lastName,
@@ -339,18 +343,23 @@ const TableTeachers = () => {
       Department: department,
     };
 
-    axios
-      .put(`http://localhost:5000/teachers/teacher/${newTeacher?._id}`, newTeacher)
-      .then((response) => {
-        console.log("Teacher updated:", response.data);
-        // Update the teachers state with the updated teacher
-        setTeachers([...teachers, newTeacher]); // Add new teacher to the local state
-        setUpdateModalOpen(false);
-      })
-      .catch((error) => {
-        console.error("Error updating teacher:", error);
-        // Handle error state or display error message
-      });
+    axios.put(`http://localhost:5000/teachers/teacher/${id}`, updatedTeacher)
+  .then((response) => {
+    console.log("Teacher updated:", response.data);
+
+    // Update the teachers state with the updated teacher
+    const updatedTeachers = teachers.map((teacher) =>
+      teacher._id === id ? updatedTeacher : teacher
+    );
+    setTeachers(updatedTeachers);
+
+    setUpdateModalOpen(false); // Close the update modal
+  })
+  .catch((error) => {
+    console.error("Error updating teacher:", error);
+    // Handle error state or display error message to the user
+  });
+
   };
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -533,11 +542,6 @@ const TableTeachers = () => {
                         <i className="fas fa-ellipsis-v" />
                       </DropdownToggle>
                       <DropdownMenu className="dropdown-menu-arrow" right>
-                        {
-                          <DropdownItem key="all" value="All Subjects">
-                            All Subjects
-                          </DropdownItem>
-                        }
                         {teacher.Subjects &&
                           teacher.Subjects.map((subject) => (
                             <DropdownItem key={subject} value={subject}>
@@ -608,13 +612,13 @@ const TableTeachers = () => {
               <ModalBody>
                 {/* Form fields to capture updated teacher data */}
                 <FormGroup>
-                  <Label for="firstname">First Name:</Label>
+                  <Label for="firstName">First Name:</Label>
                   <Input
                     type="text"
-                    name="firstname"
-                    id="firstname"
+                    name="firstName"
+                    id="firstName"
                     placeholder="Enter the teacher's first name"
-                    value={formData.firstname}
+                    value={formData.firstName}
                     onChange={handleChange}
                   />
                 </FormGroup>
@@ -622,10 +626,10 @@ const TableTeachers = () => {
                   <Label for="lastname">Last Name:</Label>
                   <Input
                     type="text"
-                    name="lastname"
-                    id="lastname"
+                    name="lastName"
+                    id="lastName"
                     placeholder="Enter the teacher's last name"
-                    value={formData.lastname}
+                    value={formData.lastName}
                     onChange={handleChange}
                   />
                 </FormGroup>
