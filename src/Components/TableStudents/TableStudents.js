@@ -365,7 +365,9 @@ const TableStudents = () => {
   };
   const handleViewProfil = (student) => {
     console.log("View Profil");
-    navigate("/profile", { state: { selectedStudent: student ,type:"student"} });
+    navigate("/profile", {
+      state: { selectedStudent: student, type: "student" },
+    });
   };
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -826,7 +828,11 @@ const TableStudents = () => {
                         name="Birthday"
                         id="birthday"
                         placeholder="Enter Date of Birth"
-                        value={formData && formData.Birthday ? formData.Birthday.slice(0, 10) : ""}
+                        value={
+                          formData && formData.Birthday
+                            ? formData.Birthday.slice(0, 10)
+                            : ""
+                        }
                         onChange={handleChange}
                       />
                       {errors.birthday && (
