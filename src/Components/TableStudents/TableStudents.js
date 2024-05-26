@@ -257,6 +257,7 @@ const newErrors = {
     
         axios.post("http://localhost:5000/students", newStudent)
           .then(response => {
+            console.log(response);
            console.log('Student added:', response.data);
            console.log('newStudent:', newStudent);
            setStudents([...students, newStudent]); // Add new student to original data
@@ -757,7 +758,7 @@ const [currentPage, setCurrentPage] = useState(1);
                   <p>Are you sure you want to delete this student?</p>
                 </ModalBody>
                 <div className="modal-footer">
-                  <Button className='addbtn' onClick={()=>{handleDelete(selectedStudent)}}>Delete</Button>
+                  <Button className='btn1' onClick={()=>{handleDelete(selectedStudent)}}>Delete</Button>
                   <Button color="secondary" onClick={toggleDeleteModal}>Cancel</Button>
                 </div>
               </Modal>

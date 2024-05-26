@@ -166,15 +166,8 @@ const EditorTemplate = () => {
             case 'WorkWeek':
                 setCurrentView(isTimelineView ? 'TimelineWorkWeek' : 'WorkWeek');
                 break;
-            case 'Month':
-                setCurrentView(isTimelineView ? 'TimelineMonth' : 'Month');
-                break;
-            case 'Year':
-                setCurrentView(isTimelineView ? 'TimelineYear' : 'Year');
-                break;
-            case 'Agenda':
-                setCurrentView('Agenda');
-                break;
+        
+
             case 'New Event':
                 const eventData = getEventData();
                 scheduleObj.current.openEditor(eventData, 'Add', true);
@@ -357,8 +350,7 @@ const EditorTemplate = () => {
                   <ItemDirective type='Separator'/>
                   <ItemDirective prefixIcon='e-icons e-day' tooltipText='Day' text='Day' tabIndex={0}/>
                   <ItemDirective prefixIcon='e-icons e-week' tooltipText='Week' text='Week' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-week' tooltipText='WorkWeek' text='WorkWeek' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-month' tooltipText='Month' text='Month' tabIndex={0}/>
+                 
                   <ItemDirective type='Separator'/>
                   </ItemsDirective>
               </ToolbarComponent>
@@ -385,8 +377,7 @@ const EditorTemplate = () => {
                         <ViewsDirective>
                           <ViewDirective option="Day" />
                           <ViewDirective option="Week" />
-                          <ViewDirective option="WorkWeek" />
-                          <ViewDirective option="Month" />
+                    
                         </ViewsDirective>
                         <Inject
                           services={[
