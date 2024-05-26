@@ -1,11 +1,9 @@
 import React from "react";
 
+import TimeTableTest from "../../Components/TableTime/TimeTableTest";
 import Header from "../../Components/Header/Header";
 import Sidebar from "../../Components/Sidebar/Sidebar";
 import NavBar from "../../Components/NavBar/NavBar";
-import Scheduler from "../../Components/Scheduler/Scheduler";
-import SelectOptions from "../../Components/SelectOptions/SelectOptions";
-import EditorCustomField from "../../Components/Scheduler/EditorTemplate";
 
 const TimeTable = (props) => {
   return (
@@ -22,8 +20,7 @@ const TimeTable = (props) => {
       <div className="main-content">
         <NavBar {...props} />
         <Header />
-        <Scheduler />
-        {/* <EditorCustomField /> */}
+        <TimeTableTest />
       </div>
     </>
   );
