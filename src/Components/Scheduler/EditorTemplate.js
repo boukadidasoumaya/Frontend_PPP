@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Month, Inject, Resize, DragAndDrop, } from '@syncfusion/ej2-react-schedule';
+import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Inject, Resize, DragAndDrop, } from '@syncfusion/ej2-react-schedule';
 import './Scheduler.css';
+import axios from 'axios';
 import { extend } from '@syncfusion/ej2-base';
 import { DateTimePickerComponent } from '@syncfusion/ej2-react-calendars';
 import { DropDownListComponent } from '@syncfusion/ej2-react-dropdowns';
@@ -19,22 +20,66 @@ import { format } from 'date-fns';
 import SelectOptions from '../SelectOptions/SelectOptions';
 
 registerLicense('ORg4AjUWIQA/Gnt2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5Xd0BjXHpcc3NRQ2hY');
-/**
- * Schedule editor template sample
- */
-const EditorTemplate = () => {
-    const [dataSource,setDataSource] = useState(
-        [
-            {   id:1, Subject: 'Analyse',Professor:'Saloua',  StartTime: new Date(2024, 4, 21, 10, 0),  EndTime: new Date(2024, 4, 21, 12, 30),  CalendarId: 1,   },
-            {   id:2 ,  Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 13, 0),  EndTime: new Date(2021, 1, 15, 15, 30), CalendarId: 2,   },
-            {  id:3 ,   Subject: 'Java',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 16, 0),  EndTime: new Date(2021, 1, 15, 18, 30),  CalendarId: 3,  },
-            {  id:4 , Subject: 'Analyse', Professor:'Saloua',  StartTime: new Date(2021, 1, 16, 10, 0),  EndTime: new Date(2021, 1, 16, 12, 30),  CalendarId: 1,   },
-            {  id:5 ,  Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 16, 13, 0),  EndTime: new Date(2021, 1, 16, 15, 30), CalendarId: 2,   }
-        ]
-    );
 
-    const majors = ['MPI', 'RT', 'GL','IIA','IMI','MASTER'];
+const getNextDate = (dayOfWeek, time) => {
+    const now = new Date();
+    const resultDate = new Date();
+    resultDate.setDate(now.getDate() + ((7 + dayOfWeek - now.getDay()) % 7));
+    resultDate.setHours(time.split(':')[0], time.split(':')[1], 0, 0);
+    if (resultDate < now) {
+        resultDate.setDate(resultDate.getDate() + 7);
+    }
+    return resultDate;
+};
+
+
+const EditorTemplate = () => {
+    const [dataSource, setDataSource] = useState([]);
+
+    useEffect(() => {
+        axios
+          .get("http://localhost:5000/timetables/majoryear/RT/3/1")
+          .then((response) => {
+              // Transform data from API to match ScheduleComponent's data structure
+              const transformedData = response.data.data.map(item => ({
+                  Id: item._id,
+                  Subject: item.SubjectName,
+                  Location: item.teacher_name,
+                  Description:item.Room,
+                  StartTime: getNextDate(getDayOfWeek(item.Day), item.StartTime),
+                  EndTime: getNextDate(getDayOfWeek(item.Day), item.EndTime)
+              }));
+              setDataSource(transformedData);
+          })
+          .catch((error) => {
+              console.error("Error fetching time tables:", error);
+          });
+    }, []);
+
+    // Function to get the day of the week based on the day string (e.g., 'Monday', 'Tuesday', etc.)
+    const getDayOfWeek = (dayString) => {
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return daysOfWeek.indexOf(dayString);
+    };
+const [majors, setMajors] = useState([]);
+  const [levels, setLevels] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/classes/majors")
+      .then((response) => {
+        setMajors(response.data.majors);
+        console.log("Majors fetched:", response.data.majors);
+        console.log("Majors:", majors);
+      })
+      .catch((error) => {
+        console.error("Error fetching majors:", error);
+      });
+  }, []);
     const [selectedMajor, setSelectedMajor] = useState('');
+    const handleMajorChange = (event) => {
+        setSelectedMajor(event.target.value);
+    };
     const projectData = [
         { text: 'MPI', id: 1, color: '#cb6bb2' },
         { text: 'CBA', id: 2, color: '#56ca85' },
@@ -48,19 +93,7 @@ const EditorTemplate = () => {
 
     ];
     
-    const categoryData = [
-        { text: 'Nancy', id: 1, groupId: 1, color: '#df5286' },
-        { text: 'Steven', id: 2, groupId: 1, color: '#7fa900' },
-        { text: 'Robert', id: 3, groupId: 2, color: '#ea7a57' },
-        { text: 'Smith', id: 4, groupId: 2, color: '#5978ee' },
-        { text: 'Michael', id: 5, groupId: 3, color: '#df5286' },
-        { text: 'Root', id: 6, groupId: 3, color: '#00bdae' },
-        { text: 'Requested', id: 7, groupId: 1, color: '#7fa900' },
-        { text: 'Confirmed', id: 8, groupId: 1, color: '#7fa900' },
-        { text: 'New', id: 9, groupId: 1, color: '#7fa900' },
-
-        
-    ];
+  
     let group = { resources: ['Projects', 'Categories'] };
     
     let scheduleObj = useRef(null);
@@ -72,25 +105,20 @@ const EditorTemplate = () => {
     let selectedTarget;
     let intl = new Internationalization();
     const data = extend([], dataSource, null, true);
+    console.log(data);
     const fields = {
+        subject: { name: 'Subject', validation: { required: true } },
         startTime: { name: 'StartTime', validation: { required: true } },
-        endTime: { name: 'EndTime', validation: { required: true } },
-    };
+        endTime: { name: 'EndTime', validation: { required: true } }
+      };
+    
     ///
     let liveTimeInterval;
     const contextMenuItems = [
         { text: 'New Event', iconCss: 'e-icons e-plus', id: 'Add' },
-        { text: 'New Recurring Event', iconCss: 'e-icons e-repeat', id: 'AddRecurrence' },
-        { text: 'Today', iconCss: 'e-icons e-timeline-today', id: 'Today' },
+        
         { text: 'Edit Event', iconCss: 'e-icons e-edit', id: 'Save' },
         { text: 'Delete Event', iconCss: 'e-icons e-trash', id: 'Delete' },
-        {
-            text: 'Delete Event', id: 'DeleteRecurrenceEvent', iconCss: 'e-icons e-trash',
-            items: [
-                { text: 'Delete Occurrence', id: 'DeleteOccurrence' },
-                { text: 'Delete Series', id: 'DeleteSeries' }
-            ]
-        },
         {
             text: 'Edit Event', id: 'EditRecurrenceEvent', iconCss: 'e-icons e-edit',
             items: [
@@ -99,12 +127,7 @@ const EditorTemplate = () => {
             ]
         }
     ];
-    const calendarCollections = [
-        { CalendarText: 'My Calendar', CalendarId: 1, CalendarColor: '#c43081' },
-        { CalendarText: 'Company', CalendarId: 2, CalendarColor: '#ff7f50' },
-        { CalendarText: 'Birthday', CalendarId: 3, CalendarColor: '#AF27CD' },
-        { CalendarText: 'Holiday', CalendarId: 4, CalendarColor: '#808000' }
-    ];
+
     const exportItems = [
         { text: 'iCalendar', iconCss: 'e-icons e-export' },
         { text: 'Excel', iconCss: 'e-icons e-export-excel' }
@@ -166,54 +189,18 @@ const EditorTemplate = () => {
             case 'WorkWeek':
                 setCurrentView(isTimelineView ? 'TimelineWorkWeek' : 'WorkWeek');
                 break;
-            case 'Month':
-                setCurrentView(isTimelineView ? 'TimelineMonth' : 'Month');
-                break;
-            case 'Year':
-                setCurrentView(isTimelineView ? 'TimelineYear' : 'Year');
-                break;
-            case 'Agenda':
-                setCurrentView('Agenda');
-                break;
+        
+
             case 'New Event':
                 const eventData = getEventData();
                 scheduleObj.current.openEditor(eventData, 'Add', true);
                 break;
-            case 'New Recurring Event':
-                const recEventData = getEventData();
-                console.log(recEventData)
-                scheduleObj.current.openEditor(recEventData, 'Add', true, 1);
-                break;
+            
         }
     };
-    const timelineTemplate = useCallback(() => {
-        return (<div className='template'>
-        <div className='icon-child'>
-          <CheckBoxComponent id='timeline_views' checked={isTimelineView} change={onChange}/>
-        </div>
-        <div className='text-child'>Timeline Views</div>
-      </div>);
-    }, []);
-    const groupTemplate = useCallback(() => {
-        return (<div className='template'>
-        <div className='icon-child'>
-          <CheckBoxComponent id='grouping' checked={true} change={(args) => { scheduleObj.current.group.resources = args.checked ? ['Calendars'] : []; }}/>
-        </div>
-        <div className='text-child'>Grouping</div>
-      </div>);
-    }, []);
-    const gridlineTemplate = useCallback(() => {
-        return (<div className='template'>
-        <div className='icon-child'>
-          <CheckBoxComponent id='timeSlots' checked={true} change={(args) => { scheduleObj.current.timeScale.enable = args.checked; }}/>
-        </div>
-        <div className='text-child'>Gridlines</div>
-      </div>);
-    }, []);
+    
    
-    const onChange = (args) => {
-        setIsTimelineView(args.checked);
-    };
+  
     const contextMenuOpen = (args) => {
         let newEventElement = document.querySelector('.e-new-event');
         if (newEventElement) {
@@ -281,31 +268,13 @@ const EditorTemplate = () => {
                 break;
         }
     };
-    ///
+
     
-    const onEventRendered = (args) => {
-        // eslint-disable-next-line default-case
-        switch (args.data.Professor) {
-            case 'Requested':
-                args.element.style.backgroundColor = '#F57F17';
-                break;
-            case 'Confirmed':
-                args.element.style.backgroundColor = '#7fa900';
-                break;
-            case 'New':
-                args.element.style.backgroundColor = '#8e24aa';
-                break;
-        }
-    };
+    
     const onActionBegin = (args) => {
         if (args.requestType === 'eventCreate' || args.requestType === 'eventChange') {
             let data = args.data instanceof Array ? args.data[0] : args.data;
             args.cancel = !scheduleObj.current.isSlotAvailable(data.StartTime, data.EndTime);
-        }
-    };
-    const onActionComplete = (args) => {
-        if (args.requestType === 'eventCreated' || args.requestType === 'eventChanged') {
-            scheduleObj.current.refreshEvents();
         }
     };
     const editorHeaderTemplate = (props) => {
@@ -356,26 +325,7 @@ const EditorTemplate = () => {
               <div></div>
       );
   };
-  const eventTemplate = (event) => {
-    // Accéder au nom du professeur à partir de l'objet d'événement (adaptez la propriété en fonction de votre structure de données)
-    const professorName = event.professorName;
-  
-    // Formater la date de début et de fin
-    const startDate = format(new Date(event.startTime), 'dd MMM yyyy');
-    const endDate = format(new Date(event.endTime), 'dd MMM yyyy');
-  
-    // Retourner le contenu HTML avec les informations de l'événement
-    return (
-      <div className="custom-event">
-        <div className="event-title">{event.subject}</div>
-        <div className="event-professor">{professorName}</div>
-        <div className="event-time">
-          {startDate} - {endDate}
-        </div>
-      </div>
-    );
-  };
-  
+
   
     return (
     <>
@@ -383,11 +333,16 @@ const EditorTemplate = () => {
         <div className='col-lg-12 control-section'>
             <div className='content-wrapper'>
             <div className='schedule-overview'>
+            <div className="select-container">
+                                        <select value={selectedMajor} onChange={handleMajorChange} placeholder="Select Major">
+                                            <option value="" disabled>Select Major</option>
+                                            {majors.map((major, index) => (
+                                                <option key={index} value={major}>{major}</option>
+                                            ))}
+                                        </select>
+                                    </div>
             <AppBarComponent colorMode=''>
                 
-                <span id="timeBtn" className="time current-time" ref={timeBtn}>
-        
-                </span>
                 <div className="e-appbar-spacer">
         
                 </div>
@@ -403,19 +358,16 @@ const EditorTemplate = () => {
                
               </AppBarComponent>
               <div>
-              <ToolbarComponent id='toolbarOptions' cssClass='overview-toolbar' className='toolbar' width='100%' height={70} overflowMode='Scrollable' scrollStep={100} created={() => liveTimeInterval = setInterval(() => { }, 1000)} clicked={onToolbarItemClicked}>
+              <ToolbarComponent id='toolbarOptions' cssClass='overview-toolbar' className='toolbar' width='100%' height={70} overflowMode='Scrollable' scrollStep={100}  clicked={onToolbarItemClicked}>
                 <ItemsDirective>
                   <ItemDirective prefixIcon='e-icons e-plus' tooltipText='New Event' text='New Event' tabIndex={0}/>
                   <ItemDirective type='Separator'/>
                   <ItemDirective prefixIcon='e-icons e-day' tooltipText='Day' text='Day' tabIndex={0}/>
                   <ItemDirective prefixIcon='e-icons e-week' tooltipText='Week' text='Week' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-week' tooltipText='WorkWeek' text='WorkWeek' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-month' tooltipText='Month' text='Month' tabIndex={0}/>
-                  
+                 
                   <ItemDirective type='Separator'/>
-                  <ItemDirective tooltipText='Grouping' text='Grouping' template={groupTemplate}/>
-                  <ItemDirective tooltipText='Timme Slots' text='Timme Slots' template={gridlineTemplate}/>
-                </ItemsDirective>
+                  
+                  </ItemsDirective>
               </ToolbarComponent>
               <div className='overview-content'>
                 <div className='left-panel'>
@@ -424,48 +376,30 @@ const EditorTemplate = () => {
                         currentView={currentView}
                         width="100%"
                         height="650px"
-                        selectedDate={new Date()}
+                    
                         ref={scheduleObj}
-                        eventSettings={{ dataSource: data, fields: fields }}
+                        eventSettings={{ dataSource: data }}
                         editorTemplate={editorTemplate}
                         editorHeaderTemplate={editorHeaderTemplate}
                         actionBegin={onActionBegin}
-                        eventRendered={onEventRendered}
-                        eventTemplate={eventTemplate}
-                        group={group}
+                        
                         enableAdaptiveUI={true}
-                        actionComplete={onActionComplete}
+                       
                         
                         >
-                        <ResourcesDirective>
-                          <ResourceDirective
-                            field="CalendarId"
-                            title="Calendars"
-                            name="Calendars"
-                            dataSource={calendarCollections}
-                            query={new Query().where("CalendarId", "equal", 1)}
-                            textField="CalendarText"
-                            idField="CalendarId"
-                            colorField="CalendarColor"
-                          />
-                            <ResourceDirective field='ProjectId' title='Choose Project' name='Projects' allowMultiple={false} dataSource={projectData} textField='text' idField='id' colorField='color' />
-                            <ResourceDirective field='TaskId' title='Category' name='Categories' allowMultiple={true} dataSource={categoryData} textField='text' idField='id' groupIDField='groupId' colorField='color' />
+                       
                         
-                        </ResourcesDirective>
                         <ViewsDirective>
                           <ViewDirective option="Day" />
                           <ViewDirective option="Week" />
-                          <ViewDirective option="WorkWeek" />
-                          <ViewDirective option="Month" />
+                    
                         </ViewsDirective>
                         <Inject
                           services={[
                             Day,
                             Week,
-                            WorkWeek,
-                            Month,
-                            Resize,
-                            DragAndDrop,
+                        
+                           
                             Print,
                             ExcelExport,
                             ICalendarImport,
@@ -473,7 +407,6 @@ const EditorTemplate = () => {
                           ]}
                         />
                       </ScheduleComponent>
-                    <ContextMenuComponent id='overviewContextMenu' cssClass='schedule-context-menu' ref={contextMenuObj} target='.e-schedule' items={contextMenuItems} beforeOpen={contextMenuOpen} select={contextMenuSelect}/>
                   </div>
                 </div>
                 

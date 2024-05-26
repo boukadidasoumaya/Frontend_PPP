@@ -15,7 +15,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/scss/argon-dashboard-react.scss";
 import Profile from './pages/Profile/Profile.js';
 import Courses from './pages/Courses/Courses.js';
-import TimeTable from './pages/TimeTable/test.js';
+import TimeTable from './pages/TimeTable/TimeTable.js';
 import Verifing from './Components/login/Verification.js';
 function App() {
   return (

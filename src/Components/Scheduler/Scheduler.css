@@ -168,7 +168,9 @@
 .schedule-resource.e-multi-select-list-wrapper.e-checkbox .e-filter-parent {
     display: none;
 }
-
+.e-schedule-toolbar-container , .e-header-date{
+    display: none !important;
+}
 .schedule-overview .e-timeline-view .e-resource-left-td,
 .schedule-overview .e-timeline-month-view .e-resource-left-td {
     width: 120px;
@@ -325,3 +327,54 @@
     padding: 7px;
     padding-right: 16px;
   }
+/* styles.css */
+
+.select-container {
+    position: relative;
+    display: inline-block;
+   
+
+}
+
+.select-container select {
+   
+    padding: 10px;
+    width: 50%;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #ffffff;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.select-container select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.select-container::after {
+    content: '▼';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #999;
+}
+
+.overview-legend {
+    margin-top: 20px;
+}
+
+.overview-legend .legend-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+button.e-link.e-schedule-export {
+    margin-left: 10px;
+}
