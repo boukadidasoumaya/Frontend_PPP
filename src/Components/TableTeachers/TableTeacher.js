@@ -21,8 +21,10 @@ import "./TableTeachers.css";
 import { useNavigate } from "react-router-dom";
 import SelectOptions from "../SelectOptions/SelectOptions";
 import axios from "axios";
+import { useRef } from "react";
 
 const TableTeachers = () => {
+  const modalRef = useRef(null);
   const navigate = useNavigate();
   const [teachers, setTeachers] = useState([]);
   const [formData, setFormData] = useState({
@@ -49,7 +51,6 @@ const TableTeachers = () => {
   const [subjects, setSubjects] = useState([]);
   const [selectedClass, setSelectedClass] = useState([]);
 
- 
   useEffect(() => {
     axios
       .get("http://localhost:5000/teachers/departments")
@@ -338,7 +339,10 @@ const TableTeachers = () => {
     };
 
     axios
-      .put(`http://localhost:5000/teachers/teacher/${newTeacher?._id}`, newTeacher)
+      .put(
+        `http://localhost:5000/teachers/teacher/${newTeacher?._id}`,
+        newTeacher
+      )
       .then((response) => {
         console.log("Teacher updated:", response.data);
         // Update the teachers state with the updated teacher
