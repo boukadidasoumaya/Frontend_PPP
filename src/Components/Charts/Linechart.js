@@ -1,12 +1,39 @@
 import { ResponsiveLine } from '@nivo/line'
 import {dataM }from './dataM'
-import  {dataW} from './dataW'
-
+import React, { useState, useEffect } from 'react';
 function Linechart(data = dataM) {
+    async function fetchAttendanceData() {
+        try {
+          const response = await fetch('/api/attendance/attendancemonthly');
+          if (!response.ok) {
+            throw new Error('Failed to fetch attendance data');
+          }
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error('Error fetching attendance data:', error);
+          throw error;
+        }
+      }
+    
+      const [attendanceData, setAttendanceData] = useState([]);
+    
+      useEffect(() => {
+        async function getAttendanceData() {
+          try {
+            const data = await fetchAttendanceData();
+            setAttendanceData(data.data); // Assuming data is an object with a data property
+          } catch (error) {
+            // Handle error
+          }
+        }
+        getAttendanceData();
+      }, []);
+    
   return (
     <>
      <ResponsiveLine
-        data={dataM}
+data={[{ id: 'all-students', data: attendanceData }]}
         theme={{
           
           "text": {

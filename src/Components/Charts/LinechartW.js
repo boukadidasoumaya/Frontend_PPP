@@ -2,60 +2,38 @@ import { ResponsiveLine } from '@nivo/line'
 import  {dataW} from './dataW'
 import React, { useEffect, useState } from 'react';
 function LinechartW(data ) {
-    async function fetchAttendanceData() {
-        const response = await fetch('/api/attendance/attendance'); // Replace with your backend URL
-        if (!response.ok) {
-          throw new Error('Failed to fetch attendance data');
-        }
-        const dataw = await response.json();
-        console.log(dataw);
-        return dataw;
+     async function fetchWeeklyAttendance() {
+    try {
+      const response = await fetch('/api/attendance/weeklyattendance');
+      if (!response.ok) {
+        throw new Error('Failed to fetch weekly attendance data');
       }
-      
-      // Function to calculate weekly attendance from the fetched data
-      function calculateWeeklyAttendance(data) {
-        const attendance = {};
-      
-        data.forEach(entry => {
-          const { id, day } = entry;
-          if (!attendance[id]) {
-            attendance[id] = Array(7).fill(0);
-          }
-          const dayIndex = day - 1; // Assuming day is 1-7 (Mon-Sun)
-          attendance[id][dayIndex]++;
-        });
-      
-        // Transform the attendance object into a format suitable for the ResponsiveLine component
-        const lineData = Object.keys(attendance).map(id => ({
-          id: id,
-          data: attendance[id].map((count, index) => ({
-            x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index],
-            y: count,
-          })),
-        }));
-      
-        return lineData;
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching weekly attendance data:', error);
+      throw error;
+    }
+  }
+
+  const [weeklyAttendance, setWeeklyAttendance] = useState([]);
+
+  useEffect(() => {
+    async function getWeeklyAttendance() {
+      try {
+        const data = await fetchWeeklyAttendance();
+        setWeeklyAttendance(data);
+      } catch (error) {
+        // Handle error
       }
-      
-        const [attendanceData, setAttendanceData] = useState([]);
-        const [error, setError] = useState(null);
-      
-        useEffect(() => {
-          async function getAttendanceData() {
-            try {
-              const dataw = await fetchAttendanceData();
-              setAttendanceData(dataw);
-            } catch (error) {
-              setError(error.message);
-            }
-          }
-      
-          getAttendanceData();
-        }, []);
+    }
+    getWeeklyAttendance();
+  }, []);
+
   return (
     <>
-     <ResponsiveLine
-        data={attendanceData}
+        <ResponsiveLine
+          data={[{ id: 'attendance', data: weeklyAttendance }]}
         theme={{
           
             "text": {
