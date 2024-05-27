@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Inject, Resize, DragAndDrop, } from '@syncfusion/ej2-react-schedule';
 import './Scheduler.css';
 import axios from 'axios';
+import { Row, Col, Alert , Modal,ModalHeader,ModalBody} from 'reactstrap';
 import { extend } from '@syncfusion/ej2-base';
 import { DateTimePickerComponent } from '@syncfusion/ej2-react-calendars';
 import { DropDownListComponent } from '@syncfusion/ej2-react-dropdowns';
@@ -22,108 +23,164 @@ import SelectOptions from '../SelectOptions/SelectOptions';
 registerLicense('ORg4AjUWIQA/Gnt2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5Xd0BjXHpcc3NRQ2hY');
 
 const getNextDate = (dayOfWeek, time) => {
+    // Fix `now` to the start of the week (Sunday)
     const now = new Date();
-    const resultDate = new Date();
-    resultDate.setDate(now.getDate() + ((7 + dayOfWeek - now.getDay()) % 7));
-    resultDate.setHours(time.split(':')[0], time.split(':')[1], 0, 0);
-    if (resultDate < now) {
-        resultDate.setDate(resultDate.getDate() + 7);
-    }
+    const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    const resultDate = new Date(firstDayOfWeek);
+
+    // Calculate the specific date for the given dayOfWeek
+    resultDate.setDate(firstDayOfWeek.getDate() + dayOfWeek);
+
+    // Set the time
+    const [hours, minutes] = time.split(':').map(Number);
+    resultDate.setHours(hours, minutes, 0, 0);
+
     return resultDate;
 };
 
 
+const getDayOfWeek = (dayString) => {
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return daysOfWeek.indexOf(dayString);
+};
+
 const EditorTemplate = () => {
     const startHour = "08:00";
     const endHour = "18:00";
-    const workDays = [1, 2, 3, 4, 5, 6]; 
     const [dataSource, setDataSource] = useState([]);
-    const fetchTimeTables = (selectedMajor) => {
-        axios
-            .get(`http://localhost:5000/timetables/majoryear/${selectedMajor}/${selectedLevel}/1`)
-            .then((response) => {
-                // Transform data from API to match ScheduleComponent's data structure
+    const [majors, setMajors] = useState([]);
+    const [levels, setLevels] = useState([]);
+    const [selectedMajor, setSelectedMajor] = useState('');
+    const [selectedLevel, setSelectedLevel] = useState('');
+    const scheduleObj = useRef(null);
+    const [currentView, setCurrentView] = useState('Week');
+    const [isTimelineView, setIsTimelineView] = useState(false);
+
+    useEffect(() => {
+        axios.get("http://localhost:5000/classes/majors")
+            .then(response => {
+                setMajors(response.data.majors);
+            })
+            .catch(error => {
+                console.error("Error fetching majors:", error);
+            });
+
+        axios.get("http://localhost:5000/classes/levels")
+            .then(response => {
+                setLevels(response.data.levels);
+            })
+            .catch(error => {
+                console.error("Error fetching levels:", error);
+            });
+    }, []);
+
+    useEffect(() => {
+        if (selectedMajor || selectedLevel) {
+            fetchTimeTables(selectedMajor, selectedLevel);
+            
+        }
+    }, [selectedMajor, selectedLevel]);
+
+    const fetchTimeTables = (major, level) => {
+        axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}/1`)
+            .then(response => {
                 const transformedData = response.data.data.map(item => ({
                     Id: item._id,
                     Subject: item.SubjectName,
                     Location: item.teacher_name,
-                    Description:item.Room,
+                    Description: item.Room,
                     StartTime: getNextDate(getDayOfWeek(item.Day), item.StartTime),
                     EndTime: getNextDate(getDayOfWeek(item.Day), item.EndTime)
                 }));
+                console.log(major);
                 setDataSource(transformedData);
             })
-            .catch((error) => {
+            .catch(error => {
                 console.error("Error fetching time tables:", error);
             });
     };
 
-    // Function to get the day of the week based on the day string (e.g., 'Monday', 'Tuesday', etc.)
-    const getDayOfWeek = (dayString) => {
-        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        return daysOfWeek.indexOf(dayString);
-    };
-const [majors, setMajors] = useState([]);
-  const [levels, setLevels] = useState([]);
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:5000/classes/majors")
-      .then((response) => {
-        setMajors(response.data.majors);
-        console.log("Majors fetched:", response.data.majors);
-        console.log("Majors:", majors);
-      })
-      .catch((error) => {
-        console.error("Error fetching majors:", error);
-      });
-  }, []);
-  useEffect(() => {
-    axios
-      .get("http://localhost:5000/classes/levels")
-      .then((response) => {
-        setLevels(response.data.levels);
-      })
-      .catch((error) => {
-        console.error("Error fetching levels:", error);
-      });
-  }, []);
-    const [selectedMajor, setSelectedMajor] = useState('');
-    const [selectedLevel, setSelectedLevel] = useState('');
     const handleMajorChange = (event) => {
-        const selectedMajor = event.target.value;
-        setSelectedMajor(selectedMajor); 
-        fetchTimeTables(selectedMajor);
+        setSelectedMajor(event.target.value);
     };
+
     const handleLevelChange = (event) => {
-        const selectedLevel = event.target.value;
-        setSelectedLevel(selectedLevel);
-        fetchTimeTables(selectedLevel);
+        setSelectedLevel(event.target.value);
     };
-    
-    
-    let scheduleObj = useRef(null);
-    const [currentView, setCurrentView] = useState('Week');
-    const [isTimelineView, setIsTimelineView] = useState(false);
-    const data = extend([], dataSource, null, true);
-    console.log(data);
-    
+
     const onPrint = () => {
         scheduleObj.current.print();
     };
+
     const importTemplateFn = (data) => {
         const template = '<div class="e-template-btn"><span class="e-btn-icon e-icons e-upload-1 e-icon-left"></span>${text}</div>';
         return compile(template.trim())(data);
     };
+
+   
+ //upload 
+    const [Alertvisible, setAlertVisible] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [UploadErrors, setUploadErrors] = useState([]);
+    const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [uploadsuccess, setUploadSuccess] = useState(false);
+    const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+    const createUpload = () => {
+        const file = document.querySelector('.calendar-import .e-css.e-btn');
+        file.classList.add('e-inherit');
+
+    };
     const onImportClick = (args) => {
-        scheduleObj.current.importICalendar(args.event.target.files[0]);
+        const file = args.event.target.files[0];
+        
+        console.log('file', file);
+    
+        if (file && file.type === 'text/csv') {
+            const formdata = new FormData();
+            formdata.append('csv', file);
+            axios.post("http://localhost:5000/timetables/upload", formdata, config)
+                .then(response => {
+                    console.log('File uploaded');
+                    setUploadSuccess(true);
+                    console.log(uploadsuccess);
+                })
+                .catch(error => {
+                    setUploadErrors(error.response.data.error);
+                    setUploadModalOpen(!uploadModalOpen);
+                    console.error('Error in uploading file:', error.response.data.error);
+                    setSelectedFile(null);
+                });
+        } else {
+            console.log('Please enter a CSV file');
+            setAlertVisible(true);
+            setSelectedFile(null);
+        }
     };
     
-        
-    const createUpload = () => {
-        const element = document.querySelector('.calendar-import .e-css.e-btn');
-        element.classList.add('e-inherit');
+    const onDismiss = () => {
+        setAlertVisible(!Alertvisible)};
+    const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
+    const onToolbarItemClicked = (args) => {
+        switch (args.item.text) {
+            case 'Day':
+                setCurrentView(isTimelineView ? 'TimelineDay' : 'Day');
+                break;
+            case 'Week':
+                setCurrentView(isTimelineView ? 'TimelineWeek' : 'Week');
+                break;
+            case 'New Event':
+                const eventData = getEventData();
+                scheduleObj.current.openEditor(eventData, 'Add', true);
+                break;
+            default:
+                break;
+        }
     };
+
     const getEventData = () => {
         const date = scheduleObj.current.selectedDate;
         return {
@@ -137,37 +194,25 @@ const [majors, setMajors] = useState([]);
             CalendarId: 1
         };
     };
-    const onToolbarItemClicked = (args) => {
-        // eslint-disable-next-line default-case
-        switch (args.item.text) {
-            case 'Day':
-                setCurrentView(isTimelineView ? 'TimelineDay' : 'Day');
-                break;
-            case 'Week':
-                setCurrentView(isTimelineView ? 'TimelineWeek' : 'Week');
-                break;
-            case 'New Event':
-                const eventData = getEventData();
-                scheduleObj.current.openEditor(eventData, 'Add', true);
-                break;
-        }
-    };
-    
-    
+
     const onActionBegin = (args) => {
         if (args.requestType === 'eventCreate' || args.requestType === 'eventChange') {
-            let data = args.data instanceof Array ? args.data[0] : args.data;
+            const data = args.data instanceof Array ? args.data[0] : args.data;
             args.cancel = !scheduleObj.current.isSlotAvailable(data.StartTime, data.EndTime);
         }
     };
+
     const editorHeaderTemplate = (props) => {
-        return (<div id="event-header">
-        {(props !== undefined) ? ((props.Subject) ? <div>{props.Subject}</div> : <div>Create New Event</div>) : <div></div>}
-        </div>);
+        return (
+            <div id="event-header">
+                {props !== undefined ? (props.Subject ? <div>{props.Subject}</div> : <div>Create New Event</div>) : <div></div>}
+            </div>
+        );
     };
+
     const editorTemplate = (props) => {
         return (
-            (props !== undefined) ?
+            props !== undefined ?
                 <table className="custom-event-editor" style={{ width: '100%' }} cellPadding={5}>
                     <tbody>
                         <tr>
@@ -200,98 +245,119 @@ const [majors, setMajors] = useState([]);
                                 <DateTimePickerComponent id="EndTime" format='dd/MM/yy hh:mm a' data-name="EndTime" value={new Date(props.endTime || props.EndTime)} className="e-field" />
                             </td>
                         </tr>
-                    
-                
                     </tbody>
                 </table>
                 :
                 <div></div>
         );
     };
+
     return (
-    <>
-    <div className='schedule-control-section'>
-        <div className='col-lg-12 control-section'>
-            <div className='content-wrapper'>
-            <div className='schedule-overview'>
-            <div className="select-container">
-                                        <select value={selectedMajor} onChange={handleMajorChange} placeholder="Major">
-                                            <option value="" disabled>Major</option>
-                                            {majors.map((major, index) => (
-                                                <option key={index} value={major}>{major}</option>
-                                            ))}
-                                        </select>
-                                        <select value={selectedLevel} onChange={handleLevelChange} placeholder="Year">
-                                            <option value="" disabled>Year</option>
-                                            {levels.map((year, index) => (
-                                                <option key={index} value={year}>{year}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-            <AppBarComponent colorMode=''>
-                
-                <div className="e-appbar-spacer">
-        
-                </div>
-                <div className='control-panel calendar-export'>
-                    <ButtonComponent id='printBtn' cssClass='title-bar-btn e-inherit' iconCss='e-icons e-print' onClick={(onPrint)} content='Print'/>
-                </div>
-                <div className='control-panel import-button'>
-                    <UploaderComponent id='fileUpload' type='file' allowedExtensions='.ics' cssClass='calendar-import' buttons={{ browse: importTemplateFn({ text: 'Import' })[0] }} multiple={false} showFileList={false} selected={(onImportClick)} created={createUpload}/>
-                </div>
+        <div className='schedule-control-section'>
+            <div className='col-lg-12 control-section'>
+                <div className='content-wrapper'>
+                    <div className='schedule-overview'>
+                        <div className="select-container">
+                            <select value={selectedMajor} onChange={handleMajorChange} placeholder="Major">
+                                <option value="" disabled>Major</option>
+                                {majors.map((major, index) => (
+                                    <option key={index} value={major}>{major}</option>
+                                ))}
+                            </select>
+                            <select value={selectedLevel} onChange={handleLevelChange} placeholder="Year">
+                                <option value="" disabled>Year</option>
+                                {levels.map((year, index) => (
+                                    <option key={index} value={year}>{year}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <Row className='alertNotif'>
+                        {uploadsuccess && (
+          <div className='col alertMessage d-flex justify-content-end'>
+              <Alert isOpen={Alertvisible} toggle={onDismiss} className="alert-slide">
+               File Uploaded
+              </Alert>
+          </div>
+        ) }
+        {Alertvisible && (
+          <div className='col alertMessage d-flex justify-content-end'>
+              <Alert isOpen={Alertvisible} toggle={onDismiss} className="alert-slide">
+                Please Enter a CSV File 
+              </Alert>
+          </div>
+        ) }
 
-            </AppBarComponent>
-                <div>
-                    <ToolbarComponent id='toolbarOptions' cssClass='overview-toolbar' className='toolbar' width='100%' height={70} overflowMode='Scrollable' scrollStep={100}  clicked={onToolbarItemClicked}>
-                        <ItemsDirective>
-                        <ItemDirective prefixIcon='e-icons e-plus' tooltipText='New Event' text='New Event' tabIndex={0}/>
-                        <ItemDirective type='Separator'/>
-                        <ItemDirective prefixIcon='e-icons e-day' tooltipText='Day' text='Day' tabIndex={0}/>
-                        <ItemDirective prefixIcon='e-icons e-week' tooltipText='Week' text='Week' tabIndex={0}/>
-                        <ItemDirective type='Separator'/>
-                        </ItemsDirective>
+        </Row>
+        <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
+                <ModalHeader color="danger" toggle={toggleUploadModal}>Error in Uploading File </ModalHeader>
+                <ModalBody>
+                  {UploadErrors ? (
+                    <div>
+                      <p>Error in  inserting timetable into the database.</p>
+                    
+                    </div>
+                  ) : null}
+                </ModalBody>
+    
+        </Modal>
 
-                    </ToolbarComponent>
-                <div className='overview-content'>
-                <div className='left-panel'>
-                    <div className='overview-scheduler'>
-                    <ScheduleComponent
-                        currentView={currentView}
-                        width="100%"
-                        height="650px"
-                        ref={scheduleObj}
-                        eventSettings={{ dataSource: data }}
-                        editorTemplate={editorTemplate}
-                        editorHeaderTemplate={editorHeaderTemplate}
-                        actionBegin={onActionBegin}
-                        enableAdaptiveUI={true}
-                        startHour={startHour}
-                        endHour={endHour}
-                        >
-                        <ViewsDirective>
-                            <ViewDirective option="Day" />
-                            <ViewDirective option="Week" />
-                        </ViewsDirective>
-                        <Inject
-                            services={[
-                            Day,
-                            Week,
-                            Print,
-                            ExcelExport,
-                            ICalendarImport,
-                            ICalendarExport,
-                            ]}
-                        />
-                        </ScheduleComponent>
+                        <AppBarComponent colorMode=''>
+                            <div className="e-appbar-spacer"></div>
+                            <div className='control-panel calendar-export'>
+                                <ButtonComponent id='printBtn' cssClass='title-bar-btn e-inherit' iconCss='e-icons e-print' onClick={onPrint} content='Print' />
+                            </div>
+                            <div className='control-panel import-button'>
+                                <UploaderComponent id='fileUpload' type='file' allowedExtensions='.ics' cssClass='calendar-import' buttons={{ browse: importTemplateFn({ text: 'Import' })[0] }} multiple={false} showFileList={false} selected={onImportClick} created={createUpload} />
+                            </div>
+                        </AppBarComponent>
+                        <ToolbarComponent id='toolbarOptions' cssClass='overview-toolbar' className='toolbar' width='100%' height={70} overflowMode='Scrollable' scrollStep={100} clicked={onToolbarItemClicked}>
+                            <ItemsDirective>
+                                <ItemDirective prefixIcon='e-icons e-plus' tooltipText='New Event' text='New Event' tabIndex={0} />
+                                <ItemDirective type='Separator' />
+                                <ItemDirective prefixIcon='e-icons e-day' tooltipText='Day' text='Day' tabIndex={0} />
+                                <ItemDirective prefixIcon='e-icons e-week' tooltipText='Week' text='Week' tabIndex={0} />
+                                <ItemDirective type='Separator' />
+                            </ItemsDirective>
+                        </ToolbarComponent>
+                        <div className='overview-content'>
+                            <div className='left-panel'>
+                                <div className='overview-scheduler'>
+                                    <ScheduleComponent
+                                        currentView={currentView}
+                                        width="100%"
+                                        height="650px"
+                                        ref={scheduleObj}
+                                        eventSettings={{ dataSource: dataSource }}
+                                        editorTemplate={editorTemplate}
+                                        editorHeaderTemplate={editorHeaderTemplate}
+                                        actionBegin={onActionBegin}
+                                        enableAdaptiveUI={true}
+                                        startHour={startHour}
+                                        endHour={endHour}
+                                    >
+                                        <ViewsDirective>
+                                            <ViewDirective option="Day" />
+                                            <ViewDirective option="Week" />
+                                        </ViewsDirective>
+                                        <Inject
+                                            services={[
+                                                Day,
+                                                Week,
+                                                Print,
+                                                ExcelExport,
+                                                ICalendarImport,
+                                                ICalendarExport,
+                                            ]}
+                                        />
+                                    </ScheduleComponent>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                </div>
-                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </>);
+    );
 };
+
 export default EditorTemplate;
