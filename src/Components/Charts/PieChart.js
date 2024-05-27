@@ -1,13 +1,37 @@
 import { ResponsivePie } from '@nivo/pie'
-import {data} from './PieData.js'
+import React, { useEffect, useState } from 'react';
+import { set } from 'react-hook-form';
 // make sure parent container have a defined height when using
 // responsive component, otherwise height will be 0 and
 // no chart will be rendered.
 // website examples showcase many properties,
 // you'll often use just a few of them.
-function PieChart(){return(
+function PieChart(){
+        const [pieData, setPieData] = useState([]);
+    
+        useEffect(() => {
+            async function fetchData() {
+                try {
+                    const response = await fetch('/api/attendance/calculateTotalStudentsPerMajor');
+                    const data = await response.json();
+                    const transformedData = data.map((item, index) => ({
+                        id: item.major.toLowerCase(), // Assuming 'major' is the key for the major name
+                        label: item.major,
+                        value: item.totalStudents,
+                        color: `hsl(${index * 25}, 70%, 50%)`, // Adjust color generation as needed
+                      }));
+                      setPieData(transformedData);
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+            };
+              console.log(pieData);
+
+            fetchData();
+        }, []);
+    return(
     <ResponsivePie
-        data={data}
+        data={pieData}
         margin={{ top: 40, right: 55, bottom: 80, left: 80 }}
         cornerRadius={8}
         activeOuterRadiusOffset={8}
