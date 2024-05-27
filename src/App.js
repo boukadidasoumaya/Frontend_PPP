@@ -1,15 +1,14 @@
-import NavBar from './Components/NavBar/NavBar';
-import  Index from './pages/chartsPage/Index.js';
-import { BrowserRouter as Router , Routes,Route} from 'react-router-dom';
-import './App.css';
-import {createBrowserRouter, RouterProvider} from "react-router-dom";
+import NavBar from "./Components/NavBar/NavBar";
+import Index from "./pages/chartsPage/Index.js";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
 import Home from "./pages/Home/Home";
 import Students from './pages/Students/Students';
 import Teachers from './pages/Teachers/Teachers';
 // import TimeTable from './pages/TimeTable/TimeTable';
 
 
-import LoginPage from "./pages/loginPage/LoginPage.js"
+import LoginPage from "./pages/loginPage/LoginPage.js";
 import "./assets/plugins/nucleo/css/nucleo.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./assets/scss/argon-dashboard-react.scss";

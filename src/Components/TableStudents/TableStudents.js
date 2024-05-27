@@ -1,17 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { render } from "react-dom";
-import ReactTable from "react-table";
 import {
-  Badge,
   Card,
   CardHeader,
-  CardFooter,
   DropdownMenu,
   DropdownItem,
   UncontrolledDropdown,
   DropdownToggle,
-  Media,
-  Progress,
   Table,
   Container,
   Row,
@@ -66,8 +60,6 @@ const TableStudents = () => {
       .get("http://localhost:5000/classes/majors")
       .then((response) => {
         setMajors(response.data.majors);
-        console.log("Majors fetched:", response.data.majors);
-        console.log("Majors:", majors);
       })
       .catch((error) => {
         console.error("Error fetching majors:", error);
@@ -373,7 +365,9 @@ const handleDelete = (student) => {
   };
   const handleViewProfil = (student) => {
     console.log("View Profil");
-    navigate("/profile", { state: { selectedStudent: student } });
+    navigate("/profile", {
+      state: { selectedStudent: student, type: "student" },
+    });
   };
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
