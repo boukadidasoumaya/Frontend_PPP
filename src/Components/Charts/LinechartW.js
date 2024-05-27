@@ -12,7 +12,7 @@ function LinechartW() {
           throw new Error('Failed to fetch weekly attendance data');
         }
         const data = await response.json();
-        setWeeklyAttendance([data]); // Wrap in array to match expected format
+        setWeeklyAttendance(data); // Remove wrapping in array
       } catch (error) {
         console.error('Error fetching weekly attendance data:', error);
       }
@@ -27,9 +27,9 @@ function LinechartW() {
 
   return (
     <>
-      <ResponsiveLine
-        data={weeklyAttendance}
-        theme={{
+    <ResponsiveLine
+      data={weeklyAttendance}
+     theme={{
           text: {
             fontSize: 11,
             fill: "#64738C",
@@ -146,3 +146,4 @@ function LinechartW() {
 }
 
 export default LinechartW;
+
