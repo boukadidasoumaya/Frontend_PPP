@@ -4,21 +4,8 @@ import { ResponsiveBar } from '@nivo/bar'
 import {data} from './Barchartdata';
 import React, { useEffect, useState } from 'react';
 function Barchart() {
-    const [data, setData] = useState([]);
-
+   
       
-        useEffect(() => {
-          const fetchData = async () => {
-            try {
-              const response = await fetch.get('/api/attendance/ncalculateTotalStudentsPerMajor'); // Adjust the endpoint based on your backend route
-              setData(response.data);
-            } catch (error) {
-              console.error('Error fetching data:', error);
-            }
-          };
-      
-          fetchData();
-        }, []);
     return(
     
     <ResponsiveBar
