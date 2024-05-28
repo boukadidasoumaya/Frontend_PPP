@@ -5,7 +5,7 @@ import { useState } from "react";
 // node.js library that concatenates classes (strings)
 import classnames from "classnames";
 import routes from "../../routes.js";
-
+import { useEffect } from 'react';
 import Barchart from '../../Components/Charts/Barchart.js';// reactstrap components
 import {
   Button,
@@ -38,7 +38,30 @@ const Index = (props) => {
     setActiveNav(index);
     setChartLineData("data" + index);
   };
- 
+  const [pieData, setPieData] = useState([]);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/attendance/calculateTotalStudentsPerYear');
+        const data = await response.json();
+        const formattedData = data.map(item => ({
+          id: `Year ${item.year}`,
+          label: `Year ${item.year}`,
+          value: item.totalStudents,
+        })).sort((a, b) => {
+          const yearA = parseInt(a.label.split(' ')[1]);
+          const yearB = parseInt(b.label.split(' ')[1]);
+          return yearA - yearB;
+        });
+        setPieData(formattedData);
+        console.log(formattedData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    fetchData();
+  }, []);
   return (
     <>
   
@@ -155,41 +178,17 @@ const Index = (props) => {
                       <i className="fas fa-arrow-up text-success mr-3" /> 46,53%
                     </td>
                   </tr>
-                  <tr>
-                    <th scope="row">etudiants 1ere</th>
-                    <td>3,985</td>
-                    <td>319</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" />{" "}
-                      46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">etudiants 2eme</th>
-                    <td>3,513</td>
-                    <td>294</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" />{" "}
-                      36,49%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">etudiant 3eme</th>
-                    <td>2,050</td>
-                    <td>147</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 50,87%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">etudiant 5eme</th>
-                    <td>1,795</td>
-                    <td>190</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-danger mr-3" />{" "}
-                      46,53%
-                    </td>
-                  </tr>
+                  
+                  {pieData.map((item, index) => (
+                    <tr key={index}>
+                      <th scope="row">{item.label}</th>
+                      <td>{item.value}</td>
+                      <td>N/A</td>
+                      <td>
+                        <i className="fas fa-arrow-up text-success mr-3" />
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </Table>
              

@@ -18,7 +18,7 @@ function PieChart(){
                         id: item.major.toLowerCase(), // Assuming 'major' is the key for the major name
                         label: item.major,
                         value: item.totalStudents,
-                        color: `hsl(${index * 25}, 70%, 50%)`, // Adjust color generation as needed
+                        color: `hsl(${index * 250}, 70%, 50%)`, // Adjust color generation as needed
                       }));
                       setPieData(transformedData);
                 } catch (error) {
