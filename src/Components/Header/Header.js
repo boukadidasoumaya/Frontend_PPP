@@ -1,7 +1,28 @@
 
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 import './Header.css'
+import React, { useEffect, useState } from 'react';
 const Header = () => {
+  const [totalStudents, setTotalStudents] = useState(null);
+
+  useEffect(() => {
+    // Function to fetch total number of students
+    const fetchTotalStudents = async () => {
+      try {
+        const response = await fetch('/total-students'); // Assuming your React app is served from the same host as your Express server
+        if (!response.ok) {
+          throw new Error('Failed to fetch total students');
+        }
+        const data = await response.json();
+        setTotalStudents(data);
+      } catch (error) {
+        console.error('Error fetching total students:', error);
+      }
+    };
+
+    // Call the function when component mounts
+    fetchTotalStudents();
+  }, []);
   return (
     <>
       <div className="header  pb-8 pt-5 pt-md-8">
@@ -21,7 +42,7 @@ const Header = () => {
                           Etudiants
                         </CardTitle>
                         <span className="h2 font-weight-bold mb-0">
-                          1000
+                        {totalStudents}
                         </span>
                       </div>
                       <Col className="col-auto">
