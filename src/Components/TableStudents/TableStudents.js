@@ -430,6 +430,31 @@ const handleDelete = (student) => {
 
   const onDismiss = () => setAlertVisible(!Alertvisible);
   const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
+  // drop students
+  const [isDropModalOpen, setIsDropModalOpen] = useState(false);
+  const handleDrop = () => {
+    
+      axios.delete(`http://localhost:5000/students/drop/${selectedMajor}/${selectedLevel}`)
+        .then(response => {
+          console.log('All students with the sepecified critiria deleted:', response.data);
+          setStudents([]);
+
+        })
+        .catch(error => {
+
+          console.error('Error in deleting students:', error);
+        });
+      toggleDropModal();
+  };
+
+  const toggleDropModal = () => {
+      setIsDropModalOpen(!isDropModalOpen);
+  };
+
+  const onDropClick = () => {
+      toggleDropModal();
+  };
+
 
     return (
         <Container className="mt--7" fluid>
@@ -860,15 +885,35 @@ const handleDelete = (student) => {
 
               </Table>
               {currentStudents.length === 0 ? null : (
-  <div className="d-flex justify-content-center mt-3">
-    <Pagination
-      studentsPerPage={studentsPerPage}
-      totalStudents={students.length}
-      paginate={paginate}
-      currentPage={currentPage}
-    />
-  </div>
+ <>
+   <div className="d-flex justify-content-center mt-3">
+     <Pagination
+       studentsPerPage={studentsPerPage}
+       totalStudents={students.length}
+       paginate={paginate}
+       currentPage={currentPage}
+     />
+   </div>
+   {selectedMajor && selectedLevel && (<div className='col-12 d-flex justify-content-end'>
+                        
+                        <button  onClick={()=>onDropClick()} class="delete-button">
+                            <svg class="delete-svgIcon" viewBox="0 0 448 512">
+                                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path>
+                                          </svg>
+                        </button>
+                    </div>)}
+                    <Modal isOpen={isDropModalOpen} toggle={toggleDropModal}>
+                <ModalHeader toggle={toggleDropModal}>Confirm Deletion</ModalHeader>
+                <ModalBody>
+                    <p>Are you sure you want to delete the students of {selectedMajor} {selectedLevel}?</p>
+                    <Button color="danger" onClick={handleDrop}>Delete</Button>
+                    <Button color="secondary" onClick={toggleDropModal}>Cancel</Button>
+                </ModalBody>
+            </Modal>
+ </>
+  
 )}
+
  
 
             </Card>
