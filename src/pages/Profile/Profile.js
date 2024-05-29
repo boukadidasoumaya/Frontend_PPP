@@ -110,7 +110,7 @@ const Profile = (props) => {
               </Card>
             </Col>
             <Col className="order-xl-1" xl="8">
-              <TableAbsence />
+              <TableAbsence id={studentId}/>
             </Col>
           </Row>
         </Container>
