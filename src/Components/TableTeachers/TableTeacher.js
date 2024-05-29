@@ -27,9 +27,9 @@ const TableTeachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [formData, setFormData] = useState({
     _id: "",
+    CIN: "",
     FirstName: "",
     LastName: "",
-    CIN: "",
     Email: "",
     Department: "",
   });
@@ -145,9 +145,9 @@ const TableTeachers = () => {
   const [currentEmail, setCurrentEmail] = useState("");
 
   const initialErrors = {
+    cin: "",
     firstName: "",
     lastName: "",
-    cin: "",
     email: "",
     department: "",
   };
@@ -278,7 +278,7 @@ const TableTeachers = () => {
   };
   const handleViewProfil = (teacher) => {
     console.log("View Profil");
-    navigate("/Profile", { state: { selectedteacher: teacher } });
+    navigate("/TeacherProfile", { state: { selectedteacher: teacher } });
   };
 
   const handleUpdateTeacher = () => {
@@ -531,11 +531,11 @@ const TableTeachers = () => {
                         <i className="fas fa-ellipsis-v" />
                       </DropdownToggle>
                       <DropdownMenu className="dropdown-menu-arrow" right>
-                        {
+                        {/* {
                           <DropdownItem key="all" value="All Subjects">
                             All Subjects
                           </DropdownItem>
-                        }
+                        } */}
                         {teacher.Subjects &&
                           teacher.Subjects.map((subject) => (
                             <DropdownItem key={subject} value={subject}>
