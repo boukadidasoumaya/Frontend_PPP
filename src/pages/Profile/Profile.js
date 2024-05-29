@@ -61,7 +61,8 @@ import axios from 'axios';
           console.error('Error fetching majors:', error);
         });
     },[]);
-    console.log("student from axios",student);
+    console.log("student from axios1",student);
+    
     function calculateAge(birthDate) {
       const today = new Date();
       const birth = new Date(birthDate);
