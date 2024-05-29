@@ -39,20 +39,18 @@ const Index = (props) => {
     setChartLineData("data" + index);
   };
   const [pieData, setPieData] = useState([]);
+
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('/api/attendance/calculateTotalStudentsPerYear');
+        const response = await fetch('/api/attendance/calculateAbsencesPerYear');
         const data = await response.json();
         const formattedData = data.map(item => ({
-          id: `Year ${item.year}`,
-          label: `Year ${item.year}`,
+          id: item.country,
+          label: item.country,
           value: item.totalStudents,
-        })).sort((a, b) => {
-          const yearA = parseInt(a.label.split(' ')[1]);
-          const yearB = parseInt(b.label.split(' ')[1]);
-          return yearA - yearB;
-        });
+          absences: item.absences, // Use the absences field directly
+        }));
         setPieData(formattedData);
         console.log(formattedData);
       } catch (error) {
@@ -62,6 +60,7 @@ const Index = (props) => {
 
     fetchData();
   }, []);
+
   return (
     <>
   
@@ -174,21 +173,17 @@ const Index = (props) => {
                     <th scope="row">profs</th>
                     <td>4,569</td>
                     <td>340</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 46,53%
-                    </td>
+                    
                   </tr>
                   
                   {pieData.map((item, index) => (
-                    <tr key={index}>
-                      <th scope="row">{item.label}</th>
-                      <td>{item.value}</td>
-                      <td>N/A</td>
-                      <td>
-                        <i className="fas fa-arrow-up text-success mr-3" />
-                      </td>
-                    </tr>
-                  ))}
+  <tr key={index}>
+    <th scope="row">{item.label}</th>
+    <td>{item.value}</td>
+    <td>{item.absences}</td> {/* Use item.absences here */}
+    
+  </tr>
+))}
                 </tbody>
               </Table>
              
