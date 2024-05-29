@@ -43,6 +43,7 @@ const TableCourses = () => {
   const [Modules, setModules] = useState([]);
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
+  const modules = formData.Module;
 
   useEffect(() => {
     axios

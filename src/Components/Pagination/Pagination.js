@@ -1,5 +1,7 @@
 import React from 'react';
 import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
+import './Pagination.css';
+
 
 const CustomPagination = ({ studentsPerPage, totalStudents, paginate, currentPage }) => {
   // Calculer le nombre total de pages

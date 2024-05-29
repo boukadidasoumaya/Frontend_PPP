@@ -168,7 +168,9 @@
 .schedule-resource.e-multi-select-list-wrapper.e-checkbox .e-filter-parent {
     display: none;
 }
-
+.e-schedule-toolbar-container , .e-header-date{
+    display: none !important;
+}
 .schedule-overview .e-timeline-view .e-resource-left-td,
 .schedule-overview .e-timeline-month-view .e-resource-left-td {
     width: 120px;
@@ -324,4 +326,167 @@
   .custom-event-editor td {
     padding: 7px;
     padding-right: 16px;
+  }
+/* styles.css */
+
+.select-container {
+    position: relative;
+    display: inline-block;
+   
+
+}
+
+.select-container select {
+   
+    padding: 10px;
+    width: 50%;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #ffffff;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.select-container select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.select-container::after {
+    content: '▼';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #999;
+}
+
+.overview-legend {
+    margin-top: 20px;
+}
+
+.overview-legend .legend-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+button.e-link.e-schedule-export {
+    margin-left: 10px;
+}
+.alert-slide {
+    animation: slideInRight 0.5s ease forwards;
+    color: #ff0000 !important;
+    background-color: #fff4f4 !important;
+    border: 1px solid #fffafa !important;
+    padding: 1% 5% 1% 1% !important;
+    margin-bottom: 10px !important;
+    margin-right: 15px !important;
+    z-index: 9999 !important;
+
+
+  }
+  .alertNotif .alertMessage{
+
+    /* margin-bottom: 10px !important; */
+    padding: 0% 0% 0% 0% !important;
+  }
+  
+  
+  .alert-slide.alert-dismissible .close > span:not(.sr-only){
+    color: #ff0000 !important;
+    margin-right: -15px !important;
+  }
+       .alert-slide {
+       animation: slideInRight 0.5s ease forwards;
+       color: #ff0000 !important;
+       background-color: #fff4f4 !important;
+       border: 1px solid #fffafa !important;
+       padding: 1% 5% 1% 1% !important;
+       margin-bottom: 10px !important;
+       margin-right: 15px !important;
+       z-index: 9999 !important;
+
+
+     }
+     .alertNotif .alertMessage{
+
+       /* margin-bottom: 10px !important; */
+       padding: 0% 0% 0% 0% !important;
+     }
+     
+
+/* success notif*/
+.loadingButton{
+  display: flex;
+   margin-top: -20px;
+   margin-left: 600px;
+
+  
+
+}
+.delete-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgb(255, 0, 0);
+    border: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.164);
+    cursor: pointer;
+    transition-duration: 0.3s;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .delete-svgIcon {
+    width: 15px;
+    transition-duration: 0.3s;
+  }
+  
+  .delete-svgIcon path {
+    fill: white;
+  }
+  
+  .delete-button:hover {
+    width: 90px;
+    border-radius: 50px;
+    transition-duration: 0.3s;
+    background-color: rgb(255, 69, 69);
+    align-items: center;
+  }
+  
+  .delete-button:hover .delete-svgIcon {
+    width: 20px;
+    transition-duration: 0.3s;
+    transform: translateY(60%);
+    -webkit-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+  
+  .delete-button::before {
+    display: none;
+    content: "Delete";
+    color: white;
+    transition-duration: 0.3s;
+    font-size: 2px;
+  }
+  
+  .delete-button:hover::before {
+    display: block;
+    padding-right: 10px;
+    font-size: 13px;
+    opacity: 1;
+    transform: translateY(0px);
+    transition-duration: 0.3s;
   }
