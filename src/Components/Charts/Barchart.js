@@ -2,16 +2,36 @@
 // yarn add @nivo/bar
 import { ResponsiveBar } from '@nivo/bar'
 import {data} from './Barchartdata';
-
+import React, { useEffect, useState } from 'react';
+import { set } from 'date-fns';
 function Barchart() {
+    const [absencesPerMajor, setAbsencesPerMajor] = useState([]);
+    
+            useEffect(() => {
+                async function fetchAbsencesPerMajor() {
+                    try {
+                        const response = await fetch('/api/attendance/calculateAbsencesPerMajor');
+                        const data = await response.json();
+        
+                            console.log('Data is not in expected format:', data);
+                        setAbsencesPerMajor(data);
+                    } catch (error) {
+                        console.error('Error fetching absences per major:', error);
+                    }
+                }
+                fetchAbsencesPerMajor();
+            
+                    console.log(',,,,,,,,,,,,,,,,,,,,,,,,')
+
+          console.log(absencesPerMajor);
+
+        }, []);
+      
     return(
     
     <ResponsiveBar
-        data={data}
-        keys={[
-            'hot dog',
-            
-        ]}
+        data={absencesPerMajor}
+        keys={['hot dog']}
         indexBy="country"
         margin={{ top: 10, right: 20, bottom: 50, left: 60 }}
         padding={0.85}
