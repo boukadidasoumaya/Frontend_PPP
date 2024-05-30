@@ -19,6 +19,7 @@ import {
 import { FormLabel } from "react-bootstrap";
 import "./TableCourses.css";
 import SelectOptions from "../SelectOptions/SelectOptions";
+import { Alert } from "reactstrap";
 import axios from "axios";
 import { useRef } from "react";
 import Pagination from "../Pagination/Pagination";
@@ -97,7 +98,8 @@ const TableCourses = () => {
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false); // State for add subject modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false); // State for add subject modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
@@ -306,6 +308,109 @@ const TableCourses = () => {
     }
   };
 
+  //upload
+  const [Alertvisible, setAlertVisible] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [UploadErrors, setUploadErrors] = useState([]);
+  const config = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  };
+
+  const parseError = (errorString) => {
+    // Split the error string based on "Erreur: Duplicate entry found:
+    const errorEntries = errorString
+      .split("Erreur: Duplicate entry found:")
+      .filter(Boolean);
+
+    console.log("errorEntries:", errorEntries); // Add this line for debugging
+
+    // Map the entries to an array of error objects
+    return errorEntries
+      .map((entry) => {
+        try {
+          return JSON.parse(entry);
+        } catch (e) {
+          console.error("Failed to parse error entry:", entry);
+          return null;
+        }
+      })
+      .filter(Boolean);
+  };
+
+  const parseErrors = (errorString) => {
+    // Split the error string based on "Erreur: Duplicate entry found:
+    const s = errorString;
+    const errors = [];
+    for (let i = 0; i < s.length; i++) {
+      errors.push(parseError(s[i]));
+    }
+    return errors;
+  };
+
+  const formatErrors = (errors) => {
+    return errors.map((errorList, i) => (
+      <React.Fragment key={i}>
+        {errorList.map((error, index) => (
+          <div key={index} className="error-message">
+            <p>Duplicate Entry Found:</p>
+            <p>
+              <strong>Subject Name:</strong> {error.SubjectName}
+            </p>
+            <p>
+              <strong>Module:</strong> {error.Module}
+            </p>
+            <p>
+              <strong>Coefficient:</strong> {error.Coeff}
+            </p>
+          </div>
+        ))}
+        <br /> {/* Add a line break between each error list */}
+      </React.Fragment>
+    ));
+  };
+
+  const handleFileChange = (event) => {
+    if (event.target.files.length === 0) {
+      setSelectedFile(null);
+      return;
+    }
+
+    const file = event.target.files[0];
+    console.log("file", file);
+    setSelectedFile(file);
+
+    if (file && file.type === "text/csv") {
+      const formdata = new FormData();
+      formdata.append("csv", file);
+      axios
+        .post("http://localhost:5000/api/subjects/upload", formdata, config)
+        .then((response) => {
+          console.log("File uploaded");
+        })
+        .catch((error) => {
+          console.log("error", error);
+          console.error("Error in uploading file:", error);
+          setUploadModalOpen(!uploadModalOpen);
+          setUploadErrors(error.response.data.error);
+          setSelectedFile(null);
+        });
+    } else {
+      setSelectedFile(null);
+      setAlertVisible(!Alertvisible);
+    }
+  };
+
+  const handleButtonClick = () => {
+    setAlertVisible(false);
+    document.getElementById("fileUpload").value = "";
+    document.getElementById("fileUpload").click();
+  };
+
+  const onDismiss = () => setAlertVisible(!Alertvisible);
+  const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
+
   const handleDelete = (subject) => {
     toggleDeleteModal();
     axios
@@ -338,6 +443,33 @@ const TableCourses = () => {
     setFormData(subject);
   };
 
+  const [isDropModalOpen, setIsDropModalOpen] = useState(false);
+  const handleDrop = () => {
+    axios
+      .delete(
+        `http://localhost:5000/api/subjects/drop/${selectedMajor}/${selectedLevel}`
+      )
+      .then((response) => {
+        console.log(
+          "All subjects with the sepecified critiria deleted:",
+          response.data
+        );
+        setSubjects([]);
+      })
+      .catch((error) => {
+        console.error("Error in deleting subjects:", error);
+      });
+    toggleDropModal();
+  };
+
+  const toggleDropModal = () => {
+    setIsDropModalOpen(!isDropModalOpen);
+  };
+
+  const onDropClick = () => {
+    toggleDropModal();
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const [subjectsPerPage] = useState(10); // Nombre de matières par page;
 
@@ -352,6 +484,31 @@ const TableCourses = () => {
   return (
     <Container className="mt--7" fluid>
       {/* Table */}
+      <Row className="alertNotif">
+        {Alertvisible && (
+          <div className="col alertMessage d-flex justify-content-end">
+            <Alert
+              isOpen={Alertvisible}
+              toggle={onDismiss}
+              className="alert-slide"
+            >
+              Please Enter a CSV File
+            </Alert>
+          </div>
+        )}
+      </Row>
+      <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
+        <ModalHeader color="danger" toggle={toggleUploadModal}>
+          Error in Uploading File:{" "}
+        </ModalHeader>
+        <ModalBody>
+          {UploadErrors ? (
+            <div>
+              <p>{formatErrors(parseErrors(UploadErrors))}</p>
+            </div>
+          ) : null}
+        </ModalBody>
+      </Modal>
       <Row>
         <div className="col">
           <Card className="shadow">
@@ -402,10 +559,26 @@ const TableCourses = () => {
                 {/* Centered "Liste des matières" */}
 
                 {/* Add Subject Button in Center */}
-                <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddSubject justify-content-end   ">
-                  <Button className="addbtn" onClick={toggleModal}>
-                    Add Subject
-                  </Button>
+                <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddEtudiant justify-content-end   ">
+                  <div className="">
+                    <input
+                      type="file"
+                      id="fileUpload"
+                      style={{ display: "none" }}
+                      name="csv"
+                      className=""
+                      onChange={handleFileChange}
+                    />
+
+                    <Button className="uploadbtn" onClick={handleButtonClick}>
+                      Upload file
+                    </Button>
+                  </div>
+                  <div>
+                    <Button className="addbtn" onClick={toggleModal}>
+                      Add Subject
+                    </Button>
+                  </div>
                 </div>
                 {/* Add Subject Modal */}
                 <Modal
@@ -459,7 +632,6 @@ const TableCourses = () => {
                         <span className="text-danger">{errors.Coeff}</span>
                       )}
                     </FormGroup>
-                    
                   </ModalBody>
                   <div className="modal-footer">
                     <Button
@@ -664,14 +836,44 @@ const TableCourses = () => {
                 </Modal>
               </tbody>
             </Table>
-            <div className="d-flex justify-content-center mt-3">
-              <Pagination
-                subjectsPerPage={subjectsPerPage}
-                totalSubjects={subjects.length}
-                paginate={paginate}
-                currentPage={currentPage}
-              />
-            </div>
+            {currentSubjects.length === 0 ? null : (
+              <>
+                <div className="d-flex justify-content-center mt-3">
+                  <Pagination
+                    subjectsPerPage={subjectsPerPage}
+                    totalSubjects={subjects.length}
+                    paginate={paginate}
+                    currentPage={currentPage}
+                  />
+                </div>
+                {selectedMajor && selectedLevel && (
+                  <div className="col-12 d-flex justify-content-end">
+                    <button onClick={() => onDropClick()} class="delete-button">
+                      <svg class="delete-svgIcon" viewBox="0 0 448 512">
+                        <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                <Modal isOpen={isDropModalOpen} toggle={toggleDropModal}>
+                  <ModalHeader toggle={toggleDropModal}>
+                    Confirm Deletion
+                  </ModalHeader>
+                  <ModalBody>
+                    <p>
+                      Are you sure you want to delete the subjects of{" "}
+                      {selectedMajor} {selectedLevel}?
+                    </p>
+                    <Button color="danger" onClick={handleDrop}>
+                      Delete
+                    </Button>
+                    <Button color="secondary" onClick={toggleDropModal}>
+                      Cancel
+                    </Button>
+                  </ModalBody>
+                </Modal>
+              </>
+            )}
           </Card>
         </div>
       </Row>
