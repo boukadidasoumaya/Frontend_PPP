@@ -13,6 +13,8 @@ import {
 import Sidebar from "../../Components/Sidebar/Sidebar";
 import NavBar from "../../Components/NavBar/NavBar";
 import Header from "../../Components/Header/Header";
+import TableTeachers from "../../Components/TableTeachers/TableTeacher";
+import { Tab } from "react-bootstrap";
 import TableAbsence from "../../Components/TableAbsence/TableAbsence";
 import Absence_Calender from "../../Components/Charts/Absence_Calendar";
 import { useLocation } from "react-router-dom";
