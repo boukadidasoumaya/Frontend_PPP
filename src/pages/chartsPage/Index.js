@@ -110,7 +110,7 @@ const Index = (props) => {
                   </div>
                 </Row>
               </CardHeader>
-              <CardBody>
+              <CardBody >
                 
                 <div className="chart">{
                   chartLineData==="dataM"?<Linechart  /> :<LinechartW />}

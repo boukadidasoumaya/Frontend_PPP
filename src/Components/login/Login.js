@@ -1,77 +1,73 @@
 import "./login.css";
 import {FaUser , FaLock} from "react-icons/fa";
 import { useState } from "react";
-
-    function Login() {
-        const [errorMessage, setErrorMessage] = useState(""); // State to hold error message
-
-        function removeHtmlEntities(input) {
-            // Define a regular expression pattern to match HTML entities
-            const pattern = /&[^\s]*?;/g; // This pattern matches any HTML entity
-        
-            // Use the replace method with the pattern to remove HTML entities
-            return input.replace(pattern, '');
+import  Alert  from "./Alert";
+function Login() {
+    const [errorMessage, setErrorMessage] = useState(""); // State to hold error message
+    const [showToast, setShowToast] = useState(false); // State to control toast visibility
+  
+    function launchToast(message) {
+      setErrorMessage(message);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 5000);
+    }
+  
+    function removeHtmlEntities(input) {
+      const pattern = /&[^\s]*?;/g; // This pattern matches any HTML entity
+      return input.replace(pattern, '');
+    }
+  
+    const handleSubmit = async (event) => {
+      event.preventDefault(); // Prevent default form submission behavior
+  
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+  
+      if (usernameInput.value.trim() === '' || passwordInput.value.trim() === '') {
+        launchToast('Please fill out all required fields.');
+        return;
+      }
+  
+      const data = {
+        username: removeHtmlEntities(usernameInput.value.trim()),
+        password: removeHtmlEntities(passwordInput.value.trim())
+      };
+  
+      try {
+        const response = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          launchToast(errorData.error);
+          console.error('Error:', errorData.error);
+          return;
         }
-            // Function to handle form submission
-            const handleSubmit = async (event) => {
-                event.preventDefault(); // Prevent default form submission behavior
-            
-                // Accessing the input fields
-                const usernameInput = document.getElementById('username');
-                const passwordInput = document.getElementById('password');
-            
-                // Check if inputs are not empty
-                if (usernameInput.value.trim() === '' || passwordInput.value.trim() === '') {
-                    alert('Please fill out all required fields.');
-                    return;
-                }
-            
-                // Construct the data object to be sent in the request body
-                const data = {
-                    username: removeHtmlEntities(usernameInput.value.trim()),
-                    password: removeHtmlEntities(passwordInput.value.trim())
-                };
-            
-                try {
-                    // Make a POST request to your backend API endpoint
-                    const response = await fetch('/api/admin/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-            
-                    // Check if the request was successful (status code 2xx)
-                    if (!response.ok) {
-                        // If the request fails, get the error message from the response
-                        const errorData = await response.json();
-                        setErrorMessage(errorData.error); // Set error message in state
-                        console.error('Error:', errorData.error);
-                        return; // Stop further execution
-                    }
-            
-                    // Get the JWT token from the response
-                    const responseData = await response.json();
-                    const token = responseData.token;
-            
-                    // Store the token in sessionStorage
-                    sessionStorage.setItem('jwtToken', token);
-            
-                    // Redirect the user upon successful login
-                    window.location.href = '/'; // Redirect to the home page
-                } catch (error) {
-                    // Handle any network errors or other exceptions
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again later.');
-                }
-            };
-        return (
-            <div className='wrapper'>
-                <form action="">
-                <h1>Login</h1>
-                {errorMessage && <div className="error-message"><FaLock />   {errorMessage}</div>}
-                <div className="input-box">
+  
+        const responseData = await response.json();
+        const token = responseData.token;
+        sessionStorage.setItem('jwtToken', token);
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Error:', error);
+        launchToast('An error occurred while logging in.');
+      }
+    };
+  
+    return (
+      <div className='wrapper'>
+        <form onSubmit={handleSubmit}>
+          <h1>Login</h1>
+          {showToast &&<div className='alertss'>
+ <Alert message={errorMessage} icon=<FaLock /> showToast={showToast}/></div> }
+          <div className="input-box">
                     <input type="text" placeholder='Username' id ='username' required ></input>
                     <FaUser className="icon" />
                 </div>
@@ -88,6 +84,7 @@ import { useState } from "react";
                 </div>
                 <button type="submit" onClick={(e) => handleSubmit(e)}>Login</button>
             </form>
+            
             </div>
 
         );

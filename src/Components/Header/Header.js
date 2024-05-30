@@ -3,25 +3,34 @@ import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 import './Header.css'
 import React, { useEffect, useState } from 'react';
 const Header = () => {
-  const [totalStudents, setTotalStudents] = useState(null);
+
+  const [totalStudents, setTotalStudents] = useState(0);
 
   useEffect(() => {
-    // Function to fetch total number of students
+    // Function to fetch student data and calculate total students
     const fetchTotalStudents = async () => {
       try {
-        const response = await fetch('/total-students'); // Assuming your React app is served from the same host as your Express server
+        const response = await fetch('/api/attendance/calculateTotalStudentsPerYear'); // Assuming your React app is served from the same host as your Express server
+
         if (!response.ok) {
-          throw new Error('Failed to fetch total students');
+          throw new Error('Failed to fetch student data');
         }
+
         const data = await response.json();
-        setTotalStudents(data);
+console.log(data);
+        // Calculate the total number of students from the fetched data
+        const total = data.reduce((sum, entry) => sum + entry.totalStudents, 0);
+        
+        setTotalStudents(total);
       } catch (error) {
-        console.error('Error fetching total students:', error);
+        console.error('Error fetching student data:', error);
       }
-    };
+    }; // Empty dependency array means this effect runs once when the component mounts
+
 
     // Call the function when component mounts
     fetchTotalStudents();
+    console.log(totalStudents);
   }, []);
   return (
     <>

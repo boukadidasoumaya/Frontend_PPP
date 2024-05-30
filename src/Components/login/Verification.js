@@ -4,8 +4,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
     import { useLocation } from 'react-router-dom';
-
+import Alert from "./Alert";
 function Verifing() {
+    
+    const [showToast, setShowToast] = useState(false); // State to control toast visibility
+  
+    function launchToast(message) {
+      setErrorMessage(message);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 5000);}
   const { search } = useLocation();
   const searchParams = new URLSearchParams(search);
   const token = searchParams.get('token');
@@ -23,18 +32,19 @@ console.log(id)
         // Check if passwords are empty
         if (passwordInput.value.trim() === '' || confirmPasswordInput.value.trim() === '') {
             setErrorMessage("Please fill out all required fields");
+            launchToast(errorMessage);
             return;
         }
 
         // Check if passwords match
         if (passwordInput.value !== confirmPasswordInput.value) {
             setErrorMessage("Passwords do not match");
+            launchToast(errorMessage);
+
             return;
         }
 
         // Clear error message if passwords match and are not empty
-        setErrorMessage("");
-
         try {
             // Fetch content from the API
             const response = await fetch('/api/admin/resetverif', {
@@ -51,7 +61,9 @@ token:token,
             });
 
             if (!response.ok) {
-                throw new Error('Failed to verify');
+                setErrorMessage('Failed to verify');
+                launchToast(errorMessage);
+
             }
 
             // Proceed with navigation to login page after successful verification
@@ -59,6 +71,8 @@ token:token,
         } catch (error) {
             console.error('Error verifying:', error);
             setErrorMessage("Failed to verify");
+            launchToast(errorMessage);
+
         }
     };
 
@@ -66,8 +80,9 @@ token:token,
         <div className='wrapper'>
             <form>
                 <h1>Verifing</h1>
-                {errorMessage && <div className="error-message"><FaLock />   {errorMessage}</div>}
-                <div className="input-box">
+                {showToast &&<div className='alertss'>
+ <Alert message={errorMessage} icon=<FaLock /> showToast={showToast}/></div> }
+*                <div className="input-box">
                     <input type="password" placeholder='Password' id='password' required />
                     <FaLock className="icon" />
                 </div>
