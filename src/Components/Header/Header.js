@@ -5,12 +5,30 @@ import React, { useEffect, useState } from 'react';
 const Header = () => {
 
   const [totalStudents, setTotalStudents] = useState(0);
+  const [totalTeachers, setTotalTeachers] = useState(0);
+  const [totalClasses, settotalClasses] = useState(0);
+  const [dataav, setDataav] = useState({ totalAbsences: 0, totalAttendances: 0, averageAbsencesPercentage: 0 });
 
   useEffect(() => {
+    const fetchAverageAbsences = async () => {
+      try {
+          const response = await fetch('http://localhost:3000/api/attendance/calculateAverageAbsences');
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          const data3 = await response.json();
+          setDataav(data3);
+          console.log(data3);
+      } catch (error) {
+        console.error(error.message);
+      }
+  };
+
+  fetchAverageAbsences();
     // Function to fetch student data and calculate total students
     const fetchTotalStudents = async () => {
       try {
-        const response = await fetch('/api/attendance/calculateTotalStudentsPerYear'); // Assuming your React app is served from the same host as your Express server
+        const response = await fetch('/students/count'); // Assuming your React app is served from the same host as your Express server
 
         if (!response.ok) {
           throw new Error('Failed to fetch student data');
@@ -19,7 +37,28 @@ const Header = () => {
         const data = await response.json();
 console.log(data);
         // Calculate the total number of students from the fetched data
-        const total = data.reduce((sum, entry) => sum + entry.totalStudents, 0);
+        const total = data.totalStudent;
+        
+        setTotalStudents(total);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+      }
+    }; // Empty dependency array means this effect runs once when the component mounts
+    const fetchTotalClasses = async () => {
+      try {
+        const response = await fetch('/classes/count'); // Assuming your React app is served from the same host as your Express server
+        const data2 = await response.json()
+        const total2=data2.totalClasses;
+        console.log(total2);
+settotalClasses(total2);
+        if (!response.ok) {
+          throw new Error('Failed to fetch classt data');
+        }
+
+        const data = await response.json();
+console.log(data);
+        // Calculate the total number of students from the fetched data
+        const total = data.totalStudent;
         
         setTotalStudents(total);
       } catch (error) {
@@ -27,7 +66,26 @@ console.log(data);
       }
     }; // Empty dependency array means this effect runs once when the component mounts
 
+    const fetchTotalTeachers = async () => {
+      try {
+        const response = await fetch('/teachers/count'); // Assuming your React app is served from the same host as your Express server
+console.log(response);
+        if (!response.ok) {
+          throw new Error('Failed to fetch student data');
+        }
 
+        const data = await response.json();
+console.log(data);
+        // Calculate the total number of students from the fetched data
+        const total = data.totalProfessors
+        
+        setTotalTeachers(total);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+      }
+    }; // Empty dependency array means this effect runs once when the component mounts
+    fetchTotalClasses();
+    fetchTotalTeachers();
     // Call the function when component mounts
     fetchTotalStudents();
     console.log(totalStudents);
@@ -48,7 +106,7 @@ console.log(data);
                           tag="h5"
                           className="text-uppercase text-muted mb-0"
                         >
-                          Etudiants
+                          Students
                         </CardTitle>
                         <span className="h2 font-weight-bold mb-0">
                         {totalStudents}
@@ -60,12 +118,7 @@ console.log(data);
                         </div>
                       </Col>
                     </Row>
-                    <p className="mt-3 mb-0 text-muted text-sm">
-                      <span className="text-success mr-2">
-                        <i className="fa fa-arrow-up" /> 3.48%
-                      </span>{" "}
-                      <span className="text-nowrap">Since last month</span>
-                    </p>
+                    
                   </CardBody>
                 </Card>
               </Col>
@@ -80,7 +133,7 @@ console.log(data);
                         >
                           Teachers
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">256</span>
+                        <span className="h2 font-weight-bold mb-0">{totalTeachers}</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-warning text-white rounded-circle shadow">
@@ -88,12 +141,7 @@ console.log(data);
                         </div>
                       </Col>
                     </Row>
-                    <p className="mt-3 mb-0 text-muted text-sm">
-                      <span className="text-danger mr-2">
-                        <i className="fas fa-arrow-down" /> 3.48%
-                      </span>{" "}
-                      <span className="text-nowrap">Since last week</span>
-                    </p>
+                    
                   </CardBody>
                 </Card>
               </Col>
@@ -108,7 +156,7 @@ console.log(data);
                         >
                           Classes
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">54</span>
+                        <span className="h2 font-weight-bold mb-0">{totalClasses}</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-yellow text-white rounded-circle shadow">
@@ -116,12 +164,7 @@ console.log(data);
                         </div>
                       </Col>
                     </Row>
-                    <p className="mt-3 mb-0 text-muted text-sm">
-                      <span className="text-warning mr-2">
-                        <i className="fas fa-arrow-down" /> 1.10%
-                      </span>{" "}
-                      <span className="text-nowrap">Since yesterday</span>
-                    </p>
+                    
                   </CardBody>
                 </Card>
               </Col>
@@ -136,7 +179,7 @@ console.log(data);
                         >
                          Absence Moyenne
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">49,65%</span>
+                        <span className="h2 font-weight-bold mb-0">{dataav.averageAbsencesPercentage}</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-info text-white rounded-circle shadow">
@@ -144,12 +187,7 @@ console.log(data);
                         </div>
                       </Col>
                     </Row>
-                    <p className="mt-3 mb-0 text-muted text-sm">
-                      <span className="text-success mr-2">
-                        <i className="fas fa-arrow-up" /> 12%
-                      </span>{" "}
-                      <span className="text-nowrap">Since last month</span>
-                    </p>
+                  
                   </CardBody>
                 </Card>
               </Col>

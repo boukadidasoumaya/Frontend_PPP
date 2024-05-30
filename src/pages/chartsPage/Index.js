@@ -210,8 +210,8 @@ const Index = (props) => {
                   </div>
                 </Row>
               </CardHeader>
-              <CardBody>
-                <div className="chart">
+              <CardBody >
+                <div className="chart" >
                   <PieChart />
                 </div>
                 </CardBody>
