@@ -18,7 +18,7 @@ import {
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
 import "./TableCourses.css";
-import SelectOptions from "../SelectOptions/SelectOptions";
+import SelectOptions from "../SelectOptions/SelectOptionsForCourses";
 import { Alert } from "reactstrap";
 import axios from "axios";
 import { useRef } from "react";
@@ -536,7 +536,7 @@ const TableCourses = () => {
               </div>
               {/* Filter Dropdowns on Left */}
               <div className="row">
-                <div className="col-lg-3 col-md-3 col-sm-4 d-flex major">
+                
                   <SelectOptions
                     options={ModuleOptions}
                     selectedValue={selectedModule}
@@ -547,7 +547,7 @@ const TableCourses = () => {
                         selectedLevel
                       )
                     }
-                    placeholderText="All Modules"
+                    placeholderText="Modules"
                   />
                   <SelectOptions
                     options={majorOptions}
@@ -559,7 +559,7 @@ const TableCourses = () => {
                         selectedLevel
                       )
                     }
-                    placeholderText="All Majors"
+                    placeholderText="Majors"
                   />
                   <SelectOptions
                     options={levelOptions}
@@ -571,13 +571,13 @@ const TableCourses = () => {
                         newLevel
                       )
                     }
-                    placeholderText="All Levels"
+                    placeholderText="Levels"
                   />
-                </div>
+                 </div>
                 {/* Centered "Liste des matières" */}
 
                 {/* Add Subject Button in Center */}
-                <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddEtudiant justify-content-end   ">
+                <div className="col-lg-12 col-md-12 col-sm-12 d-flex AddEtudiant justify-content-end   ">
                   <div className="">
                     <input
                       type="file"
@@ -670,7 +670,7 @@ const TableCourses = () => {
                     )}
                   </div>
                 </Modal>
-              </div>
+             
             </CardHeader>
             {/* Table Content */}
             <Table className="align-items-center table-flush" responsive>

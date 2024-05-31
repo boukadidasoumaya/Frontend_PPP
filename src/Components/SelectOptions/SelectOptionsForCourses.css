@@ -1,5 +1,5 @@
 .courses.custom-select {
-    position: relative;
+    position: sticky;
     border: 1px solid #ccc;
     border-radius: 20px !important;
     padding: 8px 20px;
