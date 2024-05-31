@@ -89,7 +89,7 @@ const EditorTemplate = () => {
     const fetchTimeTables = (major, level) => {
         axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}`)
             .then(response => {
-               
+        
                 response.data.data.forEach(item => {
                     const transformedItem = {
                         Id: item._id,
@@ -135,8 +135,9 @@ const EditorTemplate = () => {
    
  //upload 
     const [Alertvisible, setAlertVisible] = useState(false);
+    const [Successvisible, setSuccessVisible] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [UploadErrors, setUploadErrors] = useState([]);
+    const [UploadErrors, setUploadErrors] = useState({error: "", nonExistingEntities: []});
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [uploadsuccess, setUploadSuccess] = useState(false);
     const config = {
@@ -161,12 +162,17 @@ const EditorTemplate = () => {
             axios.post("http://localhost:5000/timetables/upload", formdata, config)
                 .then(response => {
                     console.log('File uploaded');
+                    setSuccessVisible(!Successvisible);
                     setUploadSuccess(true);
                     console.log(uploadsuccess);
                     setIsLoading(false);
                 })
                 .catch(error => {
-                    setUploadErrors(error.response.data.error);
+                    setUploadErrors({
+                        error: error.response.data.error,
+                        nonExistingEntities: error.response.data.nonExistingEntities
+                      });
+                      
                     setUploadModalOpen(!uploadModalOpen);
                     console.error('Error in uploading file:', error.response.data.error);
                     setSelectedFile(null);
@@ -182,7 +188,9 @@ const EditorTemplate = () => {
     const onDismiss = () => {
         setAlertVisible(!Alertvisible)};
     const onDismisssuccess = () => {
-        setUploadSuccess(!uploadsuccess)};
+        setSuccessVisible(!Successvisible)};
+
+    const onDismisssuccessnotif = () => setSuccessVisible(!Successvisible);
 
     const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
     const onToolbarItemClicked = (args) => {
@@ -256,13 +264,7 @@ const EditorTemplate = () => {
                             </select>
                         </div>
                         <Row className=''>
-                        {uploadsuccess && (
-          <div className='col d-flex justify-content-end'>
-              <Alert isOpen={uploadsuccess} toggle={onDismisssuccess} color='success'>
-               File Uploaded
-              </Alert>
-          </div>
-        ) }
+                        
         {Alertvisible && (
           <div className='col alertMessage d-flex justify-content-end'>
               <Alert isOpen={Alertvisible} toggle={onDismiss} className="alert-slide">
@@ -285,18 +287,28 @@ const EditorTemplate = () => {
                   </span>
                 </Button>
                 </Row>)}
+                {Successvisible && (
+          <div className='col  d-flex justify-content-end'>
+              <Alert isOpen={Successvisible} color="success" toggle={onDismisssuccess} className="">
+                File Uploaded successfully
+              </Alert>
+          </div>
+        ) }
         </Row>
         
         <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
                 <ModalHeader color="danger" toggle={toggleUploadModal}>Error in Uploading File </ModalHeader>
                 <ModalBody>
-                  {UploadErrors ? (
-                    <div>
-                      <p>Error in  inserting timetable into the database.</p>
-                    
-                    </div>
-                  ) : null}
-                </ModalBody>
+                      {UploadErrors.error ? (
+                        <div>
+                          <p>Error in inserting timetable into the database.</p>
+                          {UploadErrors.nonExistingEntities.length > 0 ? (
+                            <p>Check these lines: {UploadErrors.nonExistingEntities.join(', ')}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </ModalBody>
+
     
         </Modal>
 

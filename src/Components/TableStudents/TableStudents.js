@@ -35,6 +35,7 @@ const TableStudents = () => {
   const [students, setStudents] = useState([]);
   const [formData, setFormData] = useState({
     _id: "",
+    Student_id: "",
     FirstName: "",
     LastName: "",
     CIN: "",
@@ -176,6 +177,7 @@ useEffect(() => {
 
 
   const initialErrors = {
+    studentid: "",
     firstName: "",
     lastName: "",
     cin: "",
@@ -194,6 +196,7 @@ useEffect(() => {
     // setErrors(initialErrors);
 
     // Récupération des valeurs des champs
+    const studentid = document.getElementById("studentid").value;
     const firstName = document.getElementById("firstname").value;
     const lastName = document.getElementById("lastname").value;
     const cin = document.getElementById("cin").value;
@@ -213,6 +216,16 @@ useEffect(() => {
     const cinFormatError = !/^\d+$/.test(cin)
       ? "CIN must contain only digits"
       : "";
+      ///
+      const idError = !studentid
+      ? "Student ID is required"
+      : studentid.length !== 7
+      ? "Student ID must be 7 digits long"
+      : "";
+    const IDFormatError = !/^\d+$/.test(cin)
+      ? "Student ID must contain only digits"
+      : "";
+      ///
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     // Vérification si le prénom contient uniquement des lettres et des espaces
     const firstNameFormatError = !/^[a-zA-Z\s]+$/.test(firstName)
@@ -226,6 +239,7 @@ useEffect(() => {
 
     // Combinaison des erreurs
     const newErrors = {
+      studentid: idError || IDFormatError,
       firstName: !firstName ? "First name is required" : firstNameFormatError,
       lastName: !lastName ? "Last name is required" : lastNameFormatError,
       cin: cinError || cinFormatError,
@@ -251,6 +265,7 @@ useEffect(() => {
 
     if (action === "add") {
       const newStudent = {
+        Student_id: studentid,
         FirstName: firstName,
         LastName: lastName,
         CIN: cin,
@@ -284,6 +299,11 @@ useEffect(() => {
                 setErrors(prevErrors => ({ ...prevErrors, email: "Email already exists" }));
 
               }
+              if(backendErrors && backendErrors.Student_id){
+                setErrors(prevErrors => ({ ...prevErrors, studentid: "ID already exists" }));
+                console.log("studentid",errors);
+
+              }
               console.log("errors",errors);// Close modal after adding
           });
       
@@ -293,6 +313,7 @@ useEffect(() => {
           birthday = new Date(document.getElementById('birthday').value).toISOString().split('T')[0];
           const newStudent = {
             _id: id,
+            Student_id: studentid,
             FirstName: firstName,
             LastName: lastName,
             CIN: cin,
@@ -327,6 +348,12 @@ useEffect(() => {
               email: "Email already exists",
             }));
           }
+          if (backendErrors && backendErrors.Student_id) {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              studentid: "ID already exists",
+            }));
+          }
           console.log("errors", errors); // Close modal after adding
         });
     }
@@ -359,6 +386,7 @@ const handleDelete = (student) => {
     clearErrors(); // Effacer les erreurs lors de la fermeture
     setUpdateModalOpen(!updateModalOpen);
     setSelectedStudent(student);
+    console.log("selectedStudent", formData);
 
 
     setFormData(student);
@@ -384,8 +412,9 @@ const handleDelete = (student) => {
 
   //upload 
   const [Alertvisible, setAlertVisible] = useState(false);
+  const [Successvisible, setSuccessVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [UploadErrors, setUploadErrors] = useState([]);
+  const [UploadErrors, setUploadErrors] = useState({error:"",validationErrors:[]});
   const config = {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -407,12 +436,16 @@ const handleDelete = (student) => {
       axios.post("http://localhost:5000/students/upload", formdata, config)
         .then(response => {
           console.log('File uploaded');
+          setSuccessVisible(!Successvisible);
          
         })
         .catch(error => {
           console.error('Error in uploading file:', error);
           setUploadModalOpen(!uploadModalOpen);
-          setUploadErrors(error.response.data.error);
+          setUploadErrors({
+            error: error.response.data.error,
+            validationErrors: error.response.data.validationErrors
+          });
           setSelectedFile(null);
         });
     } else {
@@ -429,6 +462,7 @@ const handleDelete = (student) => {
   
 
   const onDismiss = () => setAlertVisible(!Alertvisible);
+  const onDismisssuccess = () => setSuccessVisible(!Successvisible);
   const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
   // drop students
   const [isDropModalOpen, setIsDropModalOpen] = useState(false);
@@ -462,8 +496,15 @@ const handleDelete = (student) => {
         <Row className='alertNotif'>
         {Alertvisible && (
           <div className='col alertMessage d-flex justify-content-end'>
-              <Alert isOpen={Alertvisible} toggle={onDismiss} className="alert-slide">
+              <Alert isOpen={Alertvisible} toggle={onDismiss} className="error alert-slide">
                 Please Enter a CSV File 
+              </Alert>
+          </div>
+        ) }
+         {Successvisible && (
+          <div className='col  d-flex justify-content-end'>
+              <Alert isOpen={Successvisible} color="success" toggle={onDismisssuccess} className="">
+                File Uploaded successfully
               </Alert>
           </div>
         ) }
@@ -472,16 +513,16 @@ const handleDelete = (student) => {
         <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
                 <ModalHeader color="danger" toggle={toggleUploadModal}>Error in Uploading File </ModalHeader>
                 <ModalBody>
-                  {UploadErrors ? (
+                  {UploadErrors.error ? (
                     <div>
-                      <p>Error in  inserting students into the database.</p>
-                      <p>Check your Emails and CINs. They must be unique and valid.</p>
+                    
+                      {UploadErrors.validationErrors && (<p className="danger">Check these lines: {UploadErrors.validationErrors}</p>)}
+
+                      <p>Student_id , Emails and CINs. They must be unique and valid.</p>
                       <p>  Also check Major, Year, and Group.</p>
                       <p>There must be all these informations:</p>
                       <p>First Name, Last Name, CIN, Email, Birthday, Major, Year, Group</p>
-                      <p>Major : MPI CBA RT GL IIA IMI CH BIO MASTER DOCTORAT</p>
-                      <p>Year : 1 2 3 4 5</p>
-                      <p>Group : 1 2 3 4</p>
+                    
                       <p>Check the file and try again.</p>
                     </div>
                   ) : null}
@@ -555,6 +596,18 @@ const handleDelete = (student) => {
                 >
                   <ModalHeader toggle={toggleModal}>Add Student</ModalHeader>
                   <ModalBody>
+                  <FormGroup>
+                      <FormLabel for="StudentId">Student ID</FormLabel>
+                      <Input
+                        type="text"
+                        name="StudentId"
+                        id="studentid"
+                        placeholder="Enter Student ID"
+                      />
+                      {errors.studentid && (
+                        <span className="text-danger">{errors.studentid}</span>
+                      )}
+                    </FormGroup>
                     <FormGroup>
                       <FormLabel for="firstname">First Name</FormLabel>
                       <Input
@@ -697,6 +750,7 @@ const handleDelete = (student) => {
             <Table className="align-items-center table-flush" responsive>
               <thead className="thead-light">
                 <tr>
+                <th scope="col">Student ID</th>
                   <th scope="col">First Name</th>
                   <th scope="col">Last Name</th>
                   <th scope="col">Major</th>
@@ -719,6 +773,7 @@ const handleDelete = (student) => {
                 ) : (
                   currentStudents.map((student) => (
                     <tr key={student._id}>
+                      <td>{student.Student_id}</td>
                       <td>{student.FirstName}</td>
                       <td>{student.LastName}</td>
                       <td>{student.Major}</td>
@@ -785,6 +840,20 @@ const handleDelete = (student) => {
                   </ModalHeader>
                   <ModalBody>
                     {/* Form fields to capture updated student data */}
+                    <FormGroup>
+                      <FormLabel for="StudentId">Student ID</FormLabel>
+                      <Input
+                        type="text"
+                        name="Student_id"
+                        id="studentid"
+                        onChange={handleChange}
+                        placeholder="Enter Student ID "
+                        value={formData ? formData.Student_id : ""}
+                      />
+                      {errors.studentid && (
+                        <span className="text-danger">{errors.studentid}</span>
+                      )}
+                    </FormGroup>
                     <FormGroup>
                       <FormLabel for="firstname">First Name</FormLabel>
                       <input
@@ -888,8 +957,8 @@ const handleDelete = (student) => {
  <>
    <div className="d-flex justify-content-center mt-3">
      <Pagination
-       studentsPerPage={studentsPerPage}
-       totalStudents={students.length}
+        itemsPerPage={studentsPerPage} 
+        totalItems={students.length}
        paginate={paginate}
        currentPage={currentPage}
      />

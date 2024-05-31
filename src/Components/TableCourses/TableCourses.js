@@ -18,7 +18,7 @@ import {
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
 import "./TableCourses.css";
-import SelectOptions from "../SelectOptions/SelectOptions";
+import SelectOptions from "../SelectOptions/SelectOptionsForCourses";
 import axios from "axios";
 import { useRef } from "react";
 import Pagination from "../Pagination/Pagination";
@@ -360,20 +360,8 @@ const TableCourses = () => {
                 <h1>Liste des matières</h1>
               </div>
               {/* Filter Dropdowns on Left */}
-              <div className="row">
-                <div className="col-lg-3 col-md-3 col-sm-4 d-flex major">
-                  <SelectOptions
-                    options={ModuleOptions}
-                    selectedValue={selectedModule}
-                    onOptionChange={(newModule) =>
-                      handleFilterChange(
-                        newModule,
-                        selectedMajor,
-                        selectedLevel
-                      )
-                    }
-                    placeholderText="All Modules"
-                  />
+              <div className="row d-flex select">
+                  
                   <SelectOptions
                     options={majorOptions}
                     selectedValue={selectedMajor}
@@ -386,6 +374,8 @@ const TableCourses = () => {
                     }
                     placeholderText="All Majors"
                   />
+                  
+                  
                   <SelectOptions
                     options={levelOptions}
                     selectedValue={selectedLevel}
@@ -398,14 +388,31 @@ const TableCourses = () => {
                     }
                     placeholderText="All Levels"
                   />
+                  <div className="module">
+                  <SelectOptions
+                    options={ModuleOptions}
+                    selectedValue={selectedModule}
+                    onOptionChange={(newModule) =>
+                      handleFilterChange(
+                        newModule,
+                        selectedMajor,
+                        selectedLevel
+                      )
+                    }
+                    placeholderText="All Modules"
+                  /></div>
+        
                 </div>
                 {/* Centered "Liste des matières" */}
+              
 
                 {/* Add Subject Button in Center */}
-                <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddSubject justify-content-end   ">
-                  <Button className="addbtn" onClick={toggleModal}>
-                    Add Subject
-                  </Button>
+                <div className="row">
+                  <div className="col-lg-12 col-md-12 col-sm-12 d-flex AddSubject justify-content-end   ">
+                    <Button className="addbtn" onClick={toggleModal}>
+                      Add Subject
+                    </Button>
+                  </div>
                 </div>
                 {/* Add Subject Modal */}
                 <Modal
@@ -480,7 +487,7 @@ const TableCourses = () => {
                     )}
                   </div>
                 </Modal>
-              </div>
+            
             </CardHeader>
             {/* Table Content */}
             <Table className="align-items-center table-flush" responsive>

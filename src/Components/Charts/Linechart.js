@@ -1,6 +1,7 @@
 import { ResponsiveLine } from '@nivo/line'
 import {dataM }from './dataM'
-import React, { useState, useEffect } from 'react';
+import "./linecharts.css"
+import React, { useState, useEffect, useRef } from 'react';
 function Linechart(data = dataM) {
     async function fetchAttendanceData() {
         try {
@@ -17,7 +18,7 @@ function Linechart(data = dataM) {
       }
     
       const [attendanceData, setAttendanceData] = useState([]);
-    
+      const chartContainerRef = useRef(null);
       useEffect(() => {
         async function getAttendanceData() {
           try {
@@ -29,7 +30,7 @@ function Linechart(data = dataM) {
         }
         getAttendanceData();
       }, []);
-    
+     
   return (
     <>
      <ResponsiveLine
@@ -152,6 +153,7 @@ data={[{ id: 'all-students', data: attendanceData }]}
         useMesh={true}
         legends={[]}
     />
+
     </>
   );
 }
