@@ -18,7 +18,8 @@ import {
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
 import "./TableCourses.css";
-import SelectOptions from "../SelectOptions/SelectOptionsForCourses";
+import SelectOptions from "../SelectOptions/SelectOptions";
+import { Alert } from "reactstrap";
 import axios from "axios";
 import { useRef } from "react";
 import Pagination from "../Pagination/Pagination";
@@ -97,7 +98,8 @@ const TableCourses = () => {
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false); // State for add subject modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false); // State for add subject modal
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
@@ -306,6 +308,124 @@ const TableCourses = () => {
     }
   };
 
+  //upload
+  const [Alertvisible, setAlertVisible] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [UploadErrors, setUploadErrors] = useState([]);
+  const config = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  };
+
+  const parseError = (errorString) => {
+    const duplicate = /Duplicate/.test(errorString);
+    console.log("Dup", typeof errorString);
+    if (duplicate) {
+      // Map the entries to an array of error objects
+      const errors = errorString
+        .map((entry) => {
+          try {
+            const jsonString = entry.replace(
+              "Erreur: Duplicate entry found:",
+              ""
+            );
+            return JSON.parse(jsonString);
+          } catch (e) {
+            console.error("Failed to parse error entry:", entry);
+            return null;
+          }
+        })
+        .filter(Boolean);
+
+      return { errors: errors, duplicate: duplicate };
+    } else {
+      return { errors: errorString, duplicate: duplicate };
+    }
+  };
+
+  const parseErrors = (errorString) => {
+    // Split the error string based on "Erreur: Duplicate entry found:
+    console.log("stttt", errorString);
+    const { errors, duplicate } = parseError(errorString);
+    console.log("eeeeeeeeeer", errors)
+    return { errors: errors, duplicate: duplicate };
+  };
+
+  const formatErrors = (errorString) => {
+    const { errors, duplicate } = errorString;
+    if (!duplicate) {
+      return (
+        <div className="error-message">
+          <p>{errors}</p>
+        </div>
+      );
+    }
+    // Render the error list
+    return (
+      <div>
+        {errors.map((error, i) => (
+          <React.Fragment key={i}>
+            {console.log("errrr", error)}
+            <div className="error-message">
+              <p>Duplicate Entry Found:</p>
+              <p>
+                <strong>Subject Name:</strong> {error.SubjectName}
+              </p>
+              <p>
+                <strong>Module:</strong> {error.Module}
+              </p>
+              <p>
+                <strong>Coefficient:</strong> {error.Coeff}
+              </p>
+            </div>
+            <br /> {/* Add a line break between each error */}
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
+  const handleFileChange = (event) => {
+    if (event.target.files.length === 0) {
+      setSelectedFile(null);
+      return;
+    }
+
+    const file = event.target.files[0];
+    console.log("file", file);
+    setSelectedFile(file);
+
+    if (file && file.type === "text/csv") {
+      const formdata = new FormData();
+      formdata.append("csv", file);
+      axios
+        .post("http://localhost:5000/api/subjects/upload", formdata, config)
+        .then((response) => {
+          console.log("File uploaded");
+        })
+        .catch((error) => {
+          console.log("error", error);
+          console.error("Error in uploading file:", error);
+          setUploadModalOpen(!uploadModalOpen);
+          setUploadErrors(error.response.data.error);
+          setSelectedFile(null);
+        });
+    } else {
+      setSelectedFile(null);
+      setAlertVisible(!Alertvisible);
+    }
+  };
+
+  const handleButtonClick = () => {
+    setAlertVisible(false);
+    document.getElementById("fileUpload").value = "";
+    document.getElementById("fileUpload").click();
+  };
+
+  const onDismiss = () => setAlertVisible(!Alertvisible);
+  const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
+
   const handleDelete = (subject) => {
     toggleDeleteModal();
     axios
@@ -338,8 +458,37 @@ const TableCourses = () => {
     setFormData(subject);
   };
 
+  const [isDropModalOpen, setIsDropModalOpen] = useState(false);
+  const handleDrop = () => {
+    axios
+      .delete(
+        `http://localhost:5000/api/subjects/drop/${selectedMajor}/${selectedLevel}`
+      )
+      .then((response) => {
+        console.log(
+          "All subjects with the sepecified critiria deleted:",
+          response.data
+        );
+        setSubjects([]);
+      })
+      .catch((error) => {
+        console.error("Error in deleting subjects:", error);
+      });
+    toggleDropModal();
+  };
+
+  const toggleDropModal = () => {
+    setIsDropModalOpen(!isDropModalOpen);
+  };
+
+  const onDropClick = () => {
+    toggleDropModal();
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const [subjectsPerPage] = useState(10); // Nombre de matières par page;
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const indexOfLastSubject = currentPage * subjectsPerPage;
   const indexOfFirstSubject = indexOfLastSubject - subjectsPerPage;
@@ -347,11 +496,37 @@ const TableCourses = () => {
     indexOfFirstSubject,
     indexOfLastSubject
   );
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <Container className="mt--7" fluid>
       {/* Table */}
+      <Row className="alertNotif">
+        {Alertvisible && (
+          <div className="col alertMessage d-flex justify-content-end">
+            <Alert
+              isOpen={Alertvisible}
+              toggle={onDismiss}
+              className="alert-slide"
+            >
+              Please Enter a CSV File
+            </Alert>
+          </div>
+        )}
+      </Row>
+      <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
+        <ModalHeader color="danger" toggle={toggleUploadModal}>
+          Error in Uploading File:{" "}
+        </ModalHeader>
+        <ModalBody>
+          {UploadErrors ? (
+            <div>
+              <p>{formatErrors(parseErrors(UploadErrors))}</p>
+            </div>
+          ) : (
+            "Matières importées avec succès"
+          )}
+        </ModalBody>
+      </Modal>
       <Row>
         <div className="col">
           <Card className="shadow">
@@ -360,8 +535,20 @@ const TableCourses = () => {
                 <h1>Liste des matières</h1>
               </div>
               {/* Filter Dropdowns on Left */}
-              <div className="row d-flex select">
-                  
+              <div className="row">
+                <div className="col-lg-3 col-md-3 col-sm-4 d-flex major">
+                  <SelectOptions
+                    options={ModuleOptions}
+                    selectedValue={selectedModule}
+                    onOptionChange={(newModule) =>
+                      handleFilterChange(
+                        newModule,
+                        selectedMajor,
+                        selectedLevel
+                      )
+                    }
+                    placeholderText="All Modules"
+                  />
                   <SelectOptions
                     options={majorOptions}
                     selectedValue={selectedMajor}
@@ -374,8 +561,6 @@ const TableCourses = () => {
                     }
                     placeholderText="All Majors"
                   />
-                  
-                  
                   <SelectOptions
                     options={levelOptions}
                     selectedValue={selectedLevel}
@@ -388,27 +573,26 @@ const TableCourses = () => {
                     }
                     placeholderText="All Levels"
                   />
-                  <div className="module">
-                  <SelectOptions
-                    options={ModuleOptions}
-                    selectedValue={selectedModule}
-                    onOptionChange={(newModule) =>
-                      handleFilterChange(
-                        newModule,
-                        selectedMajor,
-                        selectedLevel
-                      )
-                    }
-                    placeholderText="All Modules"
-                  /></div>
-        
                 </div>
                 {/* Centered "Liste des matières" */}
-              
 
                 {/* Add Subject Button in Center */}
-                <div className="row">
-                  <div className="col-lg-12 col-md-12 col-sm-12 d-flex AddSubject justify-content-end   ">
+                <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddEtudiant justify-content-end   ">
+                  <div className="">
+                    <input
+                      type="file"
+                      id="fileUpload"
+                      style={{ display: "none" }}
+                      name="csv"
+                      className=""
+                      onChange={handleFileChange}
+                    />
+
+                    <Button className="uploadbtn" onClick={handleButtonClick}>
+                      Upload file
+                    </Button>
+                  </div>
+                  <div>
                     <Button className="addbtn" onClick={toggleModal}>
                       Add Subject
                     </Button>
@@ -466,7 +650,6 @@ const TableCourses = () => {
                         <span className="text-danger">{errors.Coeff}</span>
                       )}
                     </FormGroup>
-                    
                   </ModalBody>
                   <div className="modal-footer">
                     <Button
@@ -477,7 +660,7 @@ const TableCourses = () => {
                     >
                       Add Subject
                     </Button>
-                    <Button color="link text-muted" onClick={toggleModal}>
+                    <Button color="link" onClick={toggleModal}>
                       Cancel
                     </Button>
                     {errors.combinedError && (
@@ -487,7 +670,7 @@ const TableCourses = () => {
                     )}
                   </div>
                 </Modal>
-            
+              </div>
             </CardHeader>
             {/* Table Content */}
             <Table className="align-items-center table-flush" responsive>
@@ -575,13 +758,6 @@ const TableCourses = () => {
                     {/* Form fields to capture updated subject data */}
                     <FormGroup>
                       <FormLabel for="subjectname">Subject Name</FormLabel>
-                      <input
-                        type="text"
-                        style={{ display: "none" }}
-                        id="id"
-                        value={formData ? formData._id : ""}
-                      />
-
                       <Input
                         type="text"
                         name="SubjectName"
@@ -640,10 +816,7 @@ const TableCourses = () => {
                     >
                       Save Changes
                     </Button>
-                    <Button
-                      color="link"
-                      onClick={() => toggleUpdateModal(null)}
-                    >
+                    <Button color="link" onClick={toggleUpdateModal}>
                       Cancel
                     </Button>
                   </div>
@@ -671,14 +844,44 @@ const TableCourses = () => {
                 </Modal>
               </tbody>
             </Table>
-            <div className="d-flex justify-content-center mt-3">
-              <Pagination
-                subjectsPerPage={subjectsPerPage}
-                totalSubjects={subjects.length}
-                paginate={paginate}
-                currentPage={currentPage}
-              />
-            </div>
+            {currentSubjects.length === 0 ? null : (
+              <>
+                <div className="d-flex justify-content-center mt-3">
+                  <Pagination
+                    subjectsPerPage={subjectsPerPage}
+                    totalSubjects={subjects.length}
+                    paginate={paginate}
+                    currentPage={currentPage}
+                  />
+                </div>
+                {selectedMajor && selectedLevel && (
+                  <div className="col-12 d-flex justify-content-end">
+                    <button onClick={() => onDropClick()} class="delete-button">
+                      <svg class="delete-svgIcon" viewBox="0 0 448 512">
+                        <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                <Modal isOpen={isDropModalOpen} toggle={toggleDropModal}>
+                  <ModalHeader toggle={toggleDropModal}>
+                    Confirm Deletion
+                  </ModalHeader>
+                  <ModalBody>
+                    <p>
+                      Are you sure you want to delete the subjects of{" "}
+                      {selectedMajor} {selectedLevel}?
+                    </p>
+                    <Button color="danger" onClick={handleDrop}>
+                      Delete
+                    </Button>
+                    <Button color="secondary" onClick={toggleDropModal}>
+                      Cancel
+                    </Button>
+                  </ModalBody>
+                </Modal>
+              </>
+            )}
           </Card>
         </div>
       </Row>
