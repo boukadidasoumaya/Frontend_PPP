@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Card,
   CardHeader,
@@ -8,28 +9,54 @@ import {
 } from "reactstrap";
 import SelectOptions from '../SelectOptions/SelectOptions';
 
-const TableAbsence = () => {
-    const [myCourses, setMyCourses] = useState([
-        { id: 1, course: 'Analyse', module: 'Mathématique', numberOfAbsence: '3' },
-        { id: 2, course: 'Programmation', module: 'Informatique', numberOfAbsence: '3' },
-        { id: 3, course: 'Réseau', module: 'Réseau', numberOfAbsence: '3' },
-        { id: 4, course: 'Base de données', module: 'Informatique', numberOfAbsence: '3' },
-        // ... more course data
-    ]);
-    const [selectedCourse, setSelectedCourse] = useState(''); // State for selected course filter
+const TableAbsence = ({id}) => {
+    const [myCourses, setMyCourses] = useState([]);
+    const [selectedSemester, setSelectedSemester] = useState(''); // State for selected course filter
+    const [loading, setLoading] = useState(true); // State to manage loading state
+    const [error, setError] = useState(null); // State to manage errors
+    const studentId = id; 
+    useEffect(() => {
+      const fetchData = async () => {
+          try {
+              let selectedSemesterValue = selectedSemester;
+              if (selectedSemester === 'Semester 1') {
+                  selectedSemesterValue = '1';
+              } else if (selectedSemester === 'Semester 2') {
+                  selectedSemesterValue = '2';
+              }
+            
+              const endpoint = !selectedSemester || selectedSemester === 'All Year'
+                  ? `http://localhost:5000/students/absences/${studentId}`
+                  : `http://localhost:5000/students/absences/${studentId}/${selectedSemesterValue}`;
+              
+              const response = await axios.get(endpoint).then((response) => {
+            
+                setMyCourses(response.data.data);
+
+                setLoading(false);
+            })
+            .catch((error) => {
+              
+                setMyCourses([]);
+            });
+  
+             
+          } catch (err) {
+              setError('Failed to fetch data');
+              setLoading(false);
+          }
+      };
+      
+      fetchData()
     
-    const handleFilterChange = (course) => {
-        setSelectedCourse(course);
+  }, [selectedSemester, myCourses]);
+  
+
+    const handleFilterChange = (semester) => {
+        setSelectedSemester(semester);
     };
-    
-    // Function to filter courses based on selected course
-    const filterCourses = (course) => {
-        return myCourses.filter(course => course.course === selectedCourse);
-    };
-    
-    // Filtered list of courses based on selected course
-    const filteredCourses = selectedCourse ? filterCourses(selectedCourse) : myCourses;
-    
+
+
     return (
         <Container className="mt--0" fluid>
         {/* Table */}
@@ -38,21 +65,26 @@ const TableAbsence = () => {
             <Card className="shadow">
               <CardHeader className="border-0">
                 <div className='row'>
-                <h1 className="col-lg-12 col-md-12 col-sm-12 d-flex justify-content-center listEtudiant">Liste des cours</h1>
+                <h1 className="col-lg-12 col-md-12 col-sm-12 d-flex justify-content-center listEtudiant">List of Subjects</h1>
                 </div>
                 {/* Filter Dropdowns on Left */}
                <div className='row'>
                  <div className='col-lg-3 col-md-2 col-sm-2 d-flex major' >
                  <SelectOptions
-                    options={['Analyse','Programmation','Réseau','Java'].map((course) => ({ value: course, label: course }))}
-                    selectedValue={selectedCourse}
-                    onOptionChange={(newCourse) => handleFilterChange(newCourse)}
-                    placeholderText="Course"
+                    options={['Semester 1','Semester 2','All Year'].map((course) => ({ value: course, label: course }))}
+                    selectedValue={selectedSemester}
+                    onOptionChange={handleFilterChange}
+                    placeholderText="Semester"
                   />
                  </div>
                </div>
               </CardHeader>
               {/* Table Content */}
+              {loading ? (
+                  <div>Loading...</div>
+              ) : error ? (
+                  <div>{error}</div>
+              ) : (
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
@@ -63,21 +95,22 @@ const TableAbsence = () => {
                 </thead>
                 <tbody>
                   {/* Display filtered courses or message if none found */}
-                  {filteredCourses.length === 0 ? (
+                  {myCourses.length === 0 ? (
                     <tr>
-                      <td  colSpan={6} style={{ textAlign: 'center' }}>No Absence found for the selected course</td>
+                      <td  colSpan={6} style={{ textAlign: 'center' }}>No Absence found for the selected semester</td>
                     </tr>
                   ) : (
-                    filteredCourses.map((course) => (
+                    myCourses.map((course) => (
                       <tr key={course.id}>
-                        <td>{course.course}</td>
-                        <td>{course.module}</td>
-                        <td>{course.numberOfAbsence}</td>
+                        <td>{course.SubjectName}</td>
+                        <td>{course.Module}</td>
+                        <td>{course.count}</td>
                       </tr>
                     ))
                   )}
                 </tbody>
               </Table>
+              )}
             </Card>
           </div>
         </Row>

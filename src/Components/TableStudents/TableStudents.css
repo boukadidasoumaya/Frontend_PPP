@@ -1,9 +1,67 @@
 
-      
-       .addbtn{
+
+.addbtn{
+background-color: #692E5F !important;
+color: white !important; 
+border-radius: 20px !important;
+
+}
+.btn1{
+       background-color: #692E5F !important;
+       color: white !important;   
+}
+.uploadbtn{
        background-color: #692E5F !important;
        color: white !important; 
-       border-radius: 20px !important;
- 
+       border-radius: 20px !important;   
+}
+@keyframes slideInRight {
+       from {
+         transform: translateX(100%);
        }
-      
+       to {
+         transform: translateX(0);
+       }
+     }
+     
+     .alert-slide {
+       animation: slideInRight 0.5s ease forwards;
+       color: #ff0000 !important;
+       background-color: #fff4f4 !important;
+       border: 1px solid #fffafa !important;
+       padding: 1% 5% 1% 1% !important;
+       margin-bottom: 10px !important;
+       margin-right: 15px !important;
+       z-index: 9999 !important;
+
+     }
+     .alertNotif .alertMessage{
+       padding: 0% 0% 0% 0% !important;
+     }
+
+
+@media (max-width: 822px) {
+       .addbtn{
+              margin-right: -25px !important;
+              width: 100px !important;
+              
+       }
+       .uploadbtn{
+              width: 100px !important;
+
+       }
+}
+@media (max-width: 768px) {
+       .addbtn{
+          
+              width: 130px !important;
+       }
+       .uploadbtn{
+             
+              width: 130px !important;
+       }
+}
+.danger {
+       color: red;
+     }
+     

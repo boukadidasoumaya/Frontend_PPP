@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 // reactstrap components
 import {
   DropdownMenu,
@@ -19,14 +18,6 @@ import {
 } from "reactstrap";
 
 const AdminNavbar = (props) => {
-  let navigate = useNavigate();
-  
-    const handleLogout = () => {
-      // Perform any logout logic here, such as clearing authentication tokens or user data
-      // Then navigate to the login page
-      sessionStorage.removeItem("jwtToken");
-
-navigate("/login");    };
   return (
     <>
       <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -67,7 +58,7 @@ navigate("/login");    };
               </DropdownToggle>
               <DropdownMenu className="dropdown-menu-arrow" right>
                 
-              <DropdownItem onClick={handleLogout}>
+                <DropdownItem href="#pablo" onClick={(e) => e.preventDefault()}>
                   <i className="ni ni-user-run" />
                   <span>Logout</span>
                 </DropdownItem>

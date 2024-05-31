@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Month, Inject, Resize, DragAndDrop, } from '@syncfusion/ej2-react-schedule';
+import { ScheduleComponent, ViewsDirective, ViewDirective, Day, Week, WorkWeek, Inject, Resize, DragAndDrop, } from '@syncfusion/ej2-react-schedule';
 import './Scheduler.css';
+import axios from 'axios';
+import { Row, Col, Alert , Modal,ModalHeader,ModalBody,Spinner,Button} from 'reactstrap';
 import { extend } from '@syncfusion/ej2-base';
 import { DateTimePickerComponent } from '@syncfusion/ej2-react-calendars';
 import { DropDownListComponent } from '@syncfusion/ej2-react-dropdowns';
@@ -19,131 +21,179 @@ import { format } from 'date-fns';
 import SelectOptions from '../SelectOptions/SelectOptions';
 
 registerLicense('ORg4AjUWIQA/Gnt2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5Xd0BjXHpcc3NRQ2hY');
-/**
- * Schedule editor template sample
- */
-const EditorTemplate = () => {
-    const dataSource = {
-        doctorsEventData: [
-            {   id:1, Subject: 'Analyse',Professor:'Saloua',  StartTime: new Date(2021, 1, 15, 10, 0),  EndTime: new Date(2021, 1, 15, 12, 30),  CalendarId: 1,   },
-            {   id:2 ,  Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 13, 0),  EndTime: new Date(2021, 1, 15, 15, 30), CalendarId: 2,   },
-            {  id:3 ,   Subject: 'Java',Professor:'Saloua',   StartTime: new Date(2021, 1, 15, 16, 0),  EndTime: new Date(2021, 1, 15, 18, 30),  CalendarId: 3,  },
-            {  id:4 , Subject: 'Analyse', Professor:'Saloua',  StartTime: new Date(2021, 1, 16, 10, 0),  EndTime: new Date(2021, 1, 16, 12, 30),  CalendarId: 1,   },
-            {  id:5 ,  Subject: 'Programmation',Professor:'Saloua',   StartTime: new Date(2021, 1, 16, 13, 0),  EndTime: new Date(2021, 1, 16, 15, 30), CalendarId: 2,   }
-        ]
-    };
 
-    const majors = ['MPI', 'RT', 'GL','IIA','IMI','MASTER'];
+const getNextDate = (dayOfWeek, time) => {
+    // Fix `now` to the start of the week (Sunday)
+    const now = new Date();
+    const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    const resultDate = new Date(firstDayOfWeek);
+
+    // Calculate the specific date for the given dayOfWeek
+    resultDate.setDate(firstDayOfWeek.getDate() + dayOfWeek);
+
+    // Set the time
+    const [hours, minutes] = time.split(':').map(Number);
+    resultDate.setHours(hours, minutes, 0, 0);
+
+    return resultDate;
+};
+
+
+const getDayOfWeek = (dayString) => {
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return daysOfWeek.indexOf(dayString);
+};
+
+const EditorTemplate = () => {
+    const startHour = "08:00";
+    const endHour = "18:00";
+    const [dataSource, setDataSource] = useState([]);
+    const [majors, setMajors] = useState([]);
+    const [levels, setLevels] = useState([]);
     const [selectedMajor, setSelectedMajor] = useState('');
-    const projectData = [
-        { text: 'PROJECT 1', id: 1, color: '#cb6bb2' },
-        { text: 'PROJECT 2', id: 2, color: '#56ca85' },
-        { text: 'PROJECT 3', id: 3, color: '#df5286' }
-    ];
-    
-    const categoryData = [
-        { text: 'Nancy', id: 1, groupId: 1, color: '#df5286' },
-        { text: 'Steven', id: 2, groupId: 1, color: '#7fa900' },
-        { text: 'Robert', id: 3, groupId: 2, color: '#ea7a57' },
-        { text: 'Smith', id: 4, groupId: 2, color: '#5978ee' },
-        { text: 'Michael', id: 5, groupId: 3, color: '#df5286' },
-        { text: 'Root', id: 6, groupId: 3, color: '#00bdae' }
-    ];
-    let group = { resources: ['Projects', 'Categories'] };
-    
-    let scheduleObj = useRef(null);
+    const [selectedLevel, setSelectedLevel] = useState('');
+    const scheduleObj = useRef(null);
     const [currentView, setCurrentView] = useState('Week');
     const [isTimelineView, setIsTimelineView] = useState(false);
-  
-    let contextMenuObj = useRef(null);
-    let timeBtn = useRef(null);
-    let selectedTarget;
-    let intl = new Internationalization();
-    const data = extend([], dataSource.doctorsEventData, null, true);
-    const fields = {
-        startTime: { name: 'StartTime', validation: { required: true } },
-        endTime: { name: 'EndTime', validation: { required: true } },
-    };
-    ///
-    let liveTimeInterval;
-    const contextMenuItems = [
-        { text: 'New Event', iconCss: 'e-icons e-plus', id: 'Add' },
-        { text: 'New Recurring Event', iconCss: 'e-icons e-repeat', id: 'AddRecurrence' },
-        { text: 'Today', iconCss: 'e-icons e-timeline-today', id: 'Today' },
-        { text: 'Edit Event', iconCss: 'e-icons e-edit', id: 'Save' },
-        { text: 'Delete Event', iconCss: 'e-icons e-trash', id: 'Delete' },
-        {
-            text: 'Delete Event', id: 'DeleteRecurrenceEvent', iconCss: 'e-icons e-trash',
-            items: [
-                { text: 'Delete Occurrence', id: 'DeleteOccurrence' },
-                { text: 'Delete Series', id: 'DeleteSeries' }
-            ]
-        },
-        {
-            text: 'Edit Event', id: 'EditRecurrenceEvent', iconCss: 'e-icons e-edit',
-            items: [
-                { text: 'Edit Occurrence', id: 'EditOccurrence' },
-                { text: 'Edit Series', id: 'EditSeries' }
-            ]
+    const [dataSourceSemester1, setDataSourceSemester1] = useState([]);
+    const [dataSourceSemester2, setDataSourceSemester2] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const transformedDataSemester1 = [];
+    const transformedDataSemester2 = [];
+    
+    useEffect(() => {
+        axios.get("http://localhost:5000/classes/majors")
+            .then(response => {
+                setMajors(response.data.majors);
+            })
+            .catch(error => {
+                console.error("Error fetching majors:", error);
+            });
+
+        axios.get("http://localhost:5000/classes/levels")
+            .then(response => {
+                setLevels(response.data.levels);
+            })
+            .catch(error => {
+                console.error("Error fetching levels:", error);
+            });
+    }, []);
+
+    useEffect(() => {
+        if (selectedMajor || selectedLevel) {
+            fetchTimeTables(selectedMajor, selectedLevel);
+            
         }
-    ];
-    const calendarCollections = [
-        { CalendarText: 'My Calendar', CalendarId: 1, CalendarColor: '#c43081' },
-        { CalendarText: 'Company', CalendarId: 2, CalendarColor: '#ff7f50' },
-        { CalendarText: 'Birthday', CalendarId: 3, CalendarColor: '#AF27CD' },
-        { CalendarText: 'Holiday', CalendarId: 4, CalendarColor: '#808000' }
-    ];
-    const exportItems = [
-        { text: 'iCalendar', iconCss: 'e-icons e-export' },
-        { text: 'Excel', iconCss: 'e-icons e-export-excel' }
-    ];
+    }, [selectedMajor, selectedLevel,transformedDataSemester1,transformedDataSemester2]);
+
+    const fetchTimeTables = (major, level) => {
+        axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}`)
+            .then(response => {
+        
+                response.data.data.forEach(item => {
+                    const transformedItem = {
+                        Id: item._id,
+                        Subject: item.SubjectName,
+                        Location: item.teacher_name,
+                        Description: `Classroom: ${item.Room}, Groupe: ${item.group}`,
+                        StartTime: getNextDate(getDayOfWeek(item.Day), item.StartTime),
+                        EndTime: getNextDate(getDayOfWeek(item.Day), item.EndTime),
+                        GroupId: item.group
+                    };
+                    if (item.Semester === 1) {
+                        transformedDataSemester1.push(transformedItem);
+                    } else if (item.Semester === 2) {
+                        transformedDataSemester2.push(transformedItem);
+                    }
+                });
+                setDataSourceSemester1(transformedDataSemester1);
+                setDataSourceSemester2(transformedDataSemester2);
+            })
+            .catch(error => {
+                console.error("Error fetching time tables:", error);
+            });
+    };
+    
+
+    const handleMajorChange = (event) => {
+        setSelectedMajor(event.target.value);
+    };
+
+    const handleLevelChange = (event) => {
+        setSelectedLevel(event.target.value);
+    };
+
     const onPrint = () => {
         scheduleObj.current.print();
     };
+
     const importTemplateFn = (data) => {
         const template = '<div class="e-template-btn"><span class="e-btn-icon e-icons e-upload-1 e-icon-left"></span>${text}</div>';
         return compile(template.trim())(data);
     };
+
+   
+ //upload 
+    const [Alertvisible, setAlertVisible] = useState(false);
+    const [Successvisible, setSuccessVisible] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [UploadErrors, setUploadErrors] = useState({error: "", nonExistingEntities: []});
+    const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [uploadsuccess, setUploadSuccess] = useState(false);
+    const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+    const createUpload = () => {
+        const file = document.querySelector('.calendar-import .e-css.e-btn');
+        file.classList.add('e-inherit');
+
+    };
     const onImportClick = (args) => {
-        scheduleObj.current.importICalendar(args.event.target.files[0]);
+        const file = args.event.target.files[0];
+        
+        console.log('file', file);
+    
+        if (file && file.type === 'text/csv') {
+            const formdata = new FormData();
+            formdata.append('csv', file);
+            setIsLoading(true); 
+            axios.post("http://localhost:5000/timetables/upload", formdata, config)
+                .then(response => {
+                    console.log('File uploaded');
+                    setSuccessVisible(!Successvisible);
+                    setUploadSuccess(true);
+                    console.log(uploadsuccess);
+                    setIsLoading(false);
+                })
+                .catch(error => {
+                    setUploadErrors({
+                        error: error.response.data.error,
+                        nonExistingEntities: error.response.data.nonExistingEntities
+                      });
+                      
+                    setUploadModalOpen(!uploadModalOpen);
+                    console.error('Error in uploading file:', error.response.data.error);
+                    setSelectedFile(null);
+                    setIsLoading(false);
+                });
+        } else {
+            console.log('Please enter a CSV file');
+            setAlertVisible(true);
+            setSelectedFile(null);
+        }
     };
     
-        const onExportClick = (args) => {
-            if (args.item.text === 'Excel') {
-                let exportDatas = [];
-                console.log(scheduleObj.current);
-                let eventCollection = scheduleObj.current.getEvents();
-                let resourceCollection = scheduleObj.current.getResourceCollections();
-                let resourceData = resourceCollection[0].dataSource;
-                for (let resource of resourceData) {
-                    let data = eventCollection.filter((e) => e.CalendarId === resource.CalendarId);
-                    exportDatas = exportDatas.concat(data);
-                }
-                scheduleObj.current.exportToExcel({ exportType: 'xlsx', customData: exportDatas, fields: ['Id', 'Subject','Professor', 'StartTime', 'EndTime', 'CalendarId'] });
-            }
-            else {
-                scheduleObj.current.exportToICalendar();
-            }
-        };
-    const createUpload = () => {
-        const element = document.querySelector('.calendar-import .e-css.e-btn');
-        element.classList.add('e-inherit');
-    };
-    const getEventData = () => {
-        const date = scheduleObj.current.selectedDate;
-        return {
-            Id: scheduleObj.current.getEventMaxID(),
-            Subject: '',
-            StartTime: new Date(date.getFullYear(), date.getMonth(), date.getDate(), new Date().getHours(), 0, 0),
-            EndTime: new Date(date.getFullYear(), date.getMonth(), date.getDate(), new Date().getHours() + 1, 0, 0),
-            Location: '',
-            Professor: '',
-            IsAllDay: false,
-            CalendarId: 1
-        };
-    };
+    const onDismiss = () => {
+        setAlertVisible(!Alertvisible)};
+    const onDismisssuccess = () => {
+        setSuccessVisible(!Successvisible)};
+
+    const onDismisssuccessnotif = () => setSuccessVisible(!Successvisible);
+
+    const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
     const onToolbarItemClicked = (args) => {
-        // eslint-disable-next-line default-case
         switch (args.item.text) {
             case 'Day':
                 setCurrentView(isTimelineView ? 'TimelineDay' : 'Day');
@@ -151,321 +201,239 @@ const EditorTemplate = () => {
             case 'Week':
                 setCurrentView(isTimelineView ? 'TimelineWeek' : 'Week');
                 break;
-            case 'WorkWeek':
-                setCurrentView(isTimelineView ? 'TimelineWorkWeek' : 'WorkWeek');
-                break;
-            case 'Month':
-                setCurrentView(isTimelineView ? 'TimelineMonth' : 'Month');
-                break;
-            case 'Year':
-                setCurrentView(isTimelineView ? 'TimelineYear' : 'Year');
-                break;
-            case 'Agenda':
-                setCurrentView('Agenda');
-                break;
-            case 'New Event':
-                const eventData = getEventData();
-                scheduleObj.current.openEditor(eventData, 'Add', true);
-                break;
-            case 'New Recurring Event':
-                const recEventData = getEventData();
-                console.log(recEventData)
-                scheduleObj.current.openEditor(recEventData, 'Add', true, 1);
+            default:
                 break;
         }
     };
-    const timelineTemplate = useCallback(() => {
-        return (<div className='template'>
-        <div className='icon-child'>
-          <CheckBoxComponent id='timeline_views' checked={isTimelineView} change={onChange}/>
-        </div>
-        <div className='text-child'>Timeline Views</div>
-      </div>);
-    }, []);
-    const groupTemplate = useCallback(() => {
-        return (<div className='template'>
-        <div className='icon-child'>
-          <CheckBoxComponent id='grouping' checked={true} change={(args) => { scheduleObj.current.group.resources = args.checked ? ['Calendars'] : []; }}/>
-        </div>
-        <div className='text-child'>Grouping</div>
-      </div>);
-    }, []);
-    const gridlineTemplate = useCallback(() => {
-        return (<div className='template'>
-        <div className='icon-child'>
-          <CheckBoxComponent id='timeSlots' checked={true} change={(args) => { scheduleObj.current.timeScale.enable = args.checked; }}/>
-        </div>
-        <div className='text-child'>Gridlines</div>
-      </div>);
-    }, []);
-   
-    const onChange = (args) => {
-        setIsTimelineView(args.checked);
+    //drop timetable
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [semesterToDelete, setSemesterToDelete] = useState('');
+    const [deleteNotification, setDeleteNotification] = useState(false);
+    const handleDelete = () => {
+        if (semesterToDelete === 'Semester 1') {
+
+        axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/1`)
+                .then(response => {
+                    console.log('TimeTable Dropped for sem 1');
+                    setDeleteNotification(true);
+                })
+                .catch(error => {
+                    console.error('Error in dropping Timetable:', error.response.data.error);
+                    
+                });
+        } else if (semesterToDelete === 'Semester 2') {
+            axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/2`)
+                .then(response => {
+                    console.log('TimeTable Dropped for sem 2');
+                    setDeleteNotification(true);
+                })
+                .catch(error => {
+                    console.error('Error in dropping Timetable:', error.response.data.error);
+                    
+                });
+        }
+        toggleDeleteModal();
     };
-    const contextMenuOpen = (args) => {
-        let newEventElement = document.querySelector('.e-new-event');
-        if (newEventElement) {
-            remove(newEventElement);
-            removeClass([document.querySelector('.e-selected-cell')], 'e-selected-cell');
-        }
-        scheduleObj.current.closeQuickInfoPopup();
-        let targetElement = args.event.target;
-        if (closest(targetElement, '.e-contextmenu')) {
-            return;
-        }
-        selectedTarget = closest(targetElement, '.e-appointment,.e-work-cells,.e-vertical-view .e-date-header-wrap .e-all-day-cells,.e-vertical-view .e-date-header-wrap .e-header-cells');
-        if (isNullOrUndefined(selectedTarget)) {
-            args.cancel = true;
-            return;
-        }
-        if (selectedTarget.classList.contains('e-appointment')) {
-            let eventObj = scheduleObj.current.getEventDetails(selectedTarget);
-            if (eventObj.RecurrenceRule) {
-                contextMenuObj.current.showItems(['EditRecurrenceEvent', 'DeleteRecurrenceEvent'], true);
-                contextMenuObj.current.hideItems(['Add', 'AddRecurrence', 'Today', 'Save', 'Delete'], true);
-            }
-            else {
-                contextMenuObj.current.showItems(['Save', 'Delete'], true);
-                contextMenuObj.current.hideItems(['Add', 'AddRecurrence', 'Today', 'EditRecurrenceEvent', 'DeleteRecurrenceEvent'], true);
-            }
-            return;
-        }
-        else if ((selectedTarget.classList.contains('e-work-cells') || selectedTarget.classList.contains('e-all-day-cells')) &&
-            !selectedTarget.classList.contains('e-selected-cell')) {
-            removeClass([].slice.call(scheduleObj.current.element.querySelectorAll('.e-selected-cell')), 'e-selected-cell');
-            selectedTarget.setAttribute('aria-selected', 'true');
-            selectedTarget.classList.add('e-selected-cell');
-        }
-        contextMenuObj.current.hideItems(['Save', 'Delete', 'EditRecurrenceEvent', 'DeleteRecurrenceEvent'], true);
-        contextMenuObj.current.showItems(['Add', 'AddRecurrence', 'Today'], true);
+
+    const toggleDeleteModal = () => {
+        setIsDeleteModalOpen(!isDeleteModalOpen);
     };
-    const contextMenuSelect = (args) => {
-        let selectedMenuItem = args.item.id;
-        let eventObj = {};
-        if (selectedTarget && selectedTarget.classList.contains('e-appointment')) {
-            eventObj = scheduleObj.current.getEventDetails(selectedTarget);
-        }
-        // eslint-disable-next-line default-case
-        switch (selectedMenuItem) {
-            case 'Today':
-                scheduleObj.current.selectedDate = new Date();
-                break;
-            case 'Add':
-            case 'Save':
-            case 'EditOccurrence':
-            case 'EditSeries':
-                if (selectedMenuItem === 'EditSeries') {
-                    let query = new Query().where(scheduleObj.current.eventFields.id, 'equal', eventObj.RecurrenceID);
-                    eventObj = new DataManager(scheduleObj.current.eventsData).executeLocal(query)[0];
-                }
-                scheduleObj.current.openEditor(eventObj, selectedMenuItem);
-                break;
-            case 'Delete':
-                scheduleObj.current.deleteEvent(eventObj);
-                break;
-            case 'DeleteOccurrence':
-            case 'DeleteSeries':
-                scheduleObj.current.deleteEvent(eventObj, selectedMenuItem);
-                break;
-        }
+
+    const onDeleteClick = (semester) => {
+        setSemesterToDelete(semester);
+        toggleDeleteModal();
     };
-    ///
-    
-    const onEventRendered = (args) => {
-        // eslint-disable-next-line default-case
-        switch (args.data.Professor) {
-            case 'Requested':
-                args.element.style.backgroundColor = '#F57F17';
-                break;
-            case 'Confirmed':
-                args.element.style.backgroundColor = '#7fa900';
-                break;
-            case 'New':
-                args.element.style.backgroundColor = '#8e24aa';
-                break;
-        }
-    };
-    const onActionBegin = (args) => {
-        if (args.requestType === 'eventCreate' || args.requestType === 'eventChange') {
-            let data = args.data instanceof Array ? args.data[0] : args.data;
-            args.cancel = !scheduleObj.current.isSlotAvailable(data.StartTime, data.EndTime);
-        }
-    };
-    const editorHeaderTemplate = (props) => {
-        return (<div id="event-header">
-        {(props !== undefined) ? ((props.Subject) ? <div>{props.Subject}</div> : <div>Create New Event</div>) : <div></div>}
-      </div>);
-    };
-    const editorTemplate = (props) => {
-      return (
-          (props !== undefined) ?
-              <table className="custom-event-editor" style={{ width: '100%' }} cellPadding={5}>
-                  <tbody>
-                      <tr>
-                          <td className="e-textlabel">Course</td>
-                          <td colSpan={4}>
-                              <DropDownListComponent id="Subject" placeholder='Choose course' data-name='Subject' className="e-field" style={{ width: '100%' }} dataSource={['Analyse', 'Programmation', 'Java']} />
-                          </td>
-                      </tr>
-                      <tr>
-                          <td className="e-textlabel">Professor</td>
-                          <td colSpan={4}>
-                              <DropDownListComponent id="Professor" placeholder='Choose Professor' data-name='Professor' className="e-field" style={{ width: '100%' }} dataSource={['Sofienne', 'Saloua', 'Aymen']} />
-                          </td>
-                      </tr>
-                      <tr>
-                          <td className="e-textlabel">Classroom</td>
-                          <td colSpan={4}>
-                              <DropDownListComponent id="Classroom" placeholder='Choose Classroom' data-name='Classroom' className="e-field" style={{ width: '100%' }} dataSource={['120', '121', '131']} />
-                          </td>
-                      </tr>
-                      <tr>
-                          <td className="e-textlabel">From</td>
-                          <td colSpan={4}>
-                              <DateTimePickerComponent id="StartTime" format='dd/MM/yy hh:mm a' data-name="StartTime" value={new Date(props.startTime || props.StartTime)} className="e-field" />
-                          </td>
-                      </tr>
-                      <tr>
-                          <td className="e-textlabel">To</td>
-                          <td colSpan={4}>
-                              <DateTimePickerComponent id="EndTime" format='dd/MM/yy hh:mm a' data-name="EndTime" value={new Date(props.endTime || props.EndTime)} className="e-field" />
-                          </td>
-                      </tr>
-                      {/* Ajouter une ligne pour afficher le nom du professeur */}
-                  
-                  </tbody>
-              </table>
-              :
-              <div></div>
-      );
-  };
-  const eventTemplate = (event) => {
-    // Accéder au nom du professeur à partir de l'objet d'événement (adaptez la propriété en fonction de votre structure de données)
-    const professorName = event.professorName;
-  
-    // Formater la date de début et de fin
-    const startDate = format(new Date(event.startTime), 'dd MMM yyyy');
-    const endDate = format(new Date(event.endTime), 'dd MMM yyyy');
-  
-    // Retourner le contenu HTML avec les informations de l'événement
+
     return (
-      <div className="custom-event">
-        <div className="event-title">{event.subject}</div>
-        <div className="event-professor">{professorName}</div>
-        <div className="event-time">
-          {startDate} - {endDate}
-        </div>
-      </div>
-    );
-  };
-  
-  
-    return (
-    <>
-    <div className='schedule-control-section'>
-        <div className='col-lg-12 control-section'>
-            <div className='content-wrapper'>
-            <div className='schedule-overview'>
-            <AppBarComponent colorMode=''>
-                
-                <span id="timeBtn" className="time current-time" ref={timeBtn}>
-        
-                </span>
-                <div className="e-appbar-spacer">
-        
-                </div>
-                <div className='control-panel calendar-export'>
-                    <ButtonComponent id='printBtn' cssClass='title-bar-btn e-inherit' iconCss='e-icons e-print' onClick={(onPrint)} content='Print'/>
-                </div>
-                <div className='control-panel import-button'>
-                    <UploaderComponent id='fileUpload' type='file' allowedExtensions='.ics' cssClass='calendar-import' buttons={{ browse: importTemplateFn({ text: 'Import' })[0] }} multiple={false} showFileList={false} selected={(onImportClick)} created={createUpload}/>
-                </div>
-                <div className='control-panel calendar-export'>
-                    <DropDownButtonComponent id='exportBtn' content='Export' cssClass='e-inherit' items={exportItems} select={onExportClick}/>
-                </div>
-               
-              </AppBarComponent>
-              <div>
-              <ToolbarComponent id='toolbarOptions' cssClass='overview-toolbar' className='toolbar' width='100%' height={70} overflowMode='Scrollable' scrollStep={100} created={() => liveTimeInterval = setInterval(() => { }, 1000)} clicked={onToolbarItemClicked}>
-                <ItemsDirective>
-                  <ItemDirective prefixIcon='e-icons e-plus' tooltipText='New Event' text='New Event' tabIndex={0}/>
-                  <ItemDirective type='Separator'/>
-                  <ItemDirective prefixIcon='e-icons e-day' tooltipText='Day' text='Day' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-week' tooltipText='Week' text='Week' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-week' tooltipText='WorkWeek' text='WorkWeek' tabIndex={0}/>
-                  <ItemDirective prefixIcon='e-icons e-month' tooltipText='Month' text='Month' tabIndex={0}/>
-                  
-                  <ItemDirective type='Separator'/>
-                  <ItemDirective tooltipText='Grouping' text='Grouping' template={groupTemplate}/>
-                  <ItemDirective tooltipText='Timme Slots' text='Timme Slots' template={gridlineTemplate}/>
-                </ItemsDirective>
-              </ToolbarComponent>
-              <div className='overview-content'>
-                <div className='left-panel'>
-                  <div className='overview-scheduler'>
-                  <ScheduleComponent
-                        currentView={currentView}
-                        width="100%"
-                        height="650px"
-                        selectedDate={new Date()}
-                        ref={scheduleObj}
-                        eventSettings={{ dataSource: data, fields: fields }}
-                        editorTemplate={editorTemplate}
-                        editorHeaderTemplate={editorHeaderTemplate}
-                        actionBegin={onActionBegin}
-                        eventRendered={onEventRendered}
-                        eventTemplate={eventTemplate}
-                        group={group}
-                        enableAdaptiveUI={true}
-                      >
-                        <ResourcesDirective>
-                          <ResourceDirective
-                            field="CalendarId"
-                            title="Calendars"
-                            name="Calendars"
-                            dataSource={calendarCollections}
-                            query={new Query().where("CalendarId", "equal", 1)}
-                            textField="CalendarText"
-                            idField="CalendarId"
-                            colorField="CalendarColor"
-                          />
-                            <ResourceDirective field='ProjectId' title='Choose Project' name='Projects' allowMultiple={false} dataSource={projectData} textField='text' idField='id' colorField='color' />
-                            <ResourceDirective field='TaskId' title='Category' name='Categories' allowMultiple={true} dataSource={categoryData} textField='text' idField='id' groupIDField='groupId' colorField='color' />
+        <div className='schedule-control-section'>
+            <div className='col-lg-12 control-section'>
+                <div className='content-wrapper'>
+                    <div className='schedule-overview'>
+                        <div className="select-container">
+                            <select value={selectedMajor} onChange={handleMajorChange} placeholder="Major">
+                                <option value="" disabled>Major</option>
+                                {majors.map((major, index) => (
+                                    <option key={index} value={major}>{major}</option>
+                                ))}
+                            </select>
+                            <select value={selectedLevel} onChange={handleLevelChange} placeholder="Year">
+                                <option value="" disabled>Year</option>
+                                {levels.map((year, index) => (
+                                    <option key={index} value={year}>{year}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <Row className=''>
                         
-                        </ResourcesDirective>
-                        <ViewsDirective>
-                          <ViewDirective option="Day" />
-                          <ViewDirective option="Week" />
-                          <ViewDirective option="WorkWeek" />
-                          <ViewDirective option="Month" />
-                        </ViewsDirective>
-                        <Inject
-                          services={[
-                            Day,
-                            Week,
-                            WorkWeek,
-                            Month,
-                            Resize,
-                            DragAndDrop,
-                            Print,
-                            ExcelExport,
-                            ICalendarImport,
-                            ICalendarExport,
-                          ]}
-                        />
-                      </ScheduleComponent>
-                    <ContextMenuComponent id='overviewContextMenu' cssClass='schedule-context-menu' ref={contextMenuObj} target='.e-schedule' items={contextMenuItems} beforeOpen={contextMenuOpen} select={contextMenuSelect}/>
-                  </div>
-                </div>
-                
-              </div>
-              </div>
-              
-            
-            </div>
+        {Alertvisible && (
+          <div className='col alertMessage d-flex justify-content-end'>
+              <Alert isOpen={Alertvisible} toggle={onDismiss} className="alert-slide">
+                Please Enter a CSV File 
+              </Alert>
           </div>
+        ) }
+            {isLoading && (<Row className='loadingButton'>
+
+                <Button
+                  color="primary"
+                  className='loadingButton'
+                  disabled
+                >
+                  <Spinner size="sm">
+                    Loading...
+                  </Spinner>
+                  <span>
+                    {' '}Loading
+                  </span>
+                </Button>
+                </Row>)}
+                {Successvisible && (
+          <div className='col  d-flex justify-content-end'>
+              <Alert isOpen={Successvisible} color="success" toggle={onDismisssuccess} className="">
+                File Uploaded successfully
+              </Alert>
+          </div>
+        ) }
+        </Row>
+        
+        <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
+                <ModalHeader color="danger" toggle={toggleUploadModal}>Error in Uploading File </ModalHeader>
+                <ModalBody>
+                      {UploadErrors.error ? (
+                        <div>
+                          <p>Error in inserting timetable into the database.</p>
+                          {UploadErrors.nonExistingEntities.length > 0 ? (
+                            <p>Check these lines: {UploadErrors.nonExistingEntities.join(', ')}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </ModalBody>
+
+    
+        </Modal>
+
+                        <AppBarComponent colorMode=''>
+                            <div className="e-appbar-spacer"></div>
+                            <div className='control-panel calendar-export'>
+                                <ButtonComponent id='printBtn' cssClass='title-bar-btn e-inherit' iconCss='e-icons e-print' onClick={onPrint} content='Print' />
+                            </div>
+                            <div className='control-panel import-button'>
+                            <UploaderComponent 
+                                    id='fileUpload' 
+                                    type='file' 
+                                    allowedExtensions='*' // Autoriser tous les types de fichiers
+                                    cssClass='calendar-import' 
+                                    buttons={{ browse: importTemplateFn({ text: 'Import' })[0] }} 
+                                    multiple={false} 
+                                    showFileList={false} 
+                                    selected={onImportClick} 
+                                    created={createUpload} 
+                                />
+
+                            </div>
+                        
+                        </AppBarComponent>
+                        <ToolbarComponent id='toolbarOptions' cssClass='overview-toolbar' className='toolbar' width='100%' height={70} overflowMode='Scrollable' scrollStep={100} clicked={onToolbarItemClicked}>
+                            <ItemsDirective>
+                            
+                                <ItemDirective type='Separator' />
+                                <ItemDirective prefixIcon='e-icons e-day' tooltipText='Day' text='Day' tabIndex={0} />
+                                <ItemDirective prefixIcon='e-icons e-week' tooltipText='Week' text='Week' tabIndex={0} />
+                                <ItemDirective type='Separator' />
+                            </ItemsDirective>
+                        </ToolbarComponent>
+                        <div className='overview-content'>
+                            <div className='left-panel'>
+                                <div className='overview-scheduler'>
+                                    
+                                   <div className='row'>
+                                  <div className='col-6'>
+                                     <h2>Semestre 1</h2>
+                                  </div>
+                                   {selectedMajor && selectedLevel && <div className='col-6 d-flex justify-content-end'>
+                        
+                                        <button  onClick={() => onDeleteClick('Semester 1')} class="delete-button">
+                                            <svg class="delete-svgIcon" viewBox="0 0 448 512">
+                                                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path>
+                                                          </svg>
+                                        </button>
+                                    </div>}
+                                   </div>
+                                    <ScheduleComponent
+                                        currentView={'Week'}
+                                        width="100%"
+                                        height="650px"
+                                        eventSettings={{
+                                            dataSource: dataSourceSemester1,
+                                            allowAdding: false,
+                                            allowDeleting: false, 
+                                            allowEditing: false,
+                                            
+                                        }}
+                                        startHour={startHour}
+                                        endHour={endHour}
+                                        workDays={[1, 2, 3, 4, 5, 6]}
+                                        readOnly={true}
+                                    >
+                                        <ViewsDirective>
+                                            <ViewDirective option="Day" />
+                                            <ViewDirective option="Week" />
+                                        </ViewsDirective>
+                                        <Inject services={[Day, Week]} />
+                                    </ScheduleComponent>
+                                </div>
+                            </div>
+                            </div>
+                            <div className='overview-content'>
+                            <div className='left-panel'>
+                                <div className='overview-scheduler'>
+                                <div className='row'>
+                                  <div className='col-6'>
+                                     <h2>Semestre 2</h2>
+                                  </div>
+                                    <div className='col-6 d-flex justify-content-end'>
+                                    {selectedMajor && selectedLevel && <button  onClick={() => onDeleteClick('Semester 2')} class="delete-button">
+                                            <svg class="delete-svgIcon" viewBox="0 0 448 512">
+                                                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path>
+                                                          </svg>
+                                        </button>}
+                                    </div>
+                                   </div>  <ScheduleComponent
+                                        currentView={'Week'}
+                                        width="100%"
+                                        height="650px"
+                                        eventSettings={{ dataSource: dataSourceSemester2 , 
+                                        allowAdding: false, 
+                                        allowDeleting: false, 
+                                        allowEditing: false, 
+                                    }}
+                                        startHour={startHour}
+                                        endHour={endHour}
+                                        readOnly={true}
+                                    >
+                                        <ViewsDirective>
+                                            <ViewDirective option="Day" />
+                                            <ViewDirective option="Week" />
+                                        </ViewsDirective>
+                                        <Inject services={[Day, Week]} />
+                                    </ScheduleComponent>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+              {/* Delete Confirmation Modal */}
+              <Modal isOpen={isDeleteModalOpen} toggle={toggleDeleteModal}>
+                <ModalHeader toggle={toggleDeleteModal}>Confirm Deletion</ModalHeader>
+                <ModalBody>
+                    <p>Are you sure you want to delete the timetable for {semesterToDelete}?</p>
+                    <Button color="danger" onClick={handleDelete}>Delete</Button>
+                    <Button color="secondary" onClick={toggleDeleteModal}>Cancel</Button>
+                </ModalBody>
+            </Modal>
         </div>
-      </div>
-    </>);
+    );
 };
+
 export default EditorTemplate;

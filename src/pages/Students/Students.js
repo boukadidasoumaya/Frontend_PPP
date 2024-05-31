@@ -23,6 +23,7 @@ const Students = (props) => {
       <NavBar {...props} />
         <Header />
        <TableStudents/>
+       
   
       </div>  
       </>
