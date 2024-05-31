@@ -928,17 +928,16 @@ const TableTeachers = () => {
             </Table>
 
             {currentteachers.length === 0 ? null : (
-              <div className="d-flex justify-content-center mt-3">
-                <Pagination
-                  itemsPerPage={teachersPerPage}
-                  totalItems={teachers.length}
-                  paginate={paginate}
-                  currentPage={currentPage}
-                />
-              </div>
-
-            )}
-             {selectedDepartment && (<div className='col-12 d-flex justify-content-end'>
+             <>
+               <div className="d-flex justify-content-center mt-3">
+                 <Pagination
+                   itemsPerPage={teachersPerPage}
+                   totalItems={teachers.length}
+                   paginate={paginate}
+                   currentPage={currentPage}
+                 />
+               </div>
+               {selectedDepartment && (<div className='col-12 d-flex justify-content-end'>
                         
                         <button  onClick={()=>onDropClick()} class="delete-button">
                             <svg class="delete-svgIcon" viewBox="0 0 448 512">
@@ -946,6 +945,9 @@ const TableTeachers = () => {
                                           </svg>
                         </button>
                     </div>)}
+             </>
+            )}
+            
                     <Modal isOpen={isDropModalOpen} toggle={toggleDropModal}>
                 <ModalHeader toggle={toggleDropModal}>Confirm Deletion</ModalHeader>
                 <ModalBody>
