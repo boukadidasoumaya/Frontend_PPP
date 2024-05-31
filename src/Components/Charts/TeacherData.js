@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardHeader,
-  Table,
-  Container,
-  Row,
-  FormGroup,
-  Input,
-} from "reactstrap";
+import { Card, CardHeader, Table, Container, Row, FormGroup, Input } from "reactstrap";
 import axios from "axios";
 
 const TeacherData = ({ teacherId }) => {
@@ -37,25 +29,20 @@ const TeacherData = ({ teacherId }) => {
     }
   }, [teacherId]);
 
-  const handleClassChange = async (subjectId, classId) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/teachers/${teacherId}/subjects/${subjectId}/classes/${classId}/absences`
-      );
-      console.log("Fetched absences for class:", response.data); // Debugging line
-      if (response.data.success) {
-        setSelectedClasses((prev) => ({
-          ...prev,
-          [subjectId]: {
-            ...prev[subjectId],
-            [classId]: response.data.data[0]?.absenceCount || 0,
-          },
-        }));
-      } else {
-        console.error("Failed to fetch absences for class");
-      }
-    } catch (error) {
-      console.error("Error fetching absences for class:", error);
+  const handleClassChange = (subjectId, classId) => {
+    setSelectedClasses((prev) => ({
+      ...prev,
+      [subjectId]: classId,
+    }));
+  };
+
+  const getAbsenceCount = (subject) => {
+    const selectedClassId = selectedClasses[subject.id];
+    if (selectedClassId && selectedClassId !== "all") {
+      const selectedClass = subject.classes.find((cls) => cls.id === selectedClassId);
+      return selectedClass ? selectedClass.absences : 0;
+    } else {
+      return subject.totalAbsences;
     }
   };
 
@@ -90,24 +77,18 @@ const TeacherData = ({ teacherId }) => {
                         <FormGroup>
                           <Input
                             type="select"
-                            onChange={(e) =>
-                              handleClassChange(subject.id, e.target.value)
-                            }
+                            onChange={(e) => handleClassChange(subject.id, e.target.value)}
                           >
                             <option value="all">All Classes</option>
                             {subject.classes.map((cls) => (
                               <option key={cls.id} value={cls.id}>
-                                {cls}
-                              </option> // Assuming cls.id and cls.name are the properties representing class ID and name
+                                {cls.className}
+                              </option>
                             ))}
                           </Input>
                         </FormGroup>
                       </td>
-                      <td>
-                        {selectedClasses[subject.id]?.[
-                          Object.keys(selectedClasses[subject.id] || {})[0]
-                        ] || subject.absences}
-                      </td>
+                      <td>{getAbsenceCount(subject)}</td>
                     </tr>
                   ))
                 ) : (
