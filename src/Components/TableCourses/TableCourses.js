@@ -319,56 +319,71 @@ const TableCourses = () => {
   };
 
   const parseError = (errorString) => {
-    // Split the error string based on "Erreur: Duplicate entry found:
-    const errorEntries = errorString
-      .split("Erreur: Duplicate entry found:")
-      .filter(Boolean);
+    const duplicate = /Duplicate/.test(errorString);
+    console.log("Dup", typeof errorString);
+    if (duplicate) {
+      // Map the entries to an array of error objects
+      const errors = errorString
+        .map((entry) => {
+          try {
+            const jsonString = entry.replace(
+              "Erreur: Duplicate entry found:",
+              ""
+            );
+            return JSON.parse(jsonString);
+          } catch (e) {
+            console.error("Failed to parse error entry:", entry);
+            return null;
+          }
+        })
+        .filter(Boolean);
 
-    console.log("errorEntries:", errorEntries); // Add this line for debugging
-
-    // Map the entries to an array of error objects
-    return errorEntries
-      .map((entry) => {
-        try {
-          return JSON.parse(entry);
-        } catch (e) {
-          console.error("Failed to parse error entry:", entry);
-          return null;
-        }
-      })
-      .filter(Boolean);
+      return { errors: errors, duplicate: duplicate };
+    } else {
+      return { errors: errorString, duplicate: duplicate };
+    }
   };
 
   const parseErrors = (errorString) => {
     // Split the error string based on "Erreur: Duplicate entry found:
-    const s = errorString;
-    const errors = [];
-    for (let i = 0; i < s.length; i++) {
-      errors.push(parseError(s[i]));
-    }
-    return errors;
+    console.log("stttt", errorString);
+    const { errors, duplicate } = parseError(errorString);
+    console.log("eeeeeeeeeer", errors)
+    return { errors: errors, duplicate: duplicate };
   };
 
-  const formatErrors = (errors) => {
-    return errors.map((errorList, i) => (
-      <React.Fragment key={i}>
-        {errorList.map((error, index) => (
-          <div key={index} className="error-message">
-            <p>Duplicate Entry Found:</p>
-            <p>
-              <strong>Subject Name:</strong> {error.SubjectName}
-            </p>
-            <p>
-              <strong>Module:</strong> {error.Module}
-            </p>
-            <p>
-              <strong>Coefficient:</strong> {error.Coeff}
-            </p>
-          </div>
+  const formatErrors = (errorString) => {
+    const { errors, duplicate } = errorString;
+    if (!duplicate) {
+      return (
+        <div className="error-message">
+          <p>{errors}</p>
+        </div>
+      );
+    }
+    // Render the error list
+    return (
+      <div>
+        {errors.map((error, i) => (
+          <React.Fragment key={i}>
+            {console.log("errrr", error)}
+            <div className="error-message">
+              <p>Duplicate Entry Found:</p>
+              <p>
+                <strong>Subject Name:</strong> {error.SubjectName}
+              </p>
+              <p>
+                <strong>Module:</strong> {error.Module}
+              </p>
+              <p>
+                <strong>Coefficient:</strong> {error.Coeff}
+              </p>
+            </div>
+            <br /> {/* Add a line break between each error */}
+          </React.Fragment>
         ))}
-        <br /> {/* Add a line break between each error list */}
-      </React.Fragment>
-    ));
+      </div>
+    );
   };
 
   const handleFileChange = (event) => {
@@ -473,13 +488,14 @@ const TableCourses = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [subjectsPerPage] = useState(10); // Nombre de matières par page;
 
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   const indexOfLastSubject = currentPage * subjectsPerPage;
   const indexOfFirstSubject = indexOfLastSubject - subjectsPerPage;
   const currentSubjects = subjects.slice(
     indexOfFirstSubject,
     indexOfLastSubject
   );
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <Container className="mt--7" fluid>
@@ -506,7 +522,9 @@ const TableCourses = () => {
             <div>
               <p>{formatErrors(parseErrors(UploadErrors))}</p>
             </div>
-          ) : null}
+          ) : (
+            "Matières importées avec succès"
+          )}
         </ModalBody>
       </Modal>
       <Row>
@@ -642,7 +660,7 @@ const TableCourses = () => {
                     >
                       Add Subject
                     </Button>
-                    <Button color="link text-muted" onClick={toggleModal}>
+                    <Button color="link" onClick={toggleModal}>
                       Cancel
                     </Button>
                     {errors.combinedError && (
@@ -740,13 +758,6 @@ const TableCourses = () => {
                     {/* Form fields to capture updated subject data */}
                     <FormGroup>
                       <FormLabel for="subjectname">Subject Name</FormLabel>
-                      <input
-                        type="text"
-                        style={{ display: "none" }}
-                        id="id"
-                        value={formData ? formData._id : ""}
-                      />
-
                       <Input
                         type="text"
                         name="SubjectName"
@@ -805,10 +816,7 @@ const TableCourses = () => {
                     >
                       Save Changes
                     </Button>
-                    <Button
-                      color="link"
-                      onClick={() => toggleUpdateModal(null)}
-                    >
+                    <Button color="link" onClick={toggleUpdateModal}>
                       Cancel
                     </Button>
                   </div>
