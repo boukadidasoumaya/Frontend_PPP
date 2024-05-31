@@ -109,7 +109,7 @@ const TeacherProfile = (props) => {
               </Card>
             </Col>
             <Col className="order-xl-1" xl="8">
-              <TeacherData />
+              <TeacherData teacherId={teacherId} />
             </Col>
           </Row>
         </Container>
