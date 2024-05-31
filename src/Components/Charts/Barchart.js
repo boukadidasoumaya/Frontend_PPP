@@ -10,7 +10,17 @@ function Barchart() {
             useEffect(() => {
                 async function fetchAbsencesPerMajor() {
                     try {
-                        const response = await fetch('/api/attendance/calculateAbsencesPerMajor');
+                        const token = sessionStorage.getItem('jwtToken');
+
+      const requestOptions = {
+        method: 'GET', // Assuming you're fetching student data with a GET request
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+          'Content-Type': 'application/json'
+        }
+      };
+      
+                        const response = await fetch('/api/attendance/calculateAbsencesPerMajor',requestOptions);
                         const data = await response.json();
         
                             console.log('Data is not in expected format:', data);

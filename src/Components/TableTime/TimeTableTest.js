@@ -3,13 +3,20 @@ import {Table} from "reactstrap";
 import axios from "axios";
 
 const TimeTableTest = () => {
+  const token = sessionStorage.getItem('jwtToken');
+
   const [timeTables, setTimeTables] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const config = {
+    headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+    },
+};
   useEffect(() => {
     // Fetch all time tables from the server
     axios
-      .get("http://localhost:5000/timetables")
+      .get("http://localhost:5000/timetables",config)
       .then((response) => {
         setTimeTables(response.data.data);
         setLoading(false);

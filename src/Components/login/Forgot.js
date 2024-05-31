@@ -5,6 +5,8 @@ function Forgot() {
     const [error, setError] = useState('');
     const [showToast, setShowToast] = useState(false); // State to control toast visibility
 const [success,setSuccess]=useState(false);
+const [successmsg,setSuccessmsg]=useState('');
+
     function launchToast() {
         setShowToast(true);
         setTimeout(() => {
@@ -26,7 +28,7 @@ const [success,setSuccess]=useState(false);
         // Check if input is not empty
         if (cin === '') {
             setError('Please fill out all required fields.');
-            launchToast();
+            launchToast()
             return;
         }
     
@@ -42,8 +44,8 @@ const [success,setSuccess]=useState(false);
     
             // Check if request was successful
             if (response.ok) {
-                setSuccess('Password retrieval request sent successfully!');
-                launchToast();
+                setSuccessmsg('Password retrieval request sent!');
+                launchSuccessToast();
             } else {
                 // Handle errors from the server
                 const errorData = await response.json();
@@ -65,7 +67,7 @@ const [success,setSuccess]=useState(false);
                 {showToast &&<div className='alertss'>
  <Alert message={error} icon=<FaLock /> showToast={showToast}/></div> }
  {success &&<div className='alertss'>
- <Alert message={error} icon=<FaCheck /> showToast={showToast}/></div> }
+ <Alert message={successmsg} icon=<FaCheck /> showToast={success}/></div> }
                 <div className="input-box">
                     <input type="text" placeholder='CIN' id='cin' required></input>
                     <FaUser className="icon" />

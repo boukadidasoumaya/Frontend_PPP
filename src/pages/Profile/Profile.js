@@ -26,15 +26,20 @@ import axios from 'axios';
   // core components
   
   const Profile = (props) => {
+const token= sessionStorage.getItem('jwtToken');
     const location = useLocation(); // Get the current location object
     const selectedStudent = location.state?.selectedStudent; // Access the selectedStudent object from the state
     console.log("selected student from profile",selectedStudent);
     //concerning the info of profile take the id and do anther axios here so that we can recupere the info of the student
     const studentId = selectedStudent._id;
     const [student, setStudent] = useState([]);
-
+    const config = {
+      headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+      },}
     useEffect(() => {
-      axios.get(`http://localhost:5000/students/${studentId}`)
+      axios.get(`http://localhost:5000/students/${studentId}`,config)
         .then(response => {
           setStudent(response.data.data);
           

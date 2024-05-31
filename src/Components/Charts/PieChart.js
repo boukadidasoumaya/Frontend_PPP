@@ -11,8 +11,17 @@ function PieChart(){
     
         useEffect(() => {
             async function fetchData() {
+                const token = sessionStorage.getItem('jwtToken');
+
+                const requestOptions = {
+                  method: 'GET', // Assuming you're fetching student data with a GET request
+                  headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Content-Type': 'application/json'
+                  }
+                };
                 try {
-                    const response = await fetch('/api/attendance/calculateTotalStudentsPerMajor');
+                    const response = await fetch('/api/attendance/calculateTotalStudentsPerMajor',requestOptions);
                     const data = await response.json();
                     const transformedData = data.map((item, index) => ({
                         id: item.major.toLowerCase(), // Assuming 'major' is the key for the major name

@@ -32,6 +32,8 @@ import { set } from "date-fns";
 import Pagination from "../Pagination/Pagination";
 
 const TableStudents = () => {
+  const token = sessionStorage.getItem('jwtToken');
+
   const modalRef = useRef(null);
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
@@ -54,12 +56,19 @@ const TableStudents = () => {
     console.log("Updated formData:", formData);
   };
 
+  const config = {
+    headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+    },
+};
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
-
+  console.log("Token:", token);
   useEffect(() => {
+    
     axios
-      .get("http://localhost:5000/classes/majors")
+      .get("http://localhost:5000/classes/majors",config)
       .then((response) => {
         setMajors(response.data.majors);
         console.log("Majors fetched:", response.data.majors);
@@ -76,8 +85,9 @@ const TableStudents = () => {
   ];
 
   useEffect(() => {
+ 
     axios
-      .get("http://localhost:5000/classes/levels")
+      .get("http://localhost:5000/classes/levels",config)
       .then((response) => {
         setLevels(response.data.levels);
       })
@@ -131,9 +141,9 @@ const TableStudents = () => {
       else
         endpoint = `http://localhost:5000/students/majoryear/${selectedMajor}/${selectedLevel}`;
     }
-
+  
     axios
-      .get(endpoint)
+      .get(endpoint, config)
       .then((response) => {
         setStudents(response.data.data);
       })
@@ -235,7 +245,7 @@ const TableStudents = () => {
       // Send new student data to server
 
       axios
-        .post("http://localhost:5000/students", newStudent)
+        .post("http://localhost:5000/students", newStudent,config)
         .then((response) => {
           console.log("Student added:", response.data);
           console.log("newStudent:", newStudent);
@@ -280,7 +290,7 @@ const TableStudents = () => {
       };
 
       axios
-        .put(`http://localhost:5000/students/${newStudent?._id}`, newStudent)
+        .put(`http://localhost:5000/students/${newStudent?._id}`, newStudent,config)
         .then((response) => {
           console.log("Student updated:", response.data);
           console.log("in if");
@@ -312,7 +322,7 @@ const TableStudents = () => {
   const handleDelete = (student) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/students/${student?._id}`)
+      .delete(`http://localhost:5000/students/${student?._id}`,config)
       .then((response) => {
         console.log("Student deleted:", response.data);
       })

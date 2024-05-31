@@ -36,6 +36,7 @@ import { useRef } from "react";
 
 const TableStudents = () => {
   const modalRef = useRef(null);
+  const token = sessionStorage.getItem('jwtToken');
 
   const [students, setStudents] = useState([]);
   const [formData, setFormData] = useState({
@@ -48,15 +49,22 @@ const TableStudents = () => {
     Year: "",
     Group: "",
   });
+  const config = {
+    headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+    },
+};
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
+  
   useEffect(() => {
     axios
-      .get("http://localhost:5000/students")
+      .get("http://localhost:5000/students",config)
       .then((response) => {
         setStudents(response.data.data);
         console.log("students:", students);
@@ -71,7 +79,7 @@ const TableStudents = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/majors")
+      .get("http://localhost:5000/classes/majors",config)
       .then((response) => {
         setMajors(response.data.majors);
         console.log("Majors fetched:", response.data.majors);
@@ -83,7 +91,7 @@ const TableStudents = () => {
   }, []);
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/levels")
+      .get("http://localhost:5000/classes/levels",config)
       .then((response) => {
         setLevels(response.data.levels);
       })
@@ -141,7 +149,7 @@ const TableStudents = () => {
       // Send new student data to server
 
       axios
-        .post("http://localhost:5000/students", newStudent)
+        .post("http://localhost:5000/students", newStudent,config)
         .then((response) => {
           console.log("Student added:", response.data);
         })
@@ -151,7 +159,7 @@ const TableStudents = () => {
     } else if (action === "update") {
       setUpdateModalOpen(!updateModalOpen);
       axios
-        .put(`http://localhost:5000/students/${newStudent?._id}`, newStudent)
+        .put(`http://localhost:5000/students/${newStudent?._id}`, newStudent,config)
         .then((response) => {
           console.log("Student updated:", response.data);
         })
@@ -164,7 +172,7 @@ const TableStudents = () => {
   const handleDelete = (student) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/students/${student?._id}`)
+      .delete(`http://localhost:5000/students/${student?._id}`,config)
       .then((response) => {
         console.log("Student deleted:", response.data);
       })

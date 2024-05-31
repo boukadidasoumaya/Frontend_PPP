@@ -8,9 +8,7 @@ import Alert from "./Alert";
 function Verifing() {
     
     const [showToast, setShowToast] = useState(false); // State to control toast visibility
-  
-    function launchToast(message) {
-      setErrorMessage(message);
+    function launchToast() {
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
@@ -19,9 +17,15 @@ function Verifing() {
   const searchParams = new URLSearchParams(search);
   const token = searchParams.get('token');
   const id = searchParams.get('id');
-    const [errorMessage, setErrorMessage] = useState(""); // State to hold error message
+    const [errorMessage, setErrorMessage] = useState("");
+    const [success,setSuccess]=useState(false);
+const [successmsg,setSuccessmsg]=useState('');
     const navigate = useNavigate();
-
+    function launchSuccessToast() {
+        setSuccess(true);
+        setTimeout(() => {
+            setSuccess(false);
+        }, 5000);}
     const handleSubmit = async (event) => {
         event.preventDefault(); // Prevent default form submission behavior
 console.log(id)
@@ -39,8 +43,7 @@ console.log(id)
         // Check if passwords match
         if (passwordInput.value !== confirmPasswordInput.value) {
             setErrorMessage("Passwords do not match");
-            launchToast(errorMessage);
-
+            launchToast();
             return;
         }
 
@@ -61,17 +64,21 @@ token:token,
             });
 
             if (!response.ok) {
-                setErrorMessage('Failed to verify');
-                launchToast(errorMessage);
+                setErrorMessage('Failed to verify : token already used or expired');
+                launchToast();
 
             }
-
-            // Proceed with navigation to login page after successful verification
-            navigate("/login");
+            console.log(response);
+            if (response.ok) {
+                    setSuccessmsg('Password retrieval request sent!');
+                    launchSuccessToast();
+                
+console.log('ghhhhhh')    ;
+        navigate("/login");}
         } catch (error) {
             console.error('Error verifying:', error);
-            setErrorMessage("Failed to verify");
-            launchToast(errorMessage);
+            setErrorMessage("Failed to verify : token already used or expired");
+            launchToast();
 
         }
     };
@@ -82,7 +89,7 @@ token:token,
                 <h1>Verifing</h1>
                 {showToast &&<div className='alertss'>
  <Alert message={errorMessage} icon=<FaLock /> showToast={showToast}/></div> }
-*                <div className="input-box">
+              <div className="input-box">
                     <input type="password" placeholder='Password' id='password' required />
                     <FaLock className="icon" />
                 </div>

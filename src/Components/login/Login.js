@@ -53,6 +53,7 @@ function Login() {
   
         const responseData = await response.json();
         const token = responseData.token;
+        console.log('Token:', token);
         sessionStorage.setItem('jwtToken', token);
         window.location.href = '/';
       } catch (error) {

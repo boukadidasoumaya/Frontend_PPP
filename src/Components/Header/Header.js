@@ -1,6 +1,7 @@
 
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 import './Header.css'
+import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from 'react';
 const Header = () => {
 
@@ -8,15 +9,34 @@ const Header = () => {
   const [totalTeachers, setTotalTeachers] = useState(0);
   const [totalClasses, settotalClasses] = useState(0);
   const [dataav, setDataav] = useState({ totalAbsences: 0, totalAttendances: 0, averageAbsencesPercentage: 0 });
+  const navigate = useNavigate();
+  const token = sessionStorage.getItem('jwtToken');
 
   useEffect(() => {
     const fetchAverageAbsences = async () => {
+
+                const requestOptions = {
+                  method: 'GET', // Assuming you're fetching student data with a GET request
+                  headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Content-Type': 'application/json'
+                  }
+                };
       try {
-          const response = await fetch('http://localhost:3000/api/attendance/calculateAverageAbsences');
+
+          const response = await fetch('http://localhost:3000/api/attendance/calculateAverageAbsences',requestOptions);
+          if (response.redirected) {
+            // Redirected by the server
+            console.log('Redirected to:', response.url);
+            navigate('/login'); // Navigate to the redirected URL
+            return;
+          }
           if (!response.ok) {
               throw new Error('Network response was not ok');
           }
           const data3 = await response.json();
+          console.log(response)
+          
           setDataav(data3);
           console.log(data3);
       } catch (error) {
@@ -27,8 +47,16 @@ const Header = () => {
   fetchAverageAbsences();
     // Function to fetch student data and calculate total students
     const fetchTotalStudents = async () => {
+
+                const requestOptions = {
+                  method: 'GET', // Assuming you're fetching student data with a GET request
+                  headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Content-Type': 'application/json'
+                  }
+                };
       try {
-        const response = await fetch('/students/count'); // Assuming your React app is served from the same host as your Express server
+        const response = await fetch('/students/count',requestOptions); // Assuming your React app is served from the same host as your Express server
 
         if (!response.ok) {
           throw new Error('Failed to fetch student data');
@@ -45,8 +73,16 @@ console.log(data);
       }
     }; // Empty dependency array means this effect runs once when the component mounts
     const fetchTotalClasses = async () => {
+
+                const requestOptions = {
+                  method: 'GET', // Assuming you're fetching student data with a GET request
+                  headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Content-Type': 'application/json'
+                  }
+                };
       try {
-        const response = await fetch('/classes/count'); // Assuming your React app is served from the same host as your Express server
+        const response = await fetch('/classes/count', requestOptions); // Assuming your React app is served from the same host as your Express server
         const data2 = await response.json()
         const total2=data2.totalClasses;
         console.log(total2);
@@ -67,8 +103,15 @@ console.log(data);
     }; // Empty dependency array means this effect runs once when the component mounts
 
     const fetchTotalTeachers = async () => {
+      const requestOptions = {
+        method: 'GET', // Assuming you're fetching student data with a GET request
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+          'Content-Type': 'application/json'
+        }
+      };
       try {
-        const response = await fetch('/teachers/count'); // Assuming your React app is served from the same host as your Express server
+        const response = await fetch('/teachers/count', requestOptions); // Assuming your React app is served from the same host as your Express server
 console.log(response);
         if (!response.ok) {
           throw new Error('Failed to fetch student data');

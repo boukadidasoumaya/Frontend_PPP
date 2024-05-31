@@ -51,14 +51,20 @@ const TableCourses = () => {
     });
     console.log("Updated formData:", formData);
   };
+  const token = sessionStorage.getItem('jwtToken');
 
   const [teachers, setTeachers] = useState([]);
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
-
+  const config = {
+    headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+    },
+};
   useEffect(() => {
     axios
-      .get("http://localhost:5000/teachers")
+      .get("http://localhost:5000/teachers",config)
       .then((response) => {
         setTeachers(response.data.data);
       })
@@ -76,7 +82,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/majors")
+      .get("http://localhost:5000/classes/majors",config)
       .then((response) => {
         setMajors(response.data.majors);
         console.log("Majors fetched:", response.data.majors);
@@ -94,7 +100,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/levels")
+      .get("http://localhost:5000/classes/levels", config)
       .then((response) => {
         setLevels(response.data.levels);
       })
@@ -256,7 +262,7 @@ const TableCourses = () => {
 
       // Send new subject data to server
       axios
-        .post("http://localhost:5000/api/subjects", newSubject)
+        .post("http://localhost:5000/api/subjects", newSubject,config)
         .then((response) => {
           console.log("Subject added:", response.data);
           console.log("newSubject:", newSubject);
@@ -293,7 +299,7 @@ const TableCourses = () => {
       axios
         .put(
           `http://localhost:5000/api/subjects/${newSubject?._id}`,
-          newSubject
+          newSubject,config
         )
         .then((response) => {
           console.log("Subject updated:", response.data);
@@ -324,7 +330,7 @@ const TableCourses = () => {
   const handleDelete = (subject) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/api/subjects/${subject?._id}`)
+      .delete(`http://localhost:5000/api/subjects/${subject?._id}`,config)
       .then((response) => {
         console.log("Subject deleted:", response.data);
       })
