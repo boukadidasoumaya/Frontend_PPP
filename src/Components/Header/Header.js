@@ -11,17 +11,17 @@ const Header = () => {
   const [dataav, setDataav] = useState({ totalAbsences: 0, totalAttendances: 0, averageAbsencesPercentage: 0 });
   const navigate = useNavigate();
   const token = sessionStorage.getItem('jwtToken');
-
+  const requestOptions = {
+    method: 'GET', // Assuming you're fetching student data with a GET request
+    headers: {
+      'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+      'Content-Type': 'application/json'
+    }
+  };
   useEffect(() => {
     const fetchAverageAbsences = async () => {
 
-                const requestOptions = {
-                  method: 'GET', // Assuming you're fetching student data with a GET request
-                  headers: {
-                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-                    'Content-Type': 'application/json'
-                  }
-                };
+               
       try {
 
           const response = await fetch('http://localhost:3000/api/attendance/calculateAverageAbsences',requestOptions);
@@ -48,13 +48,7 @@ const Header = () => {
     // Function to fetch student data and calculate total students
     const fetchTotalStudents = async () => {
 
-                const requestOptions = {
-                  method: 'GET', // Assuming you're fetching student data with a GET request
-                  headers: {
-                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-                    'Content-Type': 'application/json'
-                  }
-                };
+                
       try {
         const response = await fetch('/students/count',requestOptions); // Assuming your React app is served from the same host as your Express server
 
@@ -74,13 +68,7 @@ console.log(data);
     }; // Empty dependency array means this effect runs once when the component mounts
     const fetchTotalClasses = async () => {
 
-                const requestOptions = {
-                  method: 'GET', // Assuming you're fetching student data with a GET request
-                  headers: {
-                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-                    'Content-Type': 'application/json'
-                  }
-                };
+               
       try {
         const response = await fetch('/classes/count', requestOptions); // Assuming your React app is served from the same host as your Express server
         const data2 = await response.json()
@@ -103,13 +91,7 @@ console.log(data);
     }; // Empty dependency array means this effect runs once when the component mounts
 
     const fetchTotalTeachers = async () => {
-      const requestOptions = {
-        method: 'GET', // Assuming you're fetching student data with a GET request
-        headers: {
-          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
-          'Content-Type': 'application/json'
-        }
-      };
+        
       try {
         const response = await fetch('/teachers/count', requestOptions); // Assuming your React app is served from the same host as your Express server
 console.log(response);

@@ -31,8 +31,8 @@ import Pagination from '../Pagination/Pagination';
 const token = sessionStorage.getItem('jwtToken');
 const config = {
   headers: {
-      "Content-Type": "multipart/form-data",
-      Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
   },
 };
 const TableStudents = () => {

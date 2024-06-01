@@ -25,6 +25,13 @@ import axios from "axios";
 // core components
 
 const TeacherProfile = (props) => {
+  const token = sessionStorage.getItem('jwtToken');
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  };
   const location = useLocation(); // Get the current location object
   const selectedteacher = location.state?.selectedteacher; // Access the selectedteacher object from the state
   console.log("Selected teacher from profile:", selectedteacher);
@@ -37,7 +44,7 @@ const TeacherProfile = (props) => {
   useEffect(() => {
     if (teacherId) {
       axios
-        .get(`http://localhost:5000/teachers/teacher/${teacherId}`)
+        .get(`http://localhost:5000/teachers/teacher/${teacherId}`,config)
         .then((response) => {
           console.log("Response from API:", response.data.data);
           setTeacher(response.data.data);

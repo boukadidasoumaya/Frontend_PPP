@@ -21,6 +21,13 @@ const initialErrors = {
 };
 const [errors, setErrors] = useState(initialErrors);
 const [students, setStudents] = useState([]);
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+};
 const clearErrors = () => {
   setErrors(initialErrors);
 };
@@ -85,7 +92,7 @@ const clearErrors = () => {
         
         // Send new student data to server
       
-          axios.post("http://localhost:5000/students", newStudent)
+          axios.post("http://localhost:5000/students", newStudent,config)
             .then(response => {
              console.log('Student added:', response.data);
              console.log('newStudent:', newStudent);

@@ -4,10 +4,12 @@ function Absence () {
       try {
         const response = await fetch('/api/attendance/abscence', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+        
+   });
         const data = await response.json();
         console.log(data.message);
       } catch (error) {

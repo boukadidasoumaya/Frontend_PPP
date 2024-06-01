@@ -24,9 +24,9 @@ registerLicense('ORg4AjUWIQA/Gnt2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5
 const token = sessionStorage.getItem('jwtToken');
 const config = {
     headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
-    },
+      },
 };
 const getNextDate = (dayOfWeek, time) => {
   

@@ -9,10 +9,10 @@ const TimeTableTest = () => {
   const [loading, setLoading] = useState(true);
   const config = {
     headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
-};
+  };
   useEffect(() => {
     // Fetch all time tables from the server
     axios

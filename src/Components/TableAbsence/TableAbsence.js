@@ -17,10 +17,10 @@ const TableAbsence = ({id}) => {
     const studentId = id; 
     const token = sessionStorage.getItem('jwtToken');
 const config = {
-    headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-    },
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
 };
     useEffect(() => {
       const fetchData = async () => {
