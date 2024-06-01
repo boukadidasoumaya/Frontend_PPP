@@ -16,8 +16,20 @@ import {
   Container,
   Media,
 } from "reactstrap";
+import { useNavigate } from "react-router-dom";
 
 const AdminNavbar = (props) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+
+    // Clear session data (e.g., remove token from localStorage or cookies)
+    sessionStorage.removeItem('jwtToken'); // Example for localStorage
+    // Add any other session clearing logic here
+
+    // Navigate to login page
+    navigate('/login');
+  };
   return (
     <>
       <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -29,6 +41,7 @@ const AdminNavbar = (props) => {
             {props.brandText}
           </Link>
           <Form className="navbar-search navbar-search-dark form-inline mr-3 d-none d-md-flex ml-lg-auto">
+            {/* Uncomment the form group below if search functionality is needed */}
             {/* <FormGroup className="mb-0">
               <InputGroup className="input-group-alternative">
                 <InputGroupAddon addonType="prepend">
@@ -47,7 +60,8 @@ const AdminNavbar = (props) => {
                   <span className="avatar avatar-sm rounded-circle">
                     <img
                       alt="..."
-                      src={require("../../assets/img/theme/avatar.png")}                    />
+                      src={require("../../assets/img/theme/avatar.png")}
+                    />
                   </span>
                   <Media className="ml-2 d-none d-lg-block">
                     <span className="mb-0 text-sm font-weight-bold">
@@ -57,8 +71,10 @@ const AdminNavbar = (props) => {
                 </Media>
               </DropdownToggle>
               <DropdownMenu className="dropdown-menu-arrow" right>
-                
-                <DropdownItem href="#pablo" onClick={(e) => e.preventDefault()}>
+                <DropdownItem href="#pablo" onClick={(e) => {
+                  e.preventDefault();
+                  handleLogout();
+                }}>
                   <i className="ni ni-user-run" />
                   <span>Logout</span>
                 </DropdownItem>
