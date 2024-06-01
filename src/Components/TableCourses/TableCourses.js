@@ -319,11 +319,8 @@ const TableCourses = () => {
   const [Alertvisible, setAlertVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [UploadErrors, setUploadErrors] = useState([]);
-  const config = {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  };
+  
+  
 
   const parseError = (errorString) => {
     const duplicate = /Duplicate/.test(errorString);

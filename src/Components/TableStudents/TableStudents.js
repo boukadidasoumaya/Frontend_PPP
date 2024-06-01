@@ -427,11 +427,8 @@ useEffect(() => {
   const [Successvisible, setSuccessVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [UploadErrors, setUploadErrors] = useState({error:"",validationErrors:[]});
-  const config = {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  };
+
+  
   const handleFileChange = (event) => {
     if (event.target.files.length === 0) {
       setSelectedFile(null);
