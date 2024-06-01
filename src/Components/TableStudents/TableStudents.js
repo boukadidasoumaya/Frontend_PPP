@@ -28,10 +28,14 @@ import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { set } from 'date-fns';
 import Pagination from '../Pagination/Pagination';
-
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+  headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+  },
+};
 const TableStudents = () => {
-  const token = sessionStorage.getItem('jwtToken');
-
   const modalRef = useRef(null);
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
@@ -55,17 +59,10 @@ const TableStudents = () => {
     console.log("Updated formData:", formData);
   };
 
-  const config = {
-    headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-    },
-};
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
-  console.log("Token:", token);
+
   useEffect(() => {
-    
     axios
       .get("http://localhost:5000/classes/majors",config)
       .then((response) => {
@@ -82,7 +79,6 @@ const TableStudents = () => {
   ];
 
   useEffect(() => {
- 
     axios
       .get("http://localhost:5000/classes/levels",config)
       .then((response) => {
@@ -174,17 +170,15 @@ useEffect(() => {
       else
         endpoint = `http://localhost:5000/students/majoryear/${selectedMajor}/${selectedLevel}`;
     }
-  
-    axios
-      .get(endpoint, config)
-      .then((response) => {
-        setStudents(response.data.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching filtered students:", error);
-        setStudents([]);
-      });
-  }, [selectedMajor, selectedLevel, students]);
+
+  axios.get(endpoint,config)
+    .then(response => {
+      setStudents(response.data.data);
+    })
+    .catch(error => {
+      setStudents([]);
+    });
+}, [selectedMajor, selectedLevel,students]);
 
 
 
@@ -289,57 +283,57 @@ useEffect(() => {
       };
 
       // Send new student data to server
+    
+        axios.post("http://localhost:5000/students", newStudent,config)
+          .then(response => {
+            console.log(response);
+           console.log('Student added:', response.data);
+           console.log('newStudent:', newStudent);
+           setStudents([...students, newStudent]); // Add new student to original data
+            
+            setModalOpen(false);
+          })
+          .catch(error => {
+            const backendErrors = error.response.data.errors;
+            console.log("backend",error.response.data)
+              setErrors(prevErrors => ({ ...prevErrors, ...backendErrors }));
+              console.log("backend errors",backendErrors); 
+              if (backendErrors&& backendErrors.cin) {
+                setErrors(prevErrors => ({ ...prevErrors, cin: "CIN already exists" }));
+              }
+              if(backendErrors && backendErrors.email){
+                setErrors(prevErrors => ({ ...prevErrors, email: "Email already exists" }));
 
-      axios
-        .post("http://localhost:5000/students", newStudent,config)
-        .then((response) => {
-          console.log("Student added:", response.data);
-          console.log("newStudent:", newStudent);
-          setStudents([...students, newStudent]); // Add new student to original data
+              }
+              if(backendErrors && backendErrors.Student_id){
+                setErrors(prevErrors => ({ ...prevErrors, studentid: "ID already exists" }));
+                console.log("studentid",errors);
 
-          setModalOpen(false);
-        })
-        .catch((error) => {
-          const backendErrors = error.response.data.errors;
-          console.log("backend", error.response.data);
-          setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
-          console.log("backend errors", backendErrors);
-          if (backendErrors && backendErrors.cin) {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              cin: "CIN already exists",
-            }));
-          }
-          if (backendErrors && backendErrors.email) {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              email: "Email already exists",
-            }));
-          }
-          console.log("errors", errors); // Close modal after adding
-        });
-    } else if (action === "update") {
-      const id = document.getElementById("id").value;
-      birthday = new Date(document.getElementById("birthday").value)
-        .toISOString()
-        .split("T")[0];
-      const newStudent = {
-        _id: id,
-        FirstName: firstName,
-        LastName: lastName,
-        CIN: cin,
-        Email: email,
-        Birthday: birthday,
-        Major: major,
-        Year: year,
-        Group: group,
-      };
-
-      axios
-        .put(`http://localhost:5000/students/${newStudent?._id}`, newStudent,config)
-        .then((response) => {
-          console.log("Student updated:", response.data);
-          console.log("in if");
+              }
+              console.log("errors",errors);// Close modal after adding
+          });
+      
+    }
+    else if (action === "update") {
+          const id = document.getElementById('id').value;
+          birthday = new Date(document.getElementById('birthday').value).toISOString().split('T')[0];
+          const newStudent = {
+            _id: id,
+            Student_id: studentid,
+            FirstName: firstName,
+            LastName: lastName,
+            CIN: cin,
+            Email: email,
+            Birthday: birthday,
+            Major: major,
+            Year: year,
+            Group: group
+          };
+            
+          
+            axios.put(`http://localhost:5000/students/${newStudent?._id}`, newStudent,config)
+          .then(response => {
+          console.log('Student updated:', response.data);
           setStudents([...students, newStudent]); // Add new student to original data
           setUpdateModalOpen(!updateModalOpen);
         })
@@ -371,17 +365,17 @@ useEffect(() => {
     }
   };
 
-  const handleDelete = (student) => {
-    toggleDeleteModal();
-    axios
-      .delete(`http://localhost:5000/students/${student?._id}`,config)
-      .then((response) => {
-        console.log("Student deleted:", response.data);
-      })
-      .catch((error) => {
-        console.error("Error in deleting student:", error);
-      });
-  };
+const handleDelete = (student) => {
+  toggleDeleteModal();
+  axios.delete(`http://localhost:5000/students/${student?._id}`,config)
+  .then(response => {
+  console.log('Student deleted:', response.data);
+  })
+  .catch(error => {
+    console.error('Error in deleting student:', error);
+  });
+
+};
 
   const toggleDeleteModal = (student) => {
     setDeleteModalOpen(!deleteModalOpen);
@@ -428,7 +422,6 @@ useEffect(() => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [UploadErrors, setUploadErrors] = useState({error:"",validationErrors:[]});
 
-  
   const handleFileChange = (event) => {
     if (event.target.files.length === 0) {
       setSelectedFile(null);
@@ -477,7 +470,7 @@ useEffect(() => {
   const [isDropModalOpen, setIsDropModalOpen] = useState(false);
   const handleDrop = () => {
     
-      axios.delete(`http://localhost:5000/students/drop/${selectedMajor}/${selectedLevel}`)
+      axios.delete(`http://localhost:5000/students/drop/${selectedMajor}/${selectedLevel}`,config)
         .then(response => {
           console.log('All students with the sepecified critiria deleted:', response.data);
           setStudents([]);

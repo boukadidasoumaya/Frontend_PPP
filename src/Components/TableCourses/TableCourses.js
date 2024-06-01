@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -23,7 +24,13 @@ import { Alert } from "reactstrap";
 import axios from "axios";
 import { useRef } from "react";
 import Pagination from "../Pagination/Pagination";
-
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+  headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+  },
+};
 const TableCourses = () => {
   const modalRef = useRef(null);
   const [subjects, setSubjects] = useState([]);
@@ -40,22 +47,15 @@ const TableCourses = () => {
     });
     console.log("Updated formData:", formData);
   };
-  const token = sessionStorage.getItem('jwtToken');
 
   const [Modules, setModules] = useState([]);
   const [majors, setMajors] = useState([]);
   const [levels, setLevels] = useState([]);
   const modules = formData.Module;
 
-  const config = {
-    headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-    },
-};
   useEffect(() => {
     axios
-      .get("http://localhost:5000/teachers",config)
+      .get("http://localhost:5000/api/subjects/modules",config)
       .then((response) => {
         setModules(response.data.data);
       })
@@ -87,7 +87,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/levels", config)
+      .get("http://localhost:5000/classes/levels",config)
       .then((response) => {
         setLevels(response.data.levels);
       })
@@ -193,7 +193,7 @@ const TableCourses = () => {
     }
 
     axios
-      .get(endpoint)
+      .get(endpoint,config)
       .then((response) => {
         setSubjects(response.data.data);
       })
@@ -319,7 +319,7 @@ const TableCourses = () => {
   const [Alertvisible, setAlertVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [UploadErrors, setUploadErrors] = useState([]);
-  
+
   
 
   const parseError = (errorString) => {
@@ -466,7 +466,7 @@ const TableCourses = () => {
   const handleDrop = () => {
     axios
       .delete(
-        `http://localhost:5000/api/subjects/drop/${selectedMajor}/${selectedLevel}`
+        `http://localhost:5000/api/subjects/drop/${selectedMajor}/${selectedLevel}`,config
       )
       .then((response) => {
         console.log(

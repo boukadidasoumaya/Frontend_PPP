@@ -9,7 +9,13 @@ import { useRef } from 'react';
 import SelectOptions from "../SelectOptions/SelectOptionsForCourses";
 import axios from "axios";
 import Pagination from '../Pagination/Pagination';
-
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+  headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+  },
+};
 const TableTeachers = () => {
   const modalRef = useRef(null);
   const navigate = useNavigate();
@@ -44,7 +50,7 @@ const TableTeachers = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/teachers/departments")
+      .get("http://localhost:5000/teachers/departments",config)
       .then((response) => {
         setDepartments(response.data.departments);
       })
@@ -63,7 +69,7 @@ const TableTeachers = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/subjects/subjects")
+      .get("http://localhost:5000/api/subjects/subjects",config)
       .then((response) => {
         console.log("Response from API:", response.data.data);
         setSubjects(response.data.data);
@@ -117,7 +123,7 @@ const TableTeachers = () => {
     }
 
     axios
-      .get(endpoint)
+      .get(endpoint,config)
       .then((response) => {
         setTeachers(response.data.data);
       })
@@ -216,7 +222,7 @@ const TableTeachers = () => {
     };
     console.log("new teacher", newTeacher);
     axios
-      .post("http://localhost:5000/teachers", newTeacher)
+      .post("http://localhost:5000/teachers", newTeacher,config)
       .then((response) => {
         console.log("Teacher added:", response.data);
         setTeachers([...teachers, newTeacher]); // Add new teacher to the local state
@@ -257,7 +263,7 @@ const TableTeachers = () => {
   const handleDelete = (teacher) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/teachers/teacher/${teacher?._id}`)
+      .delete(`http://localhost:5000/teachers/teacher/${teacher?._id}`,config)
       .then((response) => {
         console.log("teacher deleted:", response.data);
       })
@@ -381,7 +387,7 @@ const TableTeachers = () => {
     };
 
     axios
-      .put(`http://localhost:5000/teachers/teacher/${selectedteacher._id}`, newTeacher)
+      .put(`http://localhost:5000/teachers/teacher/${selectedteacher._id}`, newTeacher,config)
       .then((response) => {
         console.log("Teacher updated:", response.data);
         setTeachers([...teachers, newTeacher]); // Add new teacher to original data
@@ -431,11 +437,6 @@ const TableTeachers = () => {
 
   const [UploadErrors, setUploadErrors] = useState([]);
 
-  const config = {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  };
   const handleFileChange = (event) => {
     if (event.target.files.length === 0) {
       setSelectedFile(null);
@@ -483,7 +484,7 @@ const TableTeachers = () => {
   const [isDropModalOpen, setIsDropModalOpen] = useState(false);
   const handleDrop = () => {
     
-    axios.delete(`http://localhost:5000/teachers/drop/departments/${selectedDepartment}`)
+    axios.delete(`http://localhost:5000/teachers/drop/departments/${selectedDepartment}`,config)
       .then(response => {
         console.log('All students with the sepecified critiria deleted:', response.data);
 
@@ -826,7 +827,7 @@ const TableTeachers = () => {
                         name="Teacher_id"
                         id="Teacher_id"
                         onChange={handleChange}
-                        placeholder="Enter Student ID "
+                        placeholder="Enter Teacher ID "
                         value={formData ? formData.Teacher_id : ""}
                       />
                       {errors.Teacher_id && (

@@ -21,8 +21,15 @@ import { format } from 'date-fns';
 import SelectOptions from '../SelectOptions/SelectOptions';
 
 registerLicense('ORg4AjUWIQA/Gnt2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5Xd0BjXHpcc3NRQ2hY');
-
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+    headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+    },
+};
 const getNextDate = (dayOfWeek, time) => {
+  
     // Fix `now` to the start of the week (Sunday)
     const now = new Date();
     const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
@@ -60,9 +67,9 @@ const EditorTemplate = () => {
     const [isLoading, setIsLoading] = useState(false);
     const transformedDataSemester1 = [];
     const transformedDataSemester2 = [];
-    
+
     useEffect(() => {
-        axios.get("http://localhost:5000/classes/majors")
+        axios.get("http://localhost:5000/classes/majors",config)
             .then(response => {
                 setMajors(response.data.majors);
             })
@@ -70,7 +77,7 @@ const EditorTemplate = () => {
                 console.error("Error fetching majors:", error);
             });
 
-        axios.get("http://localhost:5000/classes/levels")
+        axios.get("http://localhost:5000/classes/levels",config)
             .then(response => {
                 setLevels(response.data.levels);
             })
@@ -87,7 +94,7 @@ const EditorTemplate = () => {
     }, [selectedMajor, selectedLevel,transformedDataSemester1,transformedDataSemester2]);
 
     const fetchTimeTables = (major, level) => {
-        axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}`)
+        axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}`,config)
             .then(response => {
         
                 response.data.data.forEach(item => {
@@ -140,11 +147,7 @@ const EditorTemplate = () => {
     const [UploadErrors, setUploadErrors] = useState({error: "", nonExistingEntities: []});
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [uploadsuccess, setUploadSuccess] = useState(false);
-    const config = {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      };
+  
     const createUpload = () => {
         const file = document.querySelector('.calendar-import .e-css.e-btn');
         file.classList.add('e-inherit');
@@ -212,7 +215,7 @@ const EditorTemplate = () => {
     const handleDelete = () => {
         if (semesterToDelete === 'Semester 1') {
 
-        axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/1`)
+        axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/1`,config)
                 .then(response => {
                     console.log('TimeTable Dropped for sem 1');
                     setDeleteNotification(true);
@@ -222,7 +225,7 @@ const EditorTemplate = () => {
                     
                 });
         } else if (semesterToDelete === 'Semester 2') {
-            axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/2`)
+            axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/2`,config)
                 .then(response => {
                     console.log('TimeTable Dropped for sem 2');
                     setDeleteNotification(true);
