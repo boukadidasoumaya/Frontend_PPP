@@ -1,8 +1,22 @@
 import React, { useState } from 'react';
-import { FaUser, FaLock } from "react-icons/fa";
+import { FaUser, FaLock ,FaCheck } from "react-icons/fa";
+import  Alert  from "./Alert";
 function Forgot() {
     const [error, setError] = useState('');
+    const [showToast, setShowToast] = useState(false); // State to control toast visibility
+const [success,setSuccess]=useState(false);
+const [successmsg,setSuccessmsg]=useState('');
 
+    function launchToast() {
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 5000);}
+    function launchSuccessToast() {
+        setSuccess(true);
+        setTimeout(() => {
+            setSuccess(false);
+        }, 5000);}
     // Function to handle form submission
     const handleSubmit = async (event) => {
         event.preventDefault(); // Prevent default form submission behavior
@@ -14,6 +28,7 @@ function Forgot() {
         // Check if input is not empty
         if (cin === '') {
             setError('Please fill out all required fields.');
+            launchToast()
             return;
         }
     
@@ -29,16 +44,19 @@ function Forgot() {
     
             // Check if request was successful
             if (response.ok) {
-                setError('Password retrieval request sent successfully!');
+                setSuccessmsg('Password retrieval request sent!');
+                launchSuccessToast();
             } else {
                 // Handle errors from the server
                 const errorData = await response.json();
-                setError('Error: ' + errorData.message); // Assuming your server returns error messages in a JSON format
+                setError( errorData.error); 
+                launchToast();// Assuming your server returns error messages in a JSON format
             }
         } catch (error) {
             // Handle network errors or other exceptions
             console.error('Error:', error);
             setError('An error occurred while processing your request.');
+            launchToast();
         }
     };
 
@@ -46,8 +64,10 @@ function Forgot() {
         <div className='wrapper'>
             <form action="">
                 <h1>Retrieving Password</h1>
-                {error && <div className="error"><FaLock />   {error}</div>}
-
+                {showToast &&<div className='alertss'>
+ <Alert message={error} icon=<FaLock /> showToast={showToast}/></div> }
+ {success &&<div className='alertss'>
+ <Alert message={successmsg} icon=<FaCheck /> showToast={success}/></div> }
                 <div className="input-box">
                     <input type="text" placeholder='CIN' id='cin' required></input>
                     <FaUser className="icon" />

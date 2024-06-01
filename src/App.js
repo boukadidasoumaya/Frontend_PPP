@@ -17,6 +17,7 @@ import Courses from './pages/Courses/Courses.js';
 import TimeTable from './pages/TimeTable/TimeTable.js';
 import Verifing from './Components/login/Verification.js';
 import TeacherProfile from "./pages/TeacherProfile/TeacherProfile.js";
+import Unauthorized from './pages/Unauthorized.js';
 function App() {
   return (
     <>
@@ -32,9 +33,11 @@ function App() {
         <Route path = 'TeacherProfile' exact element={<TeacherProfile />} ></Route>
         <Route path='courses' exact element={<Courses />} ></Route>
         <Route path='/login' exact element={<LoginPage />} ></Route>
-        <Route path='/forgot' exact element={<LoginPage />} ></Route>
-        <Route path="/forgot/passwordReset/verif" element={<LoginPage />} />
-
+        <Route path='/forgot' exact element={<LoginPage componentToRender='forgot' />} ></Route>
+        <Route path="/forgot/passwordReset/verif" element={<LoginPage componentToRender='verification' />} />
+        <Route path="/unauthorized" exact element={<LoginPage />} />
+        <Route path='profile' exact element={<Profile />} ></Route>
+        <Route path='courses' exact element={<Courses />} ></Route>
       </Routes>
       </Router>
     </>

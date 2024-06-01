@@ -34,20 +34,12 @@ border-radius: 20px !important;
        margin-right: 15px !important;
        z-index: 9999 !important;
 
-
      }
      .alertNotif .alertMessage{
-
-       /* margin-bottom: 10px !important; */
        padding: 0% 0% 0% 0% !important;
      }
-     
-     
-     .alert-dismissible .close > span:not(.sr-only){
-       color: #ff0000 !important;
-       margin-right: -15px !important;
-     }
-     
+
+
 @media (max-width: 822px) {
        .addbtn{
               margin-right: -25px !important;
@@ -69,3 +61,7 @@ border-radius: 20px !important;
               width: 130px !important;
        }
 }
+.danger {
+       color: red;
+     }
+     

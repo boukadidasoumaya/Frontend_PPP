@@ -1,5 +1,6 @@
-.custom-select {
+.courses.custom-select {
   width: 150px !important;
+  height: 50px;
 }
 .filter {
   display: flex;

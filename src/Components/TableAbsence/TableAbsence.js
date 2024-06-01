@@ -15,6 +15,13 @@ const TableAbsence = ({id}) => {
     const [loading, setLoading] = useState(true); // State to manage loading state
     const [error, setError] = useState(null); // State to manage errors
     const studentId = id; 
+    const token = sessionStorage.getItem('jwtToken');
+const config = {
+    headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+    },
+};
     useEffect(() => {
       const fetchData = async () => {
           try {
@@ -29,7 +36,7 @@ const TableAbsence = ({id}) => {
                   ? `http://localhost:5000/students/absences/${studentId}`
                   : `http://localhost:5000/students/absences/${studentId}/${selectedSemesterValue}`;
               
-              const response = await axios.get(endpoint).then((response) => {
+              const response = await axios.get(endpoint,config).then((response) => {
             
                 setMyCourses(response.data.data);
 

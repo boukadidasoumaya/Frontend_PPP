@@ -21,8 +21,15 @@ import { format } from 'date-fns';
 import SelectOptions from '../SelectOptions/SelectOptions';
 
 registerLicense('ORg4AjUWIQA/Gnt2UFhhQlJBfV5AQmBIYVp/TGpJfl96cVxMZVVBJAtUQF1hTX5Xd0BjXHpcc3NRQ2hY');
-
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+    headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+    },
+};
 const getNextDate = (dayOfWeek, time) => {
+  
     // Fix `now` to the start of the week (Sunday)
     const now = new Date();
     const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
@@ -60,9 +67,9 @@ const EditorTemplate = () => {
     const [isLoading, setIsLoading] = useState(false);
     const transformedDataSemester1 = [];
     const transformedDataSemester2 = [];
-    
+
     useEffect(() => {
-        axios.get("http://localhost:5000/classes/majors")
+        axios.get("http://localhost:5000/classes/majors",config)
             .then(response => {
                 setMajors(response.data.majors);
             })
@@ -70,7 +77,7 @@ const EditorTemplate = () => {
                 console.error("Error fetching majors:", error);
             });
 
-        axios.get("http://localhost:5000/classes/levels")
+        axios.get("http://localhost:5000/classes/levels",config)
             .then(response => {
                 setLevels(response.data.levels);
             })
@@ -87,9 +94,9 @@ const EditorTemplate = () => {
     }, [selectedMajor, selectedLevel,transformedDataSemester1,transformedDataSemester2]);
 
     const fetchTimeTables = (major, level) => {
-        axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}`)
+        axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}`,config)
             .then(response => {
-               
+        
                 response.data.data.forEach(item => {
                     const transformedItem = {
                         Id: item._id,
@@ -135,15 +142,12 @@ const EditorTemplate = () => {
    
  //upload 
     const [Alertvisible, setAlertVisible] = useState(false);
+    const [Successvisible, setSuccessVisible] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [UploadErrors, setUploadErrors] = useState([]);
+    const [UploadErrors, setUploadErrors] = useState({error: "", nonExistingEntities: []});
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [uploadsuccess, setUploadSuccess] = useState(false);
-    const config = {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      };
+  
     const createUpload = () => {
         const file = document.querySelector('.calendar-import .e-css.e-btn');
         file.classList.add('e-inherit');
@@ -161,12 +165,17 @@ const EditorTemplate = () => {
             axios.post("http://localhost:5000/timetables/upload", formdata, config)
                 .then(response => {
                     console.log('File uploaded');
+                    setSuccessVisible(!Successvisible);
                     setUploadSuccess(true);
                     console.log(uploadsuccess);
                     setIsLoading(false);
                 })
                 .catch(error => {
-                    setUploadErrors(error.response.data.error);
+                    setUploadErrors({
+                        error: error.response.data.error,
+                        nonExistingEntities: error.response.data.nonExistingEntities
+                      });
+                      
                     setUploadModalOpen(!uploadModalOpen);
                     console.error('Error in uploading file:', error.response.data.error);
                     setSelectedFile(null);
@@ -182,7 +191,9 @@ const EditorTemplate = () => {
     const onDismiss = () => {
         setAlertVisible(!Alertvisible)};
     const onDismisssuccess = () => {
-        setUploadSuccess(!uploadsuccess)};
+        setSuccessVisible(!Successvisible)};
+
+    const onDismisssuccessnotif = () => setSuccessVisible(!Successvisible);
 
     const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
     const onToolbarItemClicked = (args) => {
@@ -204,7 +215,7 @@ const EditorTemplate = () => {
     const handleDelete = () => {
         if (semesterToDelete === 'Semester 1') {
 
-        axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/1`)
+        axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/1`,config)
                 .then(response => {
                     console.log('TimeTable Dropped for sem 1');
                     setDeleteNotification(true);
@@ -214,7 +225,7 @@ const EditorTemplate = () => {
                     
                 });
         } else if (semesterToDelete === 'Semester 2') {
-            axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/2`)
+            axios.delete(`http://localhost:5000/timetables/drop/${selectedMajor}/${selectedLevel}/2`,config)
                 .then(response => {
                     console.log('TimeTable Dropped for sem 2');
                     setDeleteNotification(true);
@@ -256,13 +267,7 @@ const EditorTemplate = () => {
                             </select>
                         </div>
                         <Row className=''>
-                        {uploadsuccess && (
-          <div className='col d-flex justify-content-end'>
-              <Alert isOpen={uploadsuccess} toggle={onDismisssuccess} color='success'>
-               File Uploaded
-              </Alert>
-          </div>
-        ) }
+                        
         {Alertvisible && (
           <div className='col alertMessage d-flex justify-content-end'>
               <Alert isOpen={Alertvisible} toggle={onDismiss} className="alert-slide">
@@ -285,18 +290,28 @@ const EditorTemplate = () => {
                   </span>
                 </Button>
                 </Row>)}
+                {Successvisible && (
+          <div className='col  d-flex justify-content-end'>
+              <Alert isOpen={Successvisible} color="success" toggle={onDismisssuccess} className="">
+                File Uploaded successfully
+              </Alert>
+          </div>
+        ) }
         </Row>
         
         <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
                 <ModalHeader color="danger" toggle={toggleUploadModal}>Error in Uploading File </ModalHeader>
                 <ModalBody>
-                  {UploadErrors ? (
-                    <div>
-                      <p>Error in  inserting timetable into the database.</p>
-                    
-                    </div>
-                  ) : null}
-                </ModalBody>
+                      {UploadErrors.error ? (
+                        <div>
+                          <p>Error in inserting timetable into the database.</p>
+                          {UploadErrors.nonExistingEntities.length > 0 ? (
+                            <p>Check these lines: {UploadErrors.nonExistingEntities.join(', ')}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </ModalBody>
+
     
         </Modal>
 

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -18,12 +19,18 @@ import {
 } from "reactstrap";
 import { FormLabel } from "react-bootstrap";
 import "./TableCourses.css";
-import SelectOptions from "../SelectOptions/SelectOptions";
+import SelectOptions from "../SelectOptions/SelectOptionsForCourses";
 import { Alert } from "reactstrap";
 import axios from "axios";
 import { useRef } from "react";
 import Pagination from "../Pagination/Pagination";
-
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+  headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+  },
+};
 const TableCourses = () => {
   const modalRef = useRef(null);
   const [subjects, setSubjects] = useState([]);
@@ -48,7 +55,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/subjects/modules")
+      .get("http://localhost:5000/api/subjects/modules",config)
       .then((response) => {
         setModules(response.data.data);
       })
@@ -64,7 +71,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/majors")
+      .get("http://localhost:5000/classes/majors",config)
       .then((response) => {
         setMajors(response.data.majors);
       })
@@ -80,7 +87,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/levels")
+      .get("http://localhost:5000/classes/levels",config)
       .then((response) => {
         setLevels(response.data.levels);
       })
@@ -186,7 +193,7 @@ const TableCourses = () => {
     }
 
     axios
-      .get(endpoint)
+      .get(endpoint,config)
       .then((response) => {
         setSubjects(response.data.data);
       })
@@ -256,7 +263,7 @@ const TableCourses = () => {
 
       // Send new subject data to server
       axios
-        .post("http://localhost:5000/api/subjects", newSubject)
+        .post("http://localhost:5000/api/subjects", newSubject,config)
         .then((response) => {
           setSubjects([...subjects, response.data.data]); // Add new subject to original data
           setModalOpen(false);
@@ -291,7 +298,7 @@ const TableCourses = () => {
       axios
         .put(
           `http://localhost:5000/api/subjects/${newSubject?._id}`,
-          newSubject
+          newSubject,config
         )
         .then((response) => {
           console.log("Subject updated:", response.data);
@@ -312,11 +319,8 @@ const TableCourses = () => {
   const [Alertvisible, setAlertVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [UploadErrors, setUploadErrors] = useState([]);
-  const config = {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  };
+
+  
 
   const parseErrors = (errorArray) => {
     const errors = [];
@@ -459,7 +463,7 @@ const TableCourses = () => {
   const handleDelete = (subject) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/api/subjects/${subject?._id}`)
+      .delete(`http://localhost:5000/api/subjects/${subject?._id}`,config)
       .then((response) => {
         console.log("Subject deleted:", response.data);
         setSubjects([...response.data]);
@@ -492,7 +496,7 @@ const TableCourses = () => {
   const handleDrop = () => {
     axios
       .delete(
-        `http://localhost:5000/api/subjects/drop/${selectedMajor}/${selectedLevel}`
+        `http://localhost:5000/api/subjects/drop/${selectedMajor}/${selectedLevel}`,config
       )
       .then((response) => {
         console.log(
@@ -562,7 +566,7 @@ const TableCourses = () => {
               </div>
               {/* Filter Dropdowns on Left */}
               <div className="row">
-                <div className="col-lg-3 col-md-3 col-sm-4 d-flex major">
+                
                   <SelectOptions
                     options={ModuleOptions}
                     selectedValue={selectedModule}
@@ -573,7 +577,7 @@ const TableCourses = () => {
                         selectedLevel
                       )
                     }
-                    placeholderText="All Modules"
+                    placeholderText="Modules"
                   />
                   <SelectOptions
                     options={majorOptions}
@@ -585,7 +589,7 @@ const TableCourses = () => {
                         selectedLevel
                       )
                     }
-                    placeholderText="All Majors"
+                    placeholderText="Majors"
                   />
                   <SelectOptions
                     options={levelOptions}
@@ -597,13 +601,13 @@ const TableCourses = () => {
                         newLevel
                       )
                     }
-                    placeholderText="All Levels"
+                    placeholderText="Levels"
                   />
-                </div>
+                 </div>
                 {/* Centered "Liste des matières" */}
 
                 {/* Add Subject Button in Center */}
-                <div className="col-lg-9 col-md-10 col-sm-10 d-flex AddEtudiant justify-content-end   ">
+                <div className="col-lg-12 col-md-12 col-sm-12 d-flex AddEtudiant justify-content-end   ">
                   <div className="">
                     <input
                       type="file"
@@ -696,7 +700,7 @@ const TableCourses = () => {
                     )}
                   </div>
                 </Modal>
-              </div>
+             
             </CardHeader>
             {/* Table Content */}
             <Table className="align-items-center table-flush" responsive>

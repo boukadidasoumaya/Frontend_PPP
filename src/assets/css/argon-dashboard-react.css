@@ -12,10 +12,10 @@
   --cyan: #2bffc6;
   --white: #fff;
   --gray: #8898aa;
-  --gray-dark: #32325d;
+  --gray-dark: #330033;
   --light: #ced4da;
   --lighter: #e9ecef;
-  --primary: #5e72e4;
+  --primary: #660066;
   --secondary: #f7fafc;
   --success: #2dce89;
   --info: #11cdef;
@@ -23,7 +23,7 @@
   --danger: #f5365c;
   --light: #adb5bd;
   --dark: #212529;
-  --default: #172b4d;
+  --default: #4d004d;
   --white: #fff;
   --neutral: #fff;
   --darker: black;
@@ -14322,7 +14322,7 @@ button.bg-lighter:focus {
 }
 
 .bg-gradient-default {
-  background: linear-gradient(87deg, #172b4d 0, #1a174d 100%) !important;
+  background: linear-gradient(87deg, #800080 0, #330033 100%) !important;
 }
 
 .bg-gradient-white {

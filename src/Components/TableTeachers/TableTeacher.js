@@ -1,30 +1,21 @@
 import React, { useState, useEffect } from "react";
 import {
-  Button,
-  Card,
-  CardHeader,
-  Container,
-  FormGroup,
-  Input,
-  Label,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  Table,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  Pagination,
-  Row,
-  Alert,
+  Button,Card,CardHeader,Container,FormGroup,Input,Label,Modal,ModalBody,ModalHeader,Table,UncontrolledDropdown,DropdownToggle,DropdownMenu,DropdownItem,Row,Alert,
 } from "reactstrap";
+import { FormLabel } from 'react-bootstrap';
 import "./TableTeachers.css";
 import { useNavigate } from "react-router-dom";
-import SelectOptions from "../SelectOptions/SelectOptions";
+import { useRef } from 'react';
+import SelectOptions from "../SelectOptions/SelectOptionsForCourses";
 import axios from "axios";
-import { useRef } from "react";
-
+import Pagination from '../Pagination/Pagination';
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+  headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+  },
+};
 const TableTeachers = () => {
   const modalRef = useRef(null);
   const navigate = useNavigate();
@@ -37,7 +28,7 @@ const TableTeachers = () => {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    _id: "",
+    Teacher_id: "",
     CIN: "",
     FirstName: "",
     LastName: "",
@@ -45,7 +36,6 @@ const TableTeachers = () => {
     Department: "",
   });
   const handleChange = (e) => {
-    const { name, value } = e.target;
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -60,7 +50,7 @@ const TableTeachers = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/teachers/departments")
+      .get("http://localhost:5000/teachers/departments",config)
       .then((response) => {
         setDepartments(response.data.departments);
       })
@@ -79,7 +69,7 @@ const TableTeachers = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/subjects/subjects")
+      .get("http://localhost:5000/api/subjects/subjects",config)
       .then((response) => {
         console.log("Response from API:", response.data.data);
         setSubjects(response.data.data);
@@ -133,7 +123,7 @@ const TableTeachers = () => {
     }
 
     axios
-      .get(endpoint)
+      .get(endpoint,config)
       .then((response) => {
         setTeachers(response.data.data);
       })
@@ -141,12 +131,13 @@ const TableTeachers = () => {
         console.error("Error fetching filtered teachers:", error);
         setTeachers([]);
       });
-  }, [selectedDepartment, selectedSubject]);
+  }, [selectedDepartment, selectedSubject,teachers]);
 
   const [currentCIN, setCurrentCIN] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
 
   const initialErrors = {
+    Teacher_id: "",
     cin: "",
     firstName: "",
     lastName: "",
@@ -160,7 +151,7 @@ const TableTeachers = () => {
   };
 
   const handleAddTeacher = () => {
-    //const id = document.getElementById("id").value;
+    const Teacher_id = document.getElementById("Teacher_id").value;
     const firstName = document.getElementById("firstName").value;
     const lastName = document.getElementById("lastName").value;
     const cin = document.getElementById("cin").value;
@@ -176,6 +167,17 @@ const TableTeachers = () => {
     const cinFormatError = !/^\d+$/.test(cin)
       ? "CIN must contain only digits"
       : "";
+
+      ///
+      const idError = !Teacher_id
+      ? "Teacher ID is required"
+      : Teacher_id.length !== 7
+      ? "Teacher ID must be 7 digits long"
+      : "";
+    const IDFormatError = !/^\d+$/.test(cin)
+      ? "Teacher ID must contain only digits"
+      : "";
+      ///
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     // Vérification si le prénom contient uniquement des lettres et des espaces
     const FirstNameFormatError = !/^[a-zA-Z\s]+$/.test(firstName)
@@ -189,6 +191,7 @@ const TableTeachers = () => {
 
     // Combinaison des erreurs
     const newErrors = {
+      Teacher_id: idError || IDFormatError,
       firstName: !firstName ? "First name is required" : FirstNameFormatError,
       lastName: !lastName ? "Last name is required" : lastNameFormatError,
       cin: cinError || cinFormatError,
@@ -202,7 +205,7 @@ const TableTeachers = () => {
 
     // Mise à jour de l'état des erreurs
     console.log(newErrors);
-    console.log("after new errrors FirstName", firstName);
+    console.log("after new errrors Department", department);
     setErrors(newErrors);
     console.log(errors);
 
@@ -210,16 +213,16 @@ const TableTeachers = () => {
     const hasErrors = Object.values(newErrors).some((error) => error !== "");
 
     const newTeacher = {
-      //_id:id,
+      Teacher_id: Teacher_id,
       FirstName: firstName,
       LastName: lastName,
       CIN: cin,
       Email: email,
       Department: department,
     };
-
+    console.log("new teacher", newTeacher);
     axios
-      .post("http://localhost:5000/teachers", newTeacher)
+      .post("http://localhost:5000/teachers", newTeacher,config)
       .then((response) => {
         console.log("Teacher added:", response.data);
         setTeachers([...teachers, newTeacher]); // Add new teacher to the local state
@@ -242,6 +245,12 @@ const TableTeachers = () => {
             email: "Email already exists",
           }));
         }
+        if (backendErrors && backendErrors.Teacher_id) {
+          setErrors((backendErrors) => ({
+            ...backendErrors,
+            Teacher_id: "ID already exists",
+          }));
+        }
         console.log("errors", errors); // Close modal after adding
       });
   };
@@ -254,7 +263,7 @@ const TableTeachers = () => {
   const handleDelete = (teacher) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/teachers/teacher/${teacher?._id}`)
+      .delete(`http://localhost:5000/teachers/teacher/${teacher?._id}`,config)
       .then((response) => {
         console.log("teacher deleted:", response.data);
       })
@@ -264,19 +273,40 @@ const TableTeachers = () => {
   };
 
   const toggleModal = () => {
-    clearErrors(); // Effacer les erreurs lors de la fermeture
+    clearErrors();
 
     setModalOpen(!modalOpen);
-  }; // Toggle add teacher modal
+  };
 
   const toggleUpdateModal = (teacher) => {
     clearErrors(); // Effacer les erreurs lors de la fermeture
     setUpdateModalOpen(!updateModalOpen);
     setSelectedteacher(teacher);
-    setCurrentCIN(teacher.CIN);
-    setCurrentEmail(teacher.Email);
-
-    setFormData(teacher);
+    console.log("selected teacher", teacher);
+    if (teacher){
+    const { Teacher_id, CIN, FirstName, LastName, Email, Department } = teacher;
+    
+    // Set the formData state with the destructured properties
+    setFormData({
+      Teacher_id,
+      CIN,
+      FirstName,
+      LastName,
+      Email,
+      Department,
+    });
+  }
+  else{
+    setFormData({
+      Teacher_id: "",
+      CIN: "",
+      FirstName: "",
+      LastName: "",
+      Email: "",
+      Department: "",
+    });
+  }
+    console.log("formData", formData);
   };
   const handleViewProfil = (teacher) => {
     console.log("View Profil");
@@ -284,13 +314,18 @@ const TableTeachers = () => {
   };
 
   const handleUpdateTeacher = () => {
-    const id = document.getElementById("id").value;
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
+    console.log("staaaaaaaaaaart");
+    setErrors(initialErrors);
+
+    // Récupération des valeurs des champs
+   const Teacher_id = document.getElementById("Teacher_id").value;
+    const firstName = document.getElementById("firstname").value;
+    const lastName = document.getElementById("lastname").value;
     const cin = document.getElementById("cin").value;
     const email = document.getElementById("email").value;
     const department = document.getElementById("department").value;
 
+    // Vérification si le CIN est vide ou ne contient pas exactement 8 chiffres
     const cinError = !cin
       ? "CIN is required"
       : cin.length !== 8
@@ -301,8 +336,18 @@ const TableTeachers = () => {
       ? "CIN must contain only digits"
       : "";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    ///
+    const idError = !Teacher_id
+    ? "Teacher ID is required"
+    : Teacher_id.length !== 7
+    ? "Teacher ID must be 7 digits long"
+    : "";
+  const IDFormatError = !/^\d+$/.test(cin)
+    ? "Teacher ID must contain only digits"
+    : "";
+    ///
     // Vérification si le prénom contient uniquement des lettres et des espaces
-    const FirstNameFormatError = !/^[a-zA-Z\s]+$/.test(firstName)
+    const firstNameFormatError = !/^[a-zA-Z\s]+$/.test(firstName)
       ? "First name must contain only letters "
       : "";
 
@@ -313,7 +358,8 @@ const TableTeachers = () => {
 
     // Combinaison des erreurs
     const newErrors = {
-      firstName: !firstName ? "First name is required" : FirstNameFormatError,
+      Teacher_id: idError || IDFormatError,
+      firstName: !firstName ? "First name is required" : firstNameFormatError,
       lastName: !lastName ? "Last name is required" : lastNameFormatError,
       cin: cinError || cinFormatError,
       email: !email
@@ -326,12 +372,13 @@ const TableTeachers = () => {
 
     // Mise à jour de l'état des erreurs
     console.log(newErrors);
-    console.log("after new errrors FirstName", firstName);
+    console.log("after new errrors Dep", department);
     setErrors(newErrors);
     console.log(errors);
 
+  
     const newTeacher = {
-      _id: id,
+      Teacher_id: Teacher_id,
       FirstName: firstName,
       LastName: lastName,
       CIN: cin,
@@ -340,20 +387,32 @@ const TableTeachers = () => {
     };
 
     axios
-      .put(
-        `http://localhost:5000/teachers/teacher/${newTeacher?._id}`,
-        newTeacher
-      )
+      .put(`http://localhost:5000/teachers/teacher/${selectedteacher._id}`, newTeacher,config)
       .then((response) => {
         console.log("Teacher updated:", response.data);
-        // Update the teachers state with the updated teacher
-        setTeachers([...teachers, newTeacher]); // Add new teacher to the local state
+        setTeachers([...teachers, newTeacher]); // Add new teacher to original data
         setUpdateModalOpen(!updateModalOpen);
       })
       .catch((error) => {
-        console.error("Error updating teacher:", error);
-        // Handle error state or display error message
+        const backendErrors = error.response.data.errors;
+        console.log("backend", error.response.data);
+        setErrors((prevErrors) => ({ ...prevErrors, ...backendErrors }));
+        console.log("backend errors", backendErrors);
+        if (backendErrors && backendErrors.cin) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            cin: "CIN already exists",
+          }));
+        }
+        if (backendErrors && backendErrors.email) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            email: "Email already exists",
+          }));
+        }
+        console.log("errors", errors); // Close modal after adding
       });
+      console.log("enddddddddddd");
   };
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -374,13 +433,10 @@ const TableTeachers = () => {
   //upload
   const [Alertvisible, setAlertVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [Successvisible, setSuccessVisible] = useState(false);
+
   const [UploadErrors, setUploadErrors] = useState([]);
 
-  const config = {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  };
   const handleFileChange = (event) => {
     if (event.target.files.length === 0) {
       setSelectedFile(null);
@@ -398,6 +454,7 @@ const TableTeachers = () => {
         .post("http://localhost:5000/teachers/upload", formdata, config)
         .then((response) => {
           console.log("File uploaded");
+          setSuccessVisible(!Successvisible);
         })
         .catch((error) => {
           console.error("Error in uploading file:", error);
@@ -418,7 +475,33 @@ const TableTeachers = () => {
   };
 
   const onDismiss = () => setAlertVisible(!Alertvisible);
+  const onDismisssuccess = () => setSuccessVisible(!Successvisible);
+
   const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
+
+
+  //drop 
+  const [isDropModalOpen, setIsDropModalOpen] = useState(false);
+  const handleDrop = () => {
+    
+    axios.delete(`http://localhost:5000/teachers/drop/departments/${selectedDepartment}`,config)
+      .then(response => {
+        console.log('All students with the sepecified critiria deleted:', response.data);
+
+      })
+      .catch(error => {
+
+        console.error('Error in deleting students:', error);
+      });
+    toggleDropModal();
+};
+
+  const toggleDropModal = () => {
+    setIsDropModalOpen(!isDropModalOpen);
+};
+  const onDropClick = () => {
+    toggleDropModal();
+};
 
   return (
     <Container className="mt--7" fluid>
@@ -435,6 +518,13 @@ const TableTeachers = () => {
             </Alert>
           </div>
         )}
+         {Successvisible && (
+          <div className='col  d-flex justify-content-end'>
+              <Alert isOpen={Successvisible} color="success" toggle={onDismisssuccess} className="">
+                File Uploaded successfully
+              </Alert>
+          </div>
+        ) }
       </Row>
       <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
         <ModalHeader color="danger" toggle={toggleUploadModal}>
@@ -503,12 +593,27 @@ const TableTeachers = () => {
                     </Button>
                   </div>
                   {/* Add Teacher Modal */}
-                  <Modal isOpen={modalOpen} toggle={toggleModal}>
+                  <Modal isOpen={modalOpen} toggle={toggleModal} innerRef={modalRef}>
                     <ModalHeader toggle={toggleModal}>
                       Add a teacher
                     </ModalHeader>
                     <ModalBody>
                       {/* Form fields to capture teacher data */}
+                      <FormGroup>
+                        <Label for="ID">Teacher ID</Label>
+                        <Input
+                          type="text"
+                          name="Teacher_id"
+                          id="Teacher_id"
+                          placeholder="Enter the teacher's ID"
+          
+                        />
+                        {errors.Teacher_id && (
+                          <span className="text-danger">
+                            {errors.Teacher_id}
+                          </span>
+                        )}
+                      </FormGroup>
                       <FormGroup>
                         <Label for="firstName">First Name</Label>
                         <Input
@@ -600,6 +705,7 @@ const TableTeachers = () => {
             <Table className="align-items-center table-flush" responsive>
               <thead className="thead-light">
                 <tr>
+                <th scope="col">Teacher ID</th>
                   <th scope="col">First Name</th>
                   <th scope="col">last Name</th>
                   <th scope="col">CIN</th>
@@ -619,8 +725,9 @@ const TableTeachers = () => {
                     </td>
                   </tr>
                 ) : (
-                  teachers.map((teacher) => (
+                  currentteachers.map((teacher) => (
                     <tr key={teacher.id}>
+                       <td>{teacher.Teacher_id}</td>
                       <td>{teacher.FirstName}</td>
                       <td>{teacher.LastName}</td>
                       <td>{teacher.CIN}</td>
@@ -680,7 +787,7 @@ const TableTeachers = () => {
                             <DropdownItem
                               href=""
                               onClick={() => {
-                                toggleUpdateModal([teacher]);
+                                toggleUpdateModal(teacher);
                               }}
                             >
                               <i className="fas fa-pencil-alt" />
@@ -709,75 +816,109 @@ const TableTeachers = () => {
                   toggle={() => toggleUpdateModal(selectedteacher)}
                 >
                   <ModalHeader toggle={() => toggleUpdateModal(null)}>
-                    Update Teacher
+                    Modify Teacher
                   </ModalHeader>
                   <ModalBody>
-                    {/* Form fields to capture updated teacher data */}
-                    <FormGroup>
-                      <Label for="firstname">First Name:</Label>
+                      {/* Form fields to capture teacher data */}
+                      <FormGroup>
+                      <FormLabel for="Teacher_id">Teacher ID</FormLabel>
                       <Input
                         type="text"
-                        name="firstname"
+                        name="Teacher_id"
+                        id="Teacher_id"
+                        onChange={handleChange}
+                        placeholder="Enter Teacher ID "
+                        value={formData ? formData.Teacher_id : ""}
+                      />
+                      {errors.Teacher_id && (
+                        <span className="text-danger">{errors.Teacher_id}</span>
+                      )}
+                    </FormGroup>
+                      <FormGroup>
+                  
+
+                      <Input
+                        type="text"
+                        name="FirstName"
                         id="firstname"
-                        placeholder="Enter the teacher's first name"
+                        placeholder="Enter First Name"
                         value={formData ? formData.FirstName : ""}
                         onChange={handleChange}
                       />
+                      {errors.firstName && (
+                        <span className="text-danger">{errors.firstName}</span>
+                      )}
                     </FormGroup>
-                    <FormGroup>
-                      <Label for="lastname">Last Name:</Label>
-                      <Input
-                        type="text"
-                        name="lastname"
-                        id="lastname"
-                        placeholder="Enter the teacher's last name"
-                        value={formData ? formData.LastName : ""}
-                        onChange={handleChange}
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="cin">CIN:</Label>
-                      <Input
-                        type="text"
-                        name="cin"
-                        id="cin"
-                        placeholder="Enter the teacher's CIN"
-                        value={formData.CIN}
-                        onChange={handleChange}
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="email">Email:</Label>
-                      <Input
-                        type="text"
-                        name="email"
-                        id="email"
-                        placeholder="Enter the teacher's femail"
-                        value={formData.Email}
-                        onChange={handleChange}
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="department">Department:</Label>
-                      <Input
-                        type="text"
-                        name="department"
-                        id="department"
-                        placeholder="Enter the teacher's department"
-                        value={formData.Department}
-                        onChange={handleChange}
-                      />
-                    </FormGroup>
-                  </ModalBody>
+                      <FormGroup>
+                        <Label for="lastname">Last Name</Label>
+                        <Input
+                          type="text"
+                          name="LastName"
+                          id="lastname"
+                          placeholder="Enter the teacher's last name"
+                          value={formData.LastName}
+                          onChange={handleChange}
+                        />
+                        {errors.lastName && (
+                          <span className="text-danger">{errors.lastName}</span>
+                        )}
+                      </FormGroup>
+                      <FormGroup>
+                        <Label for="cin">CIN</Label>
+                        <Input
+                          type="text"
+                          name="CIN"
+                          id="cin"
+                          placeholder="Enter the teacher's CIN"
+                          value={formData.CIN}
+                          onChange={handleChange}
+                        />
+                        {errors.cin && (
+                          <span className="text-danger">{errors.cin}</span>
+                        )}
+                      </FormGroup>
+                      <FormGroup>
+                        <Label for="email">Email</Label>
+                        <Input
+                          type="text"
+                          name="Email"
+                          id="email"
+                          placeholder="Enter the teacher's email"
+                          value={formData.Email}
+                          onChange={handleChange}
+                        />
+                        {errors.email && (
+                          <span className="text-danger">{errors.email}</span>
+                        )}
+                      </FormGroup>
+                      <FormGroup>
+                        <Label for="department">Department</Label>
+                        <Input
+                          type="text"
+                          name="Department"
+                          id="department"
+                          placeholder="Enter the teacher's Department"
+                          value={formData.Department}
+                          onChange={handleChange}
+                        />
+                        {errors.department && (
+                          <span className="text-danger">
+                            {errors.department}
+                          </span>
+                        )}
+                      </FormGroup>
+                    </ModalBody>
                   <div className="modal-footer">
                     <Button
-                      color="primary"
-                      onClick={() => handleUpdateTeacher()}
+                      className="addbtn"
+                      onClick={() => {
+                        handleUpdateTeacher();
+                      }}
                     >
-                      Update
+                      Save Changes
                     </Button>
                     <Button
-                      color="link text-muted"
+                      color="link"
                       onClick={() => toggleUpdateModal(null)}
                     >
                       Cancel
@@ -788,15 +929,34 @@ const TableTeachers = () => {
             </Table>
 
             {currentteachers.length === 0 ? null : (
-              <div className="d-flex justify-content-center mt-3">
-                <Pagination
-                  teachersPerPage={teachersPerPage}
-                  totalTeachers={teachers.length}
-                  paginate={paginate}
-                  currentPage={currentPage}
-                />
-              </div>
+             <>
+               <div className="d-flex justify-content-center mt-3">
+                 <Pagination
+                   itemsPerPage={teachersPerPage}
+                   totalItems={teachers.length}
+                   paginate={paginate}
+                   currentPage={currentPage}
+                 />
+               </div>
+               {selectedDepartment && (<div className='col-12 d-flex justify-content-end'>
+                        
+                        <button  onClick={()=>onDropClick()} class="delete-button">
+                            <svg class="delete-svgIcon" viewBox="0 0 448 512">
+                                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path>
+                                          </svg>
+                        </button>
+                    </div>)}
+             </>
             )}
+            
+                    <Modal isOpen={isDropModalOpen} toggle={toggleDropModal}>
+                <ModalHeader toggle={toggleDropModal}>Confirm Deletion</ModalHeader>
+                <ModalBody>
+                    <p>Are you sure you want to delete the Teachers in the department {selectedDepartment}?</p>
+                    <Button color="danger" onClick={handleDrop}>Delete</Button>
+                    <Button color="secondary" onClick={toggleDropModal}>Cancel</Button>
+                </ModalBody>
+            </Modal>
           </Card>
         </div>
       </Row>

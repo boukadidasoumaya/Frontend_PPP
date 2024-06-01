@@ -39,11 +39,46 @@ const Index = (props) => {
     setChartLineData("data" + index);
   };
   const [pieData, setPieData] = useState([]);
-
+const [totalTeachers, setTotalTeachers] = useState(0);
   useEffect(() => {
-    async function fetchData() {
+    const token = sessionStorage.getItem('jwtToken');
+
+    const fetchTotalTeachers = async () => {
+      const requestOptions = {
+        method: 'GET', // Assuming you're fetching student data with a GET request
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+          'Content-Type': 'application/json'
+        }
+      };
+      
       try {
-        const response = await fetch('/api/attendance/calculateAbsencesPerYear');
+        const response = await fetch('/teachers/count', requestOptions);
+        console.log(response);
+console.log(response);
+        if (!response.ok) {
+          throw new Error('Failed to fetch student data');
+        }
+
+        const data = await response.json();
+console.log(data);
+        // Calculate the total number of students from the fetched data
+        const total = data.totalProfessors
+        
+        setTotalTeachers(total);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+      }
+    };
+    async function fetchData() {
+      try { const requestOptions = {
+        method: 'GET', // Assuming you're fetching student data with a GET request
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+          'Content-Type': 'application/json'
+        }
+      };
+        const response = await fetch('/api/attendance/calculateAbsencesPerYear',requestOptions);
         const data = await response.json();
         const formattedData = data.map(item => ({
           id: item.country,
@@ -57,7 +92,14 @@ const Index = (props) => {
         console.error('Error fetching data:', error);
       }
     }
-
+    if (token) {
+      // Token exists, perform actions (e.g., make authenticated API requests)
+      console.log('Token exists:', token);
+    } else {
+      // Token does not exist, handle accordingly (e.g., redirect to login page)
+      console.log('Token does not exist');
+    }
+    fetchTotalTeachers();
     fetchData();
   }, []);
 
@@ -110,7 +152,7 @@ const Index = (props) => {
                   </div>
                 </Row>
               </CardHeader>
-              <CardBody>
+              <CardBody >
                 
                 <div className="chart">{
                   chartLineData==="dataM"?<Linechart  /> :<LinechartW />}
@@ -171,7 +213,7 @@ const Index = (props) => {
                 <tbody>
                   <tr>
                     <th scope="row">profs</th>
-                    <td>4,569</td>
+                    <td>{totalTeachers}</td>
                     <td>340</td>
                     
                   </tr>
@@ -210,8 +252,8 @@ const Index = (props) => {
                   </div>
                 </Row>
               </CardHeader>
-              <CardBody>
-                <div className="chart">
+              <CardBody >
+                <div className="chart" >
                   <PieChart />
                 </div>
                 </CardBody>

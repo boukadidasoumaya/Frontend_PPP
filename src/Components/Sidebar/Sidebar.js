@@ -169,22 +169,17 @@ const Sidebar = (props) => {
             </NavItem>
             <NavItem className="el" >
                 <NavLink to="/timetable" onClick={closeCollapse} tag={NavLinkRRD} >
-                <i class='fas fa-book-reader text-red'></i>
+                <i class="fa fa-calendar" aria-hidden="true"></i>
                   Manage Time Tables
                 </NavLink>
             </NavItem>
             <NavItem className="el">
                <NavLink to="/courses" onClick={closeCollapse} tag={NavLinkRRD} >
-               <i class='fas fa-book-reader text-red'></i>
+               <i class="fas fa-book-open text-red"></i>
                  Manage Courses
                </NavLink>
             </NavItem>
-            <NavItem className="el">
-               <NavLink to="/manageaccount" onClick={closeCollapse} tag={NavLinkRRD} >
-               <i class='fas fa-book-reader text-red'></i>
-                 Manage Acounts
-               </NavLink>
-            </NavItem>
+           
           </Nav>
          
 
