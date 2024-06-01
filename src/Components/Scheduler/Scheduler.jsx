@@ -28,6 +28,12 @@ const config = {
         Authorization: `Bearer ${token}`,
       },
 };
+const config1 = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  };
 const getNextDate = (dayOfWeek, time) => {
   
     // Fix `now` to the start of the week (Sunday)
@@ -162,7 +168,7 @@ const EditorTemplate = () => {
             const formdata = new FormData();
             formdata.append('csv', file);
             setIsLoading(true); 
-            axios.post("http://localhost:5000/timetables/upload", formdata, config)
+            axios.post("http://localhost:5000/timetables/upload", formdata, config1)
                 .then(response => {
                     console.log('File uploaded');
                     setSuccessVisible(!Successvisible);

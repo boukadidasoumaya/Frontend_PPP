@@ -35,6 +35,12 @@ const config = {
     Authorization: `Bearer ${token}`,
   },
 };
+const config1 = {
+  headers: {
+    "Content-Type": "multipart/form-data",
+    Authorization: `Bearer ${token}`,
+  },
+};
 const TableStudents = () => {
   const modalRef = useRef(null);
   const navigate = useNavigate();
@@ -435,7 +441,7 @@ const handleDelete = (student) => {
     if (file && file.type === 'text/csv') {
       const formdata = new FormData();
       formdata.append('csv', file);
-      axios.post("http://localhost:5000/students/upload", formdata, config)
+      axios.post("http://localhost:5000/students/upload", formdata, config1)
         .then(response => {
           console.log('File uploaded');
           setSuccessVisible(!Successvisible);

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -24,10 +23,16 @@ import { Alert } from "reactstrap";
 import axios from "axios";
 import { useRef } from "react";
 import Pagination from "../Pagination/Pagination";
-const token = sessionStorage.getItem('jwtToken');
+const token = sessionStorage.getItem("jwtToken");
 const config = {
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+};
+const config1 = {
+  headers: {
+    "Content-Type": "multipart/form-data",
     Authorization: `Bearer ${token}`,
   },
 };
@@ -55,7 +60,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/subjects/modules",config)
+      .get("http://localhost:5000/api/subjects/modules", config)
       .then((response) => {
         setModules(response.data.data);
       })
@@ -71,7 +76,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/majors",config)
+      .get("http://localhost:5000/classes/majors", config)
       .then((response) => {
         setMajors(response.data.majors);
       })
@@ -87,7 +92,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/levels",config)
+      .get("http://localhost:5000/classes/levels", config)
       .then((response) => {
         setLevels(response.data.levels);
       })
@@ -193,7 +198,7 @@ const TableCourses = () => {
     }
 
     axios
-      .get(endpoint,config)
+      .get(endpoint, config)
       .then((response) => {
         setSubjects(response.data.data);
       })
@@ -260,10 +265,9 @@ const TableCourses = () => {
         Module: Module,
         Coeff: Coeff,
       };
-
       // Send new subject data to server
       axios
-        .post("http://localhost:5000/api/subjects", newSubject,config)
+        .post("http://localhost:5000/api/subjects", newSubject, config)
         .then((response) => {
           setSubjects([...subjects, response.data.data]); // Add new subject to original data
           setModalOpen(false);
@@ -288,6 +292,7 @@ const TableCourses = () => {
         });
     } else if (action === "update") {
       const id = document.getElementById("id").value;
+      console.log("iiiiiiiiiiiiiiiiiid", id);
       const newSubject = {
         _id: id,
         SubjectName: SubjectName,
@@ -298,7 +303,8 @@ const TableCourses = () => {
       axios
         .put(
           `http://localhost:5000/api/subjects/${newSubject?._id}`,
-          newSubject,config
+          newSubject,
+          config
         )
         .then((response) => {
           console.log("Subject updated:", response.data);
@@ -317,10 +323,9 @@ const TableCourses = () => {
 
   //upload
   const [Alertvisible, setAlertVisible] = useState(false);
+  const [Successvisible, setSuccessVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [UploadErrors, setUploadErrors] = useState([]);
-
-  
 
   const parseErrors = (errorArray) => {
     const errors = [];
@@ -396,10 +401,10 @@ const TableCourses = () => {
     // Render the error list
     return (
       <div>
-        {errors.map((error, i) => (
-          <React.Fragment key={i}>
+        {errors.map((error, z) => (
+          <React.Fragment key={z}>
             <div className="error-message">
-              <p>{messages[i]}</p>
+              <p>{messages[z]}</p>
               <p>
                 <strong>Subject Name:</strong> {error.SubjectName}
               </p>
@@ -431,12 +436,12 @@ const TableCourses = () => {
       const formdata = new FormData();
       formdata.append("csv", file);
       axios
-        .post("http://localhost:5000/api/subjects/upload", formdata, config)
+        .post("http://localhost:5000/api/subjects/upload", formdata, config1)
         .then((response) => {
           console.log("File uploaded");
           // Handle success response
-          setUploadErrors(["File uploaded successfully"]); // Assuming error.response.data.errors contains the error messages
           setUploadModalOpen(false);
+          setSuccessVisible(!Successvisible);
           setSelectedFile(null);
         })
         .catch((error) => {
@@ -458,12 +463,13 @@ const TableCourses = () => {
   };
 
   const onDismiss = () => setAlertVisible(!Alertvisible);
+  const onDismisssuccess = () => setSuccessVisible(!Successvisible);
   const toggleUploadModal = () => setUploadModalOpen(!uploadModalOpen);
 
   const handleDelete = (subject) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/api/subjects/${subject?._id}`,config)
+      .delete(`http://localhost:5000/api/subjects/${subject?._id}`, config)
       .then((response) => {
         console.log("Subject deleted:", response.data);
         setSubjects([...response.data]);
@@ -496,7 +502,8 @@ const TableCourses = () => {
   const handleDrop = () => {
     axios
       .delete(
-        `http://localhost:5000/api/subjects/drop/${selectedMajor}/${selectedLevel}`,config
+        `http://localhost:5000/api/subjects/drop/${selectedMajor}/${selectedLevel}`,
+        config
       )
       .then((response) => {
         console.log(
@@ -546,6 +553,18 @@ const TableCourses = () => {
             </Alert>
           </div>
         )}
+        {Successvisible && (
+          <div className="col  d-flex justify-content-end">
+            <Alert
+              isOpen={Successvisible}
+              color="success"
+              toggle={onDismisssuccess}
+              className=""
+            >
+              File Uploaded successfully
+            </Alert>
+          </div>
+        )}
       </Row>
       <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
         <ModalHeader color="danger" toggle={toggleUploadModal}>
@@ -566,141 +585,123 @@ const TableCourses = () => {
               </div>
               {/* Filter Dropdowns on Left */}
               <div className="row">
-                
-                  <SelectOptions
-                    options={ModuleOptions}
-                    selectedValue={selectedModule}
-                    onOptionChange={(newModule) =>
-                      handleFilterChange(
-                        newModule,
-                        selectedMajor,
-                        selectedLevel
-                      )
-                    }
-                    placeholderText="Modules"
-                  />
-                  <SelectOptions
-                    options={majorOptions}
-                    selectedValue={selectedMajor}
-                    onOptionChange={(newMajor) =>
-                      handleFilterChange(
-                        selectedModule,
-                        newMajor,
-                        selectedLevel
-                      )
-                    }
-                    placeholderText="Majors"
-                  />
-                  <SelectOptions
-                    options={levelOptions}
-                    selectedValue={selectedLevel}
-                    onOptionChange={(newLevel) =>
-                      handleFilterChange(
-                        selectedModule,
-                        selectedMajor,
-                        newLevel
-                      )
-                    }
-                    placeholderText="Levels"
-                  />
-                 </div>
-                {/* Centered "Liste des matières" */}
+                <SelectOptions
+                  options={ModuleOptions}
+                  selectedValue={selectedModule}
+                  onOptionChange={(newModule) =>
+                    handleFilterChange(newModule, selectedMajor, selectedLevel)
+                  }
+                  placeholderText="Modules"
+                />
+                <SelectOptions
+                  options={majorOptions}
+                  selectedValue={selectedMajor}
+                  onOptionChange={(newMajor) =>
+                    handleFilterChange(selectedModule, newMajor, selectedLevel)
+                  }
+                  placeholderText="Majors"
+                />
+                <SelectOptions
+                  options={levelOptions}
+                  selectedValue={selectedLevel}
+                  onOptionChange={(newLevel) =>
+                    handleFilterChange(selectedModule, selectedMajor, newLevel)
+                  }
+                  placeholderText="Levels"
+                />
+              </div>
+              {/* Centered "Liste des matières" */}
 
-                {/* Add Subject Button in Center */}
-                <div className="col-lg-12 col-md-12 col-sm-12 d-flex AddEtudiant justify-content-end   ">
-                  <div className="">
-                    <input
-                      type="file"
-                      id="fileUpload"
-                      style={{ display: "none" }}
-                      name="csv"
-                      className=""
-                      onChange={handleFileChange}
-                    />
+              {/* Add Subject Button in Center */}
+              <div className="col-lg-12 col-md-12 col-sm-12 d-flex AddEtudiant justify-content-end   ">
+                <div className="">
+                  <input
+                    type="file"
+                    id="fileUpload"
+                    style={{ display: "none" }}
+                    name="csv"
+                    className=""
+                    onChange={handleFileChange}
+                  />
 
-                    <Button className="uploadbtn" onClick={handleButtonClick}>
-                      Upload file
-                    </Button>
-                  </div>
-                  <div>
-                    <Button className="addbtn" onClick={toggleModal}>
-                      Add Subject
-                    </Button>
-                  </div>
+                  <Button className="uploadbtn" onClick={handleButtonClick}>
+                    Upload file
+                  </Button>
                 </div>
-                {/* Add Subject Modal */}
-                <Modal
-                  isOpen={modalOpen}
-                  toggle={toggleModal}
-                  innerRef={modalRef}
-                >
-                  <ModalHeader toggle={toggleModal}>Add Subject</ModalHeader>
-                  <ModalBody>
-                    <FormGroup>
-                      <FormLabel for="subjectname">Subject Name</FormLabel>
-                      <Input
-                        type="text"
-                        name="subjectname"
-                        id="subjectname"
-                        placeholder="Enter Subject Name"
-                      />
-                      {errors.SubjectName && (
-                        <span className="text-danger">
-                          {errors.SubjectName}
-                        </span>
-                      )}
-                    </FormGroup>
-                    <FormGroup>
-                      <FormLabel for="Module">Module</FormLabel>
-                      <select
-                        className="form-control shadow-none border-1 bg-transparent text-dark"
-                        name="Module"
-                        id="Module"
-                      >
-                        <option value="">Select Module</option>
-                        {Modules.map((Module) => (
-                          <option key={Module} value={Module}>
-                            {Module}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.Module && (
-                        <span className="text-danger">{errors.Module}</span>
-                      )}
-                    </FormGroup>
-                    <FormGroup>
-                      <FormLabel for="Coeff">Coeff</FormLabel>
-                      <Input
-                        type="text"
-                        name="Coeff"
-                        id="Coeff"
-                        placeholder="Enter Coeff"
-                      />
-                      {errors.Coeff && (
-                        <span className="text-danger">{errors.Coeff}</span>
-                      )}
-                    </FormGroup>
-                  </ModalBody>
-                  <div className="modal-footer">
-                    <Button
-                      className="addbtn"
-                      onClick={() => {
-                        handleSubject("add");
-                      }}
-                    >
-                      Add Subject
-                    </Button>
-                    <Button color="link" onClick={toggleModal}>
-                      Cancel
-                    </Button>
-                    {errors.combinedError && (
-                      <span className="text-danger">
-                        {errors.combinedError}
-                      </span>
+                <div>
+                  <Button className="addbtn" onClick={toggleModal}>
+                    Add Subject
+                  </Button>
+                </div>
+              </div>
+              {/* Add Subject Modal */}
+              <Modal
+                isOpen={modalOpen}
+                toggle={toggleModal}
+                innerRef={modalRef}
+              >
+                <ModalHeader toggle={toggleModal}>Add Subject</ModalHeader>
+                <ModalBody>
+                  <FormGroup>
+                    <FormLabel for="subjectname">Subject Name</FormLabel>
+                    <Input
+                      type="text"
+                      name="subjectname"
+                      id="subjectname"
+                      placeholder="Enter Subject Name"
+                    />
+                    {errors.SubjectName && (
+                      <span className="text-danger">{errors.SubjectName}</span>
                     )}
-                  </div>
-                </Modal>
-             
+                  </FormGroup>
+                  <FormGroup>
+                    <FormLabel for="Module">Module</FormLabel>
+                    <select
+                      className="form-control shadow-none border-1 bg-transparent text-dark"
+                      name="Module"
+                      id="Module"
+                    >
+                      <option value="">Select Module</option>
+                      {Modules.map((Module) => (
+                        <option key={Module} value={Module}>
+                          {Module}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.Module && (
+                      <span className="text-danger">{errors.Module}</span>
+                    )}
+                  </FormGroup>
+                  <FormGroup>
+                    <FormLabel for="Coeff">Coeff</FormLabel>
+                    <Input
+                      type="text"
+                      name="Coeff"
+                      id="Coeff"
+                      placeholder="Enter Coeff"
+                    />
+                    {errors.Coeff && (
+                      <span className="text-danger">{errors.Coeff}</span>
+                    )}
+                  </FormGroup>
+                </ModalBody>
+                <div className="modal-footer">
+                  <Button
+                    className="addbtn"
+                    onClick={() => {
+                      handleSubject("add");
+                    }}
+                  >
+                    Add Subject
+                  </Button>
+                  <Button color="link" onClick={toggleModal}>
+                    Cancel
+                  </Button>
+                  {errors.combinedError && (
+                    <span className="text-danger">{errors.combinedError}</span>
+                  )}
+                </div>
+              </Modal>
             </CardHeader>
             {/* Table Content */}
             <Table className="align-items-center table-flush" responsive>
@@ -788,6 +789,13 @@ const TableCourses = () => {
                     {/* Form fields to capture updated subject data */}
                     <FormGroup>
                       <FormLabel for="subjectname">Subject Name</FormLabel>
+                      <input
+                        type="text"
+                        style={{ display: "none" }}
+                        id="id"
+                        value={formData ? formData._id : ""}
+                      />
+
                       <Input
                         type="text"
                         name="SubjectName"
@@ -878,8 +886,8 @@ const TableCourses = () => {
               <>
                 <div className="d-flex justify-content-center mt-3">
                   <Pagination
-                    subjectsPerPage={subjectsPerPage}
-                    totalSubjects={subjects.length}
+                    itemsPerPage={subjectsPerPage}
+                    totalItems={subjects.length}
                     paginate={paginate}
                     currentPage={currentPage}
                   />
