@@ -318,35 +318,26 @@ const TableCourses = () => {
     },
   };
 
-  const parseError = (errorString) => {
-    const duplicate = /Duplicate/.test(errorString);
-    if (duplicate) {
-      const errors = [];
-      const entries = errorString.split("Erreur: Duplicate entry found:");
-      for (let i = 0; i < entries.length; i++) {
-        const entry = entries[i];
+  const parseErrors = (errorArray) => {
+    const errors = [];
+    let duplicate = false;
+  
+    errorArray.forEach((errorString) => {
+      if (/Duplicate/.test(errorString)) {
+        duplicate = true;
         try {
-          const jsonString = errorString.substring("Duplicate entry found: ".length);
-
-          console.log("entryy", jsonString);
+          const jsonString = errorString.replace('Duplicate entry found: ', '').trim();
           const parsedError = JSON.parse(jsonString);
           errors.push(parsedError);
         } catch (e) {
-          console.error("Failed to parse error entry:", entry);
+          console.error('Failed to parse error entry:', errorString);
         }
+      } else {
+        errors.push(errorString);
       }
-      console.log("teeeeeesstttt", errors);
-
-      return { errors: errors, duplicate: duplicate };
-    } else {
-      return { errors: errorString, duplicate: duplicate };
-    }
-  };
-
-  const parseErrors = (errorString) => {
-    // Split the error string based on "Erreur: Duplicate entry found:
-    const { errors, duplicate } = parseError(errorString);
-    return { errors: errors, duplicate: duplicate };
+    });
+  
+    return { errors, duplicate };
   };
 
   const formatErrors = (errorString) => {
@@ -363,7 +354,6 @@ const TableCourses = () => {
       <div>
         {errors.map((error, i) => (
           <React.Fragment key={i}>
-            {console.log("errrr", error)}
             <div className="error-message">
               <p>Duplicate Entry Found:</p>
               <p>
@@ -400,12 +390,14 @@ const TableCourses = () => {
         .post("http://localhost:5000/api/subjects/upload", formdata, config)
         .then((response) => {
           console.log("File uploaded");
+          // Handle success response
+          setUploadModalOpen(false);
+          setSelectedFile(null);
         })
         .catch((error) => {
-          console.log("error", error);
-          console.error("Error in uploading file:", error);
-          setUploadModalOpen(!uploadModalOpen);
-          setUploadErrors(error.response.data.error);
+          console.error("Errors in uploading file:", error);
+          setUploadModalOpen(true); // Show the modal with errors
+          setUploadErrors(error.response.data.error); // Assuming error.response.data.errors contains the error messages
           setSelectedFile(null);
         });
     } else {
@@ -515,13 +507,9 @@ const TableCourses = () => {
           Error in Uploading File:{" "}
         </ModalHeader>
         <ModalBody>
-          {UploadErrors ? (
-            <div>
-              <p>{formatErrors(parseErrors(UploadErrors))}</p>
-            </div>
-          ) : (
-            "Matières importées avec succès"
-          )}
+          <div>
+            <p>{formatErrors(parseErrors(UploadErrors))}</p>
+          </div>
         </ModalBody>
       </Modal>
       <Row>
