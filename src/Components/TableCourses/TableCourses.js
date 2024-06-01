@@ -320,23 +320,22 @@ const TableCourses = () => {
 
   const parseError = (errorString) => {
     const duplicate = /Duplicate/.test(errorString);
-    console.log("Dup", typeof errorString);
     if (duplicate) {
-      // Map the entries to an array of error objects
-      const errors = errorString
-        .map((entry) => {
-          try {
-            const jsonString = entry.replace(
-              "Erreur: Duplicate entry found:",
-              ""
-            );
-            return JSON.parse(jsonString);
-          } catch (e) {
-            console.error("Failed to parse error entry:", entry);
-            return null;
-          }
-        })
-        .filter(Boolean);
+      const errors = [];
+      const entries = errorString.split("Erreur: Duplicate entry found:");
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        try {
+          const jsonString = errorString.substring("Duplicate entry found: ".length);
+
+          console.log("entryy", jsonString);
+          const parsedError = JSON.parse(jsonString);
+          errors.push(parsedError);
+        } catch (e) {
+          console.error("Failed to parse error entry:", entry);
+        }
+      }
+      console.log("teeeeeesstttt", errors);
 
       return { errors: errors, duplicate: duplicate };
     } else {
@@ -346,9 +345,7 @@ const TableCourses = () => {
 
   const parseErrors = (errorString) => {
     // Split the error string based on "Erreur: Duplicate entry found:
-    console.log("stttt", errorString);
     const { errors, duplicate } = parseError(errorString);
-    console.log("eeeeeeeeeer", errors)
     return { errors: errors, duplicate: duplicate };
   };
 
