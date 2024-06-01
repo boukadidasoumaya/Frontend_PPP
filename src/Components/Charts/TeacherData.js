@@ -5,13 +5,19 @@ import axios from "axios";
 const TeacherData = ({ teacherId }) => {
   const [teacherData, setTeacherData] = useState(null);
   const [selectedClasses, setSelectedClasses] = useState({});
-
+  const token = sessionStorage.getItem('jwtToken');
+  const config = {
+    headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+    },
+  };
   useEffect(() => {
     if (teacherId) {
       const fetchTeacherData = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:5000/teachers/teacherProfile/teacherDataWithAbsences/${teacherId}`
+            `http://localhost:5000/teachers/teacherProfile/teacherDataWithAbsences/${teacherId}`,config
           );
           console.log("Fetched teacher data:", response.data); // Debugging line
           if (response.data.success) {
