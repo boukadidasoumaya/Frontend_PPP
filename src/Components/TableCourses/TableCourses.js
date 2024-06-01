@@ -320,29 +320,69 @@ const TableCourses = () => {
 
   const parseErrors = (errorArray) => {
     const errors = [];
-    let duplicate = false;
-  
+    const messages = [];
+    let jsoon = false;
+
     errorArray.forEach((errorString) => {
       if (/Duplicate/.test(errorString)) {
-        duplicate = true;
+        jsoon = true;
         try {
-          const jsonString = errorString.replace('Duplicate entry found: ', '').trim();
+          const jsonString = errorString
+            .replace("Duplicate entry found: ", "")
+            .trim();
           const parsedError = JSON.parse(jsonString);
           errors.push(parsedError);
+          messages.push("Duplicate entry found: ");
         } catch (e) {
-          console.error('Failed to parse error entry:', errorString);
+          console.error("Failed to parse error entry:", errorString);
+        }
+      } else if (/Missing/.test(errorString)) {
+        jsoon = true;
+        try {
+          const jsonString = errorString
+            .replace("Missing required fields in entry: ", "")
+            .trim();
+          const parsedError = JSON.parse(jsonString);
+          errors.push(parsedError);
+          messages.push("Missing required fields in entry: ");
+        } catch (e) {
+          console.error("Failed to parse error entry:", errorString);
+        }
+      } else if (/Coefficient/.test(errorString)) {
+        jsoon = true;
+        try {
+          const jsonString = errorString
+            .replace("Coefficient must be between 1 and 9 in entry: ", "")
+            .trim();
+          const parsedError = JSON.parse(jsonString);
+          errors.push(parsedError);
+          messages.push("Coefficient must be between 1 and 9 in entry: ");
+        } catch (e) {
+          console.error("Failed to parse error entry:", errorString);
+        }
+      } else if (/Champs/.test(errorString)) {
+        jsoon = true;
+        try {
+          const jsonString = errorString
+            .replace("Champs requis manquants dans l'entrée: ", "")
+            .trim();
+          const parsedError = JSON.parse(jsonString);
+          errors.push(parsedError);
+          messages.push("Champs requis manquants dans l'entrée: ");
+        } catch (e) {
+          console.error("Failed to parse error entry:", errorString);
         }
       } else {
         errors.push(errorString);
       }
     });
-  
-    return { errors, duplicate };
+
+    return { errors, messages, jsoon };
   };
 
   const formatErrors = (errorString) => {
-    const { errors, duplicate } = errorString;
-    if (!duplicate) {
+    const { errors, messages, jsoon } = errorString;
+    if (!jsoon) {
       return (
         <div className="error-message">
           <p>{errors}</p>
@@ -355,7 +395,7 @@ const TableCourses = () => {
         {errors.map((error, i) => (
           <React.Fragment key={i}>
             <div className="error-message">
-              <p>Duplicate Entry Found:</p>
+              <p>{messages[i]}</p>
               <p>
                 <strong>Subject Name:</strong> {error.SubjectName}
               </p>
@@ -391,6 +431,7 @@ const TableCourses = () => {
         .then((response) => {
           console.log("File uploaded");
           // Handle success response
+          setUploadErrors(["File uploaded successfully"]); // Assuming error.response.data.errors contains the error messages
           setUploadModalOpen(false);
           setSelectedFile(null);
         })
@@ -504,7 +545,7 @@ const TableCourses = () => {
       </Row>
       <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
         <ModalHeader color="danger" toggle={toggleUploadModal}>
-          Error in Uploading File:{" "}
+          Notification for upload:
         </ModalHeader>
         <ModalBody>
           <div>
