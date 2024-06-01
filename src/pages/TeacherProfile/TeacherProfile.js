@@ -26,12 +26,12 @@ import axios from "axios";
 
 const TeacherProfile = (props) => {
   const token = sessionStorage.getItem('jwtToken');
-const config = {
-  headers: {
-      "Content-Type": "multipart/form-data",
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
-  },
-};
+    },
+  };
   const location = useLocation(); // Get the current location object
   const selectedteacher = location.state?.selectedteacher; // Access the selectedteacher object from the state
   console.log("Selected teacher from profile:", selectedteacher);

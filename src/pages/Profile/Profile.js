@@ -20,9 +20,10 @@ const token= sessionStorage.getItem('jwtToken');
     const [student, setStudent] = useState([]);
     const config = {
       headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-      },}
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    };
     useEffect(() => {
       axios.get(`http://localhost:5000/students/${studentId}`,config)
         .then(response => {

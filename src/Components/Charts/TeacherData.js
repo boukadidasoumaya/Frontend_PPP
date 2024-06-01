@@ -7,10 +7,10 @@ const TeacherData = ({ teacherId }) => {
   const [selectedClasses, setSelectedClasses] = useState({});
   const token = sessionStorage.getItem('jwtToken');
   const config = {
-    headers: {
-        "Content-Type": "multipart/form-data",
+      headers: {
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
-    },
+      },
   };
   useEffect(() => {
     if (teacherId) {

@@ -22,7 +22,13 @@ import SelectOptions from "../SelectOptions/SelectOptionsForCourses";
 import axios from "axios";
 import { useRef } from "react";
 import Pagination from "../Pagination/Pagination";
-
+const token = sessionStorage.getItem('jwtToken');
+const config = {
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+};
 const TableCourses = () => {
   const modalRef = useRef(null);
   const [subjects, setSubjects] = useState([]);
@@ -47,7 +53,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/subjects/modules")
+      .get("http://localhost:5000/api/subjects/modules",config)
       .then((response) => {
         setModules(response.data.data);
       })
@@ -63,7 +69,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/majors")
+      .get("http://localhost:5000/classes/majors",config)
       .then((response) => {
         setMajors(response.data.majors);
       })
@@ -79,7 +85,7 @@ const TableCourses = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/classes/levels")
+      .get("http://localhost:5000/classes/levels",config)
       .then((response) => {
         setLevels(response.data.levels);
       })
@@ -184,7 +190,7 @@ const TableCourses = () => {
     }
 
     axios
-      .get(endpoint)
+      .get(endpoint,config)
       .then((response) => {
         setSubjects(response.data.data);
       })
@@ -254,7 +260,7 @@ const TableCourses = () => {
 
       // Send new subject data to server
       axios
-        .post("http://localhost:5000/api/subjects", newSubject)
+        .post("http://localhost:5000/api/subjects", newSubject,config)
         .then((response) => {
           setSubjects([...subjects, response.data.data]); // Add new subject to original data
           setModalOpen(false);
@@ -289,7 +295,7 @@ const TableCourses = () => {
       axios
         .put(
           `http://localhost:5000/api/subjects/${newSubject?._id}`,
-          newSubject
+          newSubject,config
         )
         .then((response) => {
           console.log("Subject updated:", response.data);
@@ -309,7 +315,7 @@ const TableCourses = () => {
   const handleDelete = (subject) => {
     toggleDeleteModal();
     axios
-      .delete(`http://localhost:5000/api/subjects/${subject?._id}`)
+      .delete(`http://localhost:5000/api/subjects/${subject?._id}`,config)
       .then((response) => {
         console.log("Subject deleted:", response.data);
         setSubjects([...response.data]);
