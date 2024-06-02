@@ -33,7 +33,10 @@ function Linechart(data = dataM) {
         async function getAttendanceData() {
           try {
             const data = await fetchAttendanceData();
-            setAttendanceData(data.data); // Assuming data is an object with a data property
+            setAttendanceData(data.data);
+            if (attendanceData === null) {
+              return <div>Loading...</div>;
+            } // Assuming data is an object with a data property
           } catch (error) {
             // Handle error
           }

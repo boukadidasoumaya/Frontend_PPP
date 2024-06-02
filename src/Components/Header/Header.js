@@ -202,8 +202,7 @@ console.log(data);
                           tag="h5"
                           className="text-uppercase text-muted mb-0"
                         >
-                         Absence Moyenne
-                        </CardTitle>
+average absence                        </CardTitle>
                         <span className="h2 font-weight-bold mb-0">{dataav.averageAbsencesPercentage}</span>
                       </div>
                       <Col className="col-auto">

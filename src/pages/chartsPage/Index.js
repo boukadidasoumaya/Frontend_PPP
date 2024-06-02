@@ -31,7 +31,7 @@ import PieChart from '../../Components/Charts/PieChart.js';
 const Index = (props) => {
   const [activeNav, setActiveNav] = useState("M");
   const [chartLineData, setChartLineData] = useState("dataM");
-
+const [TotalabsTeachers,setTotalabsTeachers]=useState(0);
  
   const toggleNavs = (e, index) => {
     e.preventDefault();
@@ -40,6 +40,11 @@ const Index = (props) => {
   };
   const [pieData, setPieData] = useState([]);
 const [totalTeachers, setTotalTeachers] = useState(0);
+function getYearLabel(index) {
+  // Convert index to year label
+  const yearLabels = ['First Year', 'Second Year', 'Third Year', 'Fourth Year', 'Fifth Year'];
+  return yearLabels[index] || ''; // Return the corresponding label or an empty string if index is out of range
+}
   useEffect(() => {
     const token = sessionStorage.getItem('jwtToken');
 
@@ -54,18 +59,44 @@ const [totalTeachers, setTotalTeachers] = useState(0);
       
       try {
         const response = await fetch('/teachers/count', requestOptions);
-        console.log(response);
-console.log(response);
         if (!response.ok) {
           throw new Error('Failed to fetch student data');
         }
 
         const data = await response.json();
-console.log(data);
         // Calculate the total number of students from the fetched data
         const total = data.totalProfessors
         
         setTotalTeachers(total);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+      }
+    };
+    const calculateAndSendNumberOfTeachers = async () => {
+      const requestOptions = {
+        method: 'GET', // Assuming you're fetching student data with a GET request
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      try {
+        console.log("ddddddddddddddddd");
+
+        const response = await fetch('/teachers/calculateAndSendNumberOfTeachers', requestOptions);
+        console.log("ddddddddddddddddd");
+        console.log(response);
+        if (!response.ok) {
+          throw new Error('Failed to fetch abscence data');
+        }
+
+        const data5 = await response.json();
+        // Calculate the total number of students from the fetched data
+        const totalss =data5.totalabsProfessors;
+        console.log("totalss",totalss);
+        
+        setTotalabsTeachers(totalss);
       } catch (error) {
         console.error('Error fetching student data:', error);
       }
@@ -87,7 +118,6 @@ console.log(data);
           absences: item.absences, // Use the absences field directly
         }));
         setPieData(formattedData);
-        console.log(formattedData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -101,6 +131,7 @@ console.log(data);
     }
     fetchTotalTeachers();
     fetchData();
+    calculateAndSendNumberOfTeachers();
   }, []);
 
   return (
@@ -119,7 +150,7 @@ console.log(data);
                     <h6 className="text-uppercase text-light ls-1 mb-1">
                       Overview
                     </h6>
-                    <h2 className="text-white mb-0">taux d'abscence</h2>
+                    <h2 className="text-white mb-0">Attendance rate</h2>
                   </div>
                   <div className="col">
                     <Nav className="justify-content-end" pills>
@@ -169,7 +200,7 @@ console.log(data);
                     <h6 className="text-uppercase text-muted ls-1 mb-1">
                       Performance
                     </h6>
-                    <h2 className="mb-0">absence par filiaire </h2>
+                    <h2 className="mb-0">Absence per Major </h2>
                   </div>
                 </Row>
               </CardHeader>
@@ -188,7 +219,7 @@ console.log(data);
               <CardHeader className="border-0">
                 <Row className="align-items-center">
                   <div className="col">
-                    <h3 className="mb-0">nombre des etudiants et des professeurs</h3>
+                    <h3 className="mb-0">Number of students and professors</h3>
                   </div>
                   <div className="col text-right">
                     <Button
@@ -206,25 +237,25 @@ console.log(data);
                 <thead className="thead-light">
                   <tr>
                     <th scope="col">status</th>
-                    <th scope="col">nomber total</th>
-                    <th scope="col">nombre d'absence global</th>
+                    <th scope="col">TOTAL NUMBER</th>
+                    <th scope="col">GLOABL ABSENCE</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <th scope="row">profs</th>
+                    <th scope="row">Professors</th>
                     <td>{totalTeachers}</td>
-                    <td>340</td>
+                    <td>{TotalabsTeachers}</td>
                     
                   </tr>
-                  
-                  {pieData.map((item, index) => (
-  <tr key={index}>
-    <th scope="row">{item.label}</th>
-    <td>{item.value}</td>
-    <td>{item.absences}</td> {/* Use item.absences here */}
-    
-  </tr>
+                  {pieData
+  .filter((item, index) => index < 5) // Filter to include only the first five items
+  .map((item, index) => (
+    <tr key={index}>
+      <th scope="row">{getYearLabel(index)}</th>
+      <td>{item.value}</td>
+      <td>{item.absences}</td>
+    </tr>
 ))}
                 </tbody>
               </Table>

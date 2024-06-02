@@ -25,6 +25,9 @@ function Barchart() {
         
                             console.log('Data is not in expected format:', data);
                         setAbsencesPerMajor(data);
+                        if (absencesPerMajor === null) {
+                            return <div>Loading...</div>;
+                          }
                     } catch (error) {
                         console.error('Error fetching absences per major:', error);
                     }

@@ -22,7 +22,8 @@ function LinechartW() {
           throw new Error('Failed to fetch weekly attendance data');
         }
         const data = await response.json();
-        setWeeklyAttendance(data); // Remove wrapping in array
+        setWeeklyAttendance(data); 
+        console.log(data)// Remove wrapping in array
       } catch (error) {
         console.error('Error fetching weekly attendance data:', error);
       }

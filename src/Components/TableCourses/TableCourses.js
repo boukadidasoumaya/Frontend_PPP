@@ -41,10 +41,10 @@ const TableCourses = () => {
     Coeff: "",
   });
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       [e.target.name]: e.target.value,
-    });
+    }));
     console.log("Updated formData:", formData);
   };
 
@@ -201,7 +201,7 @@ const TableCourses = () => {
         console.error("Error fetching filtered subjects:", error);
         setSubjects([]);
       });
-  }, [selectedModule, selectedMajor, selectedLevel, subjects]);
+  }, [selectedModule, selectedMajor, selectedLevel]);
 
   const initialErrors = {
     SubjectName: "",
@@ -294,7 +294,7 @@ const TableCourses = () => {
         Module: Module,
         Coeff: Coeff,
       };
-
+console.log('newSubject')
       axios
         .put(
           `http://localhost:5000/api/subjects/${newSubject?._id}`,
@@ -617,6 +617,7 @@ const TableCourses = () => {
                         name="subjectname"
                         id="subjectname"
                         placeholder="Enter Subject Name"
+                        value={formData.SubjectName} 
                       />
                       {errors.SubjectName && (
                         <span className="text-danger">
@@ -648,6 +649,7 @@ const TableCourses = () => {
                         type="text"
                         name="Coeff"
                         id="Coeff"
+                        value={formData.SubjectName} 
                         placeholder="Enter Coeff"
                       />
                       {errors.Coeff && (
@@ -779,19 +781,19 @@ const TableCourses = () => {
                     <FormGroup>
                       <FormLabel for="Module">Module</FormLabel>
                       <select
-                        className="form-control shadow-none border-1 bg-transparent text-dark"
-                        name="Module"
-                        id="Module"
-                        value={formData ? formData.Module : ""}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select Module</option>
-                        {Modules.map((Module) => (
-                          <option key={Module} value={Module}>
-                            {Module}
-                          </option>
-                        ))}
-                      </select>
+  className="form-control shadow-none border-1 bg-transparent text-dark"
+  name="Module"
+  id="Module"
+  value={formData ? formData.Module : ""}
+  onChange={handleChange}
+>
+  <option value="">Select Module</option>
+  {Modules.map((Module) => (
+    <option key={Module} value={Module}>
+      {Module}
+    </option>
+  ))}
+</select>
                       {errors.Module && (
                         <span className="text-danger">{errors.Module}</span>
                       )}
