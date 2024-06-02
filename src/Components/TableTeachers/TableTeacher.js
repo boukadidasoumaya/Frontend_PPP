@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Button,Card,CardHeader,Container,FormGroup,Input,Label,Modal,ModalBody,ModalHeader,Table,UncontrolledDropdown,DropdownToggle,DropdownMenu,DropdownItem,Row,Alert,
+  Spinner,
 } from "reactstrap";
 import { FormLabel } from 'react-bootstrap';
 import "./TableTeachers.css";
@@ -132,12 +133,13 @@ const TableTeachers = () => {
       .get(endpoint,config)
       .then((response) => {
         setTeachers(response.data.data);
+      
       })
       .catch((error) => {
         console.error("Error fetching filtered teachers:", error);
         setTeachers([]);
       });
-  }, [selectedDepartment, selectedSubject,teachers]);
+  }, [selectedDepartment, selectedSubject]);
 
   const [currentCIN, setCurrentCIN] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
@@ -440,7 +442,7 @@ const TableTeachers = () => {
   const [Alertvisible, setAlertVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [Successvisible, setSuccessVisible] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [UploadErrors, setUploadErrors] = useState([]);
 
   const handleFileChange = (event) => {
@@ -456,17 +458,20 @@ const TableTeachers = () => {
     if (file && file.type === "text/csv") {
       const formdata = new FormData();
       formdata.append("csv", file);
+      setIsLoading(true); 
       axios
         .post("http://localhost:5000/teachers/upload", formdata, config1)
         .then((response) => {
           console.log("File uploaded");
           setSuccessVisible(!Successvisible);
+          setIsLoading(false);
         })
         .catch((error) => {
           console.error("Error in uploading file:", error);
           setUploadModalOpen(!uploadModalOpen);
           setUploadErrors(error.response.data.problematicLines);
           setSelectedFile(null);
+          setIsLoading(false);
         });
     } else {
       setSelectedFile(null);
@@ -531,6 +536,24 @@ const TableTeachers = () => {
               </Alert>
           </div>
         ) }
+        {isLoading && (
+
+<div className="col   d-flex justify-content-end">
+  <Button
+    color="primary"
+    className='loadingButton'
+    disabled
+  >
+    <Spinner size="sm">
+      Loading...
+    </Spinner>
+    <span>
+      {' '}Loading
+    </span>
+  </Button>
+</div>
+)}
+
       </Row>
       <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
         <ModalHeader color="danger" toggle={toggleUploadModal}>

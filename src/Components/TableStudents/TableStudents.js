@@ -15,6 +15,7 @@ import {
   ModalBody,
   FormGroup,
   Input,
+  Spinner,
 } from "reactstrap";
 import { FormLabel } from 'react-bootstrap';
 import { Alert } from 'reactstrap';
@@ -180,6 +181,7 @@ useEffect(() => {
   axios.get(endpoint,config)
     .then(response => {
       setStudents(response.data.data);
+  
     })
     .catch(error => {
       setStudents([]);
@@ -427,6 +429,7 @@ const handleDelete = (student) => {
   const [Successvisible, setSuccessVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [UploadErrors, setUploadErrors] = useState({error:"",validationErrors:[]});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (event) => {
     if (event.target.files.length === 0) {
@@ -441,10 +444,12 @@ const handleDelete = (student) => {
     if (file && file.type === 'text/csv') {
       const formdata = new FormData();
       formdata.append('csv', file);
+      setIsLoading(true); 
       axios.post("http://localhost:5000/students/upload", formdata, config1)
         .then(response => {
           console.log('File uploaded');
           setSuccessVisible(!Successvisible);
+          setIsLoading(false);
          
         })
         .catch(error => {
@@ -455,6 +460,7 @@ const handleDelete = (student) => {
             validationErrors: error.response.data.validationErrors
           });
           setSelectedFile(null);
+          setIsLoading(false);
         });
     } else {
       setSelectedFile(null);
@@ -516,6 +522,24 @@ const handleDelete = (student) => {
               </Alert>
           </div>
         ) }
+    
+        {isLoading && (
+
+            <div className="col   d-flex justify-content-end">
+              <Button
+                color="primary"
+                className='loadingButton'
+                disabled
+              >
+                <Spinner size="sm">
+                  Loading...
+                </Spinner>
+                <span>
+                  {' '}Loading
+                </span>
+              </Button>
+            </div>
+            )}
 
         </Row>
         <Modal isOpen={uploadModalOpen} toggle={toggleUploadModal}>
@@ -545,7 +569,7 @@ const handleDelete = (student) => {
               <CardHeader className="border-0 ">
                 
                <div className="col-lg-12 col-md-12 col-sm-12 d-flex  justify-content-center">
-                 <h1 >Liste des étudiants</h1>
+                 <h1 >List of Students</h1>
                </div>
             
                

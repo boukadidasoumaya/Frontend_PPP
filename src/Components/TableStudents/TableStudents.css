@@ -64,4 +64,9 @@ border-radius: 20px !important;
 .danger {
        color: red;
      }
-     
+.loadingButton{
+       display: relative;
+       top: 60px ;
+       
+       z-index: 9999;
+}
