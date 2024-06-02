@@ -28,6 +28,12 @@ const config = {
         Authorization: `Bearer ${token}`,
       },
 };
+const config1 = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  };
 const getNextDate = (dayOfWeek, time) => {
   
     // Fix `now` to the start of the week (Sunday)
@@ -72,6 +78,7 @@ const EditorTemplate = () => {
         axios.get("http://localhost:5000/classes/majors",config)
             .then(response => {
                 setMajors(response.data.majors);
+                console.log(token);
             })
             .catch(error => {
                 console.error("Error fetching majors:", error);
@@ -91,34 +98,42 @@ const EditorTemplate = () => {
             fetchTimeTables(selectedMajor, selectedLevel);
             
         }
-    }, [selectedMajor, selectedLevel,transformedDataSemester1,transformedDataSemester2]);
+    }, [selectedMajor, selectedLevel]);
 
     const fetchTimeTables = (major, level) => {
-        axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}`,config)
-            .then(response => {
-        
-                response.data.data.forEach(item => {
-                    const transformedItem = {
-                        Id: item._id,
-                        Subject: item.SubjectName,
-                        Location: item.teacher_name,
-                        Description: `Classroom: ${item.Room}, Groupe: ${item.group}`,
-                        StartTime: getNextDate(getDayOfWeek(item.Day), item.StartTime),
-                        EndTime: getNextDate(getDayOfWeek(item.Day), item.EndTime),
-                        GroupId: item.group
-                    };
-                    if (item.Semester === 1) {
-                        transformedDataSemester1.push(transformedItem);
-                    } else if (item.Semester === 2) {
-                        transformedDataSemester2.push(transformedItem);
-                    }
-                });
-                setDataSourceSemester1(transformedDataSemester1);
-                setDataSourceSemester2(transformedDataSemester2);
-            })
-            .catch(error => {
-                console.error("Error fetching time tables:", error);
-            });
+        axios.get(`http://localhost:5000/timetables/majoryear/${major}/${level}`, config)
+    .then(response => {
+        const transformedDataSemester1 = [];
+        const transformedDataSemester2 = [];
+        console.log("reponse",response.data.data);
+        response.data.data.forEach(item => {
+          
+            
+            const transformedItem = {
+                Id: item._id,
+                Subject: item.SubjectName,
+                Location: item.teacher_name, // Ensure this is the correct field in your API response
+                Description: `Classroom: ${item.Room}, Groupe: ${item.group}`,
+                StartTime: getNextDate(getDayOfWeek(item.Day), item.StartTime),
+                EndTime: getNextDate(getDayOfWeek(item.Day), item.EndTime),
+                GroupId: item.group
+            };
+            
+            if (item.Semester === 1) {
+                transformedDataSemester1.push(transformedItem);
+            } else if (item.Semester === 2) {
+                transformedDataSemester2.push(transformedItem);
+            }
+        });
+
+        setDataSourceSemester1(transformedDataSemester1);
+        setDataSourceSemester2(transformedDataSemester2);
+    })
+    .catch(error => {
+        console.error("There was an error fetching the timetable data!", error);
+    });
+
+    
     };
     
 
@@ -162,7 +177,7 @@ const EditorTemplate = () => {
             const formdata = new FormData();
             formdata.append('csv', file);
             setIsLoading(true); 
-            axios.post("http://localhost:5000/timetables/upload", formdata, config)
+            axios.post("http://localhost:5000/timetables/upload", formdata, config1)
                 .then(response => {
                     console.log('File uploaded');
                     setSuccessVisible(!Successvisible);
@@ -275,21 +290,23 @@ const EditorTemplate = () => {
               </Alert>
           </div>
         ) }
-            {isLoading && (<Row className='loadingButton'>
+             {isLoading && (
 
-                <Button
-                  color="primary"
-                  className='loadingButton'
-                  disabled
-                >
-                  <Spinner size="sm">
-                    Loading...
-                  </Spinner>
-                  <span>
-                    {' '}Loading
-                  </span>
-                </Button>
-                </Row>)}
+<div className="col   d-flex justify-content-end">
+  <Button
+    color="primary"
+    className='loadingBtn'
+    disabled
+  >
+    <Spinner size="sm">
+      Loading...
+    </Spinner>
+    <span>
+      {' '}Loading
+    </span>
+  </Button>
+</div>
+)}
                 {Successvisible && (
           <div className='col  d-flex justify-content-end'>
               <Alert isOpen={Successvisible} color="success" toggle={onDismisssuccess} className="">
@@ -305,7 +322,7 @@ const EditorTemplate = () => {
                       {UploadErrors.error ? (
                         <div>
                           <p>Error in inserting timetable into the database.</p>
-                          {UploadErrors.nonExistingEntities.length > 0 ? (
+                          {UploadErrors.nonExistingEntities && UploadErrors.nonExistingEntities.length > 0 ? (
                             <p>Check these lines: {UploadErrors.nonExistingEntities.join(', ')}</p>
                           ) : null}
                         </div>
